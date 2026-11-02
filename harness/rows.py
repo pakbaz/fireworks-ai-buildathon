@@ -68,6 +68,19 @@ def harness(case, model, use_images, with_wiki):
     r = client.chat(model, [{"role": "user", "content": [{"type": "text", "text": prompts.READ}] + docs}], max_tokens=6000)
     _acc(stats, model, r)
     read = client.parse_json(client.content(r)) or {}
+    # 1b. A document that exists but came back empty is a reading failure, not an absent document: read it alone.
+    present = {k for k in ("po", "shipping_notice", "gr", "invoice")
+               if (case.get("documents") or {}).get(k) or (use_images and k in packet.images_of(case))}
+    dropped = [k for k in sorted(present) if not read.get(k)]
+    if dropped:
+        parts = [p for p in packet.document_parts(case, use_images)
+                 if not (p.get("type") == "text" and any(p["text"].startswith(f"--- {packet.DOC_NAMES[o]}") for o in ("po", "shipping_notice", "gr", "invoice") if o not in dropped))]
+        rd = client.chat(model, [{"role": "user", "content": [{"type": "text", "text": prompts.READ + "\n\nOnly these documents are included; return null for the others."}] + parts}], max_tokens=6000)
+        _acc(stats, model, rd)
+        extra = client.parse_json(client.content(rd)) or {}
+        for k in dropped:
+            if extra.get(k):
+                read[k] = extra[k]
     issues, feats, at_risk, wait = domain.analyze(read, case, wiki, policy)
     agree = True
     read2 = None
