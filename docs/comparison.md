@@ -1,5 +1,7 @@
 # Kimi K3 vs our harness: inputs, outputs, and how we compare them
 
+**Latest low-reasoning results and full 1,000-case comparison:** see [../results.md](../results.md) and the [updated demo charts](results/demo/README.md). This page preserves earlier/default-reasoning experimental details; its older tables are not the final selected system's results.
+
 ## The setup in one table
 
 Both systems see **the same case**. The difference is what happens to it.
