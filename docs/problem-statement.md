@@ -68,9 +68,9 @@ flowchart TB
         PKT["1 · Assemble case packet<br/>+ as-of date"]:::code
         LOOK["2 · Wiki lookup by ID<br/>supplier · items · policy"]:::code
         NORM["3 · Normalize in code<br/>dates · numbers · currency<br/>pack sizes · aliases from wiki"]:::code
-        EXT["4 · Extract to JSON<br/>small open model on Fireworks<br/>every field: ok / unreadable / absent"]:::model
+        EXT["4 · Extract to JSON<br/>Kimi K2.5 on Fireworks<br/>every field: ok / unreadable / absent"]:::model
         CHK{"5 · Deterministic checks<br/>qty × price = line total<br/>lines sum to subtotal<br/>PO ref matches across docs<br/>price within policy tolerance<br/>invoice qty = received qty<br/>invoice no. not already paid<br/>GR present, or notice in window"}:::code
-        RR["6 · Targeted re-read<br/>only fields that failed or were unreadable<br/>large open model on Fireworks<br/>wiki hints · 3 reads · majority vote"]:::model
+        RR["6 · Targeted re-read<br/>only fields that failed or were unreadable<br/>Kimi K2.5 on Fireworks<br/>wiki hints · 3 reads · majority vote"]:::model
         DEC{"7 · Classifier + business dial<br/>risk × dollars at stake"}:::code
     end
 

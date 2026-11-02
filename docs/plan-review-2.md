@@ -1,5 +1,7 @@
 # Plan review 2 (1:25 PM)
 
+**Status:** folded into [plan.md](plan.md) at 1:30 PM (sections 5, 5a, 6a, 8, 10).
+
 Review of [plan.md](plan.md) and [problem-statement.md](problem-statement.md) as of commit `de43ecc`. The first review is in [plan-review.md](plan-review.md).
 
 The new direction is good. It makes a stronger story: one open model, before and after, the business dial, and the chain-break diagnosis. The problem statement reads well for judges. My points are about **time, model access, and the one rule that could cost points**.
