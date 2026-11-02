@@ -10,7 +10,7 @@
 
 - Arrow keys / space: next or previous slide; **N**: show presenter notes; **F**: fullscreen.
 - All illustrations are 1600 × 900 SVGs with legible text, reusable in a conventional slide deck. No external fonts or remote image dependencies.
-- Slides 1–7 are the main story. Slide 8 is an optional *business economics* backup; do not use its assumptions as realized ROI.
+- Slides 1–7 are the main story. Slides 8–9 are optional *business economics and scanned-image* backups; do not use the economics assumptions as realized ROI.
 - Charts were authored from the benchmark evidence, not produced by the model, and are independent of the separately mocked analyst dashboard in \`dashboard/\`.
 
 ## Figures (presentation sequence)
@@ -25,6 +25,7 @@
 | 6 | **Engineering optimization:** low reasoning versus default on 300 document cases | [04-low-reasoning-dev.svg](04-low-reasoning-dev.svg) |
 | 7 | **Honest limitation:** complete 1,000-case document test, recall, review burden and cost | [03-document-tradeoff.svg](03-document-tradeoff.svg) |
 | 8 | **Finance/controller backup:** a $10/review assumption shows why inference cost is not total cost | [08-review-economics-backup.svg](08-review-economics-backup.svg) |
+| 9 | **Scanned-image robustness backup:** Kimi reads the synthetic scans better | [09-scanned-images-limit.svg](09-scanned-images-limit.svg) |
 
 ## Exact figures, denominator and qualification
 
@@ -74,6 +75,17 @@ From \`examples/demo/TESTCTX-0149.json\`:
 - Standalone Kimi, explicitly instructed to check the history, **recommended PAY** and said quantity was below the threshold.
 - Harness result **ESCALATE**, reason \`quantity_spike\`. The human reviewer verifies the unusual order. No payment is executed.
 - Invoice total is **not** an amount proven lost or saved; it is a synthetic invoice value. \`at_risk_usd\` is a synthetic policy-based exposure estimate.
+
+### E. Scanned-image subset — backup result
+
+The repository's latest `results.md` adds **100 synthetic rendered document scans**. Both systems were evaluated on the same 100 cases: **25 real problems, 50 fine invoices, 25 in transit**. I independently inspected both 100-row prediction files and verified the totals of decisions and model-cost sums (the correctness breakdown below comes from the root `results.md`).
+
+| System | True discrepancies detected | False alerts among 50 fine | In-transit correctly WAIT | Model cost for 100 |
+|---|---:|---:|---:|---:|
+| Kimi K3 alone | **25/25** | **2/50** | **25/25** | $1.90 |
+| GLM low + wiki harness | 24/25 | 18/50 | 21/25 | **$0.13** |
+
+This is a serious input-quality limitation: the smaller model's image extraction creates many false disputes and some incorrect `WAIT` decisions. These are synthetically rendered documents, not a clinical real-invoice OCR test. **Do not** claim the full text-based benchmark proves scanned-image robustness. Source: `runs/glm_harness_wiki_low/test_images.jsonl` and `runs/kimi_alone_v2/test_images.jsonl`.
 
 ## Recommended ~100-second narration
 
