@@ -1,5 +1,7 @@
 # Invoice Reconciliation
 
+**Demo video (1 min 53 s):** [watch on Google Drive](https://drive.google.com/file/d/1cEZZ00eSJBZlKE0aDoeYgAf1HcPLOe6y/view?usp=sharing) · narration script: [media/narration.md](media/narration.md)
+
 An evidence-first open-model evaluation for **Fireworks: Deploy with Microsoft and NVIDIA**, November 2, 2026.
 
 > Can a rules-first system use an open model only for genuine ambiguity, reduce unnecessary human review, and still catch cases that require a person?

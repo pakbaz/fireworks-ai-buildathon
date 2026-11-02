@@ -1,7 +1,7 @@
 # Demo video narration
 Explainer video, about 1 min 53 s, narrated with the macOS Samantha voice.
 
-**Video:** link to be added.
+**Video:** [watch on Google Drive](https://drive.google.com/file/d/1cEZZ00eSJBZlKE0aDoeYgAf1HcPLOe6y/view?usp=sharing)
 
 1. **Three papers.** Before a company pays a bill, three papers have to agree. The order, the delivery slip, and the invoice.
 2. **They agree.** Same item, same count, same price. When they line up, the bill pays itself.
