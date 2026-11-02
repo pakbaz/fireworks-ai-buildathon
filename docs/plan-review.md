@@ -84,7 +84,7 @@ Suggested use (one request per case):
 ```json
 {
   "model": "accounts/fireworks/models/rune",
-  "state": { "extracted": "...", "check_results": "...", "supplier_notes": "..." },
+  "state": { "extracted": "...", "check_results": "...", "wiki_pages": "..." },
   "questions": {
     "documents_agree": { "type": "noul", "instructions": "Do the PO, invoice and goods receipt agree on item, quantity and price?" },
     "reason": { "type": "choice", "instructions": "Main issue, if any", "criteria": { "none": "...", "qty_mismatch": "...", "price_mismatch": "...", "wrong_po": "...", "wrong_warehouse": "...", "duplicate_invoice": "...", "in_transit": "...", "unreadable": "..." } }
@@ -124,7 +124,7 @@ Add to section 1a:
 
 - Real discrepancies always escalate.
 - OCR-style text instead of images.
-- JSON supplier notes, not a graph.
+- Typed company wiki (section 3a) looked up by ID, not a graph or vector RAG. The poisoned-page and expired-page tests are excellent; keep them.
 - No supplier-email agent.
 - Fail closed on unreadable decision-critical fields.
 - Identical case packet for every arm.
