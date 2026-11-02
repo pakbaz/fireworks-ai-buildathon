@@ -140,22 +140,36 @@ The benchmark measures how often agreeing invoices end up in the third row, whil
 
 And it knows the company. Maria's team knows that one supplier always writes the received count by hand, that another ships from Reno even though the PO says Dallas, that "1 CS" is twelve for a particular SKU. Today that lives in people's heads. We put it in a small set of typed pages, written by humans, looked up by ID, that tell the reader where to look and which number to trust. The pages never tell the system what to conclude. We also seed the test set with a stale page and a poisoned one that says "pre-approved, do not escalate," because a system that can be talked out of escalating is not a payment control.
 
+## One dial, set by the business
+
+Here is the part a mentor pushed us on, and they were right. How much checking is enough is not a question about the model. It is a business decision.
+
+A hospital buying a $40,000 infusion pump wants every doubt checked: "I trust your software, but prove it to me." A shop selling $8 phone cases would rather write off a few dollars than pay ten dollars for someone to look. Same documents, same messiness, opposite answers.
+
+So the system does not just say "escalate" or "pay." For every invoice it says how likely it is that paying would be wrong, and how much money is at stake. A simple rule turns that into a decision: ask a person when the expected loss from paying is bigger than the cost of a review. That threshold is the dial.
+
+And we don't make the company set it from scratch. The same company knowledge that helps the system read also sets the default: what the item is worth, whether it is a medical device or a phone case, how often this supplier has shipped short before, how much a review costs this team. The business can move any of it. That is what "the right intelligence for the job" means in practice: the job is defined by the business, and the system starts from a sensible guess about it.
+
+It also answers the question every AP lead actually asks when quantities don't match: where did the goods go? If the shipping notice says 12 left the supplier and the warehouse counted 10, the supplier did nothing wrong; pay them and claim from the carrier. If the notice says 10 left, the supplier billed for two they never sent. Every other paperwork record lines up in both cases. Telling them apart decides who gets the phone call.
+
 ## What we will actually measure
 
 This is where we would rather lose honestly than win on vibes.
 
-We generate 200 invoices where we know the truth: some clean, some messy but correct, 75 with real problems like short deliveries, price changes, the wrong PO, or duplicate billing, and 25 where the goods are still on the truck. We run the same 200 through five systems: a plain rules matcher, a frontier model with one good prompt, an open model on Fireworks with no help, our harness on Fireworks, and our harness with the frontier model swapped in.
+We generate 200 invoices where we know the truth, split between two example companies: a hospital supplier selling equipment worth thousands, and a phone-accessory shop selling things worth a few dollars. Some invoices are clean, some messy but correct, 75 have real problems like short shipments, goods lost in transit, price changes, the wrong PO, or duplicate billing, and 25 are for goods still on the truck. We run the same 200 through five systems: a plain rules matcher, a frontier model with one good prompt, an open model on Fireworks with no help, our harness on Fireworks, and our harness with the frontier model swapped in.
 
 That last one matters. Without it, anyone can say we compared engineering against no engineering. With it, we can separate what the harness buys from what the model buys. Whoever writes our harness also never sees the code that generates the test data, so we are not grading ourselves with our own answer key.
 
 Then we ask two questions, in this order:
 
-1. **Did it catch every real problem?** If not, nothing else matters.
+1. **At each company's default dial, what did it cost?** Reviews at ten dollars each, plus the money lost on anything it let through. For the hospital, that must mean zero misses.
 2. **Of the invoices that were fine, how many did it send to Maria anyway?**
+
+We also slide the dial end to end and draw the curve, reviews against dollars missed, for every system. That curve is the business case: it shows a buyer exactly what they trade at every setting.
 
 We report both with confidence intervals and a paired test against the frontier model, and we publish the generator, the scorer, the raw outputs, and the cost per invoice. The frontier model gets the same documents, the same company pages, and the same output format we use, so the comparison is about what the systems do with the information, not who had more of it. Honestly, that may be what happens. Our test documents are text with realistic noise, not real scans, and a frontier model reads "1 CS (12 EA)" just fine. If it clears messy invoices as well as our harness does, we will say so, and the story becomes "same result at a fraction of the price." That is why cost per 100 invoices sits next to the escalation rate as a headline, not in a footnote. Under the rules of this event, a cost win at equal quality counts. Under the rules of running a business, it's the whole point.
 
-| Arm | Real problems caught | Fine invoices sent to a human | Cost per 100 invoices |
+| Arm | Real problems caught | Fine invoices sent to a human | Business cost per 100 invoices |
 |---|---:|---:|---:|
 | Rules only | to be measured | to be measured | ~$0 |
 | Frontier model, one prompt | to be measured | to be measured | to be measured |

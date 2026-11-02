@@ -22,7 +22,7 @@ flowchart TB
             A4["4 · Fireworks harness"]
             A5["5 · Frontier model in the same harness"]
         end
-        ARMS --> SCORE["Scorer<br/>false escalation rate on agreeing cases<br/>gate: 75/75 real discrepancies caught<br/>cost per 100 invoices · latency · per-stratum"]
+        ARMS --> SCORE["Scorer<br/>false escalation rate on agreeing cases<br/>business dial per company<br/>reviews · misses · $ per 100 invoices<br/>cost curve · calibration · latency"]
         SCORE --> TABLE["Results table<br/>built only from saved outputs"]
     end
 
@@ -83,7 +83,7 @@ Two patterns hold across all of them:
 1. **Matching is deterministic and the AI explains or triages.** No product we found lets a model clear an invoice that rules could not read. Stampli comes closest, and it escalates on low confidence.
 2. **Nobody publishes a benchmark.** Claimed no-touch rates have no stated denominator, case mix or safety constraint. Industry research (Ardent) reports exception rates, not what caused them.
 
-**Where we differ.** We keep the deterministic core and the fixed tolerances. We put the open model in the one place the products do not: reading a messy document well enough that the deterministic checks can run at all, with an explicit `unreadable` status so it never guesses. And we publish the benchmark: case mix, safety gate, counts, per-stratum results, raw outputs. The claim is narrow and testable: fewer document-only escalations at zero missed real discrepancies, versus a frontier model on identical cases.
+**Where we differ.** We keep the deterministic core and the fixed tolerances. We put the open model in the one place the products do not: reading a messy document well enough that the deterministic checks can run at all, with an explicit `unreadable` status so it never guesses. And we publish the benchmark: case mix, safety gate, counts, per-stratum results, raw outputs. And we give the business the dial: how much checking is worth it is their call, with a default set from what the system knows about their goods and suppliers. The claim is narrow and testable: fewer needless reviews at the same or lower business cost, versus a frontier model on identical cases.
 
 ---
 
@@ -96,17 +96,21 @@ Output: one JSON object.
 ```json
 {
   "action": "CLEAR | ESCALATE | WAIT",
-  "reason_code": "none | qty_mismatch | price_mismatch | wrong_po | duplicate_invoice | gr_missing_in_transit | unreadable_field",
-  "confidence": 0.0,
-  "evidence": "one sentence citing the fields compared"
+  "reason_code": "none | short_shipped | lost_in_transit | qty_mismatch | price_mismatch | wrong_po | duplicate_invoice | gr_missing_in_transit | unreadable_field",
+  "next_step": "pay | dispute_with_supplier | claim_from_carrier | investigate | wait",
+  "risk": 0.0,
+  "at_risk_usd": 0.0,
+  "evidence": "one sentence citing the fields compared and, for quantity problems, which leg of the chain lost the goods"
 }
 ```
 
 | Action | Meaning |
 |---|---|
 | CLEAR | Documents agree. Pay the invoice. No human. |
-| ESCALATE | A real discrepancy exists, or a decision-critical field could not be read. A human must act. |
+| ESCALATE | The business dial (section 4a) says this invoice is too risky to pay unreviewed. A human must act. |
 | WAIT | GR is missing and goods are in transit. Re-check later. Not a human escalation. |
+
+`risk` is the system's probability that paying this invoice without review would be wrong. `at_risk_usd` is the money that would be lost if it were. Both are computed for every case, and the action follows from them through the dial.
 
 ---
 
@@ -146,14 +150,18 @@ Rules for noise:
 - A handwritten quantity on the GR, when present, is the authoritative received quantity. On CLEAR cases it equals the printed quantity and the invoice. On a qty_mismatch case it may differ from the printed quantity, which is the hardest case in the set.
 - Price on CLEAR cases never drifts. Rounding noise is presentation only.
 
-### 3.4 Discrepancy mutations (for "real discrepancy"), four
+### 3.4 Discrepancy mutations (for "real discrepancy")
 
 | reason_code | Mutation |
 |---|---|
-| qty_mismatch | GR quantity differs from invoice quantity on one line |
+| short_shipped | Shipping notice says 10 shipped, GR says 10 received, invoice bills 12. The supplier billed for goods it never sent. Next step: dispute with supplier. |
+| lost_in_transit | Shipping notice says 12 shipped, GR says 10 received, invoice bills 12. The supplier did ship 12; two were lost on the way. Next step: pay the supplier, claim from the carrier. |
+| qty_mismatch | GR quantity differs from invoice quantity and there is no shipping notice, so the leg cannot be told. Next step: investigate. |
 | price_mismatch | Invoice unit price differs from PO unit price by at least 3%. Policy tolerance is 1%, so no mutation sits near the line. |
 | wrong_po | Invoice references PO B; goods were received against PO A at a different price |
 | duplicate_invoice | Invoice number already appears in the paid-invoices list for that PO |
+
+**Where in the chain.** Every paperwork record in a lost_in_transit case lines up: ordered 12, shipped 12, billed 12. Only the warehouse count disagrees. Telling that apart from a supplier that shipped short is the most human moment in the set, because it decides who gets the phone call. The shipping notice carries the shipped quantity on most cases so this can be told; reason-code accuracy on these two codes is reported on its own.
 
 Cut for time: wrong_warehouse. It needs transfer records and a receipt search, which is a day of work on its own. Future work.
 
@@ -165,6 +173,7 @@ Cut for time: wrong_warehouse. It needs transfer records and a receipt search, w
   "split": "test",
   "stratum": "messy",
   "as_of_date": "2026-11-02",
+  "company": "northside | caseworks",
   "documents": { "po": "<text>", "invoice": "<text>", "gr": "<text or null>", "shipping_notice": "<text or null>" },
   "paid_invoices": ["INV-8812"],
   "supplier_profile": { "supplier_id": "SUP-ACME", "notes": ["Writes received qty by hand at top of GR"] },
@@ -198,9 +207,9 @@ Session 2 called this "supplier wiki / memory." It is the tribal knowledge a new
 
 | Page | Contents | Which noise or case it unlocks |
 |---|---|---|
-| `wiki/suppliers/<id>.json` | aliases and sites, PO reference style, pack sizes, whether handwritten quantities on their GR are authoritative, typical lead days, where key fields sit on their layouts | vendor_alias, po_ref_format, uom_pack, handwritten_note, in transit |
-| `wiki/items/<sku>.json` | description variants, unit of measure, approved conversions | uom_pack |
-| `wiki/policy.json` | price tolerance 1%, in-transit window 10 days, duplicate rule, what counts as decision-critical | all arms read this |
+| `wiki/suppliers/<id>.json` | aliases and sites, PO reference style, pack sizes, whether handwritten quantities on their GR are authoritative, typical lead days, where key fields sit on their layouts, past problem rate (synthetic history, labeled as such) | vendor_alias, po_ref_format, uom_pack, handwritten_note, in transit |
+| `wiki/items/<sku>.json` | description variants, unit of measure, approved conversions, unit value, category | uom_pack, and the dial defaults |
+| `wiki/policy.json` | price tolerance 1%, in-transit window 10 days, duplicate rule, what counts as decision-critical, review cost, category weights, the company's overrides | all arms read this; the dial reads it |
 
 Pages are typed JSON, not free text, so code can apply pack sizes and aliases during normalization and the model can read the rest as hints.
 
@@ -236,12 +245,12 @@ Person 1 writes the pages alongside the generator, which already knows every sup
 
 **Co-headlines.** We report two numbers side by side, because the most likely honest outcome is that a frontier model reads text noise about as well as we do, and then cost is the result.
 
-> 1. False escalation rate on cases with no real discrepancy, reported only while recall on real discrepancies is 100%.
-> 2. Cost per 100 invoices at that safety level.
+> 1. False escalation rate on cases with no real discrepancy, at each company's default dial.
+> 2. Total business cost per 100 invoices at that dial: reviews at $10 each plus the weighted dollars lost on misses. Model cost per 100 invoices is reported beside it.
 
 Denominator for the first: the 100 Clean plus Clean-but-messy cases. Numerator: those the system marked ESCALATE.
 
-**Safety gate:** every Real-discrepancy case must be ESCALATE. Report the count, for example `75/75`. Zero misses on 75 cases bounds the miss rate below about 4% at 95% confidence, so say that. The gate is a sanity check that every arm should pass, not the place we expect to win.
+**Safety gate:** for the hospital supplier, every real discrepancy must be ESCALATE at the default dial. Report the count, for example `37/37`, with its interval. For the phone-case seller the default dial may let a small discrepancy through on purpose, because a $6 write-off is cheaper than a $10 review; those are reported as dollars written off, not hidden. Section 4a explains why.
 
 **Secondary:**
 
@@ -256,7 +265,7 @@ Denominator for the first: the 100 Clean plus Clean-but-messy cases. Numerator: 
 
 Scoring rules:
 
-- **Safety gate:** on a Real-discrepancy case only an ESCALATE prediction counts as caught. CLEAR or WAIT there is a miss. Nobody looks at a WAIT.
+- **Caught:** on a Real-discrepancy case only an ESCALATE prediction counts as caught. CLEAR or WAIT there is a miss. Nobody looks at a WAIT.
 - **False escalation metric:** on an agreeing case, ESCALATE counts as a false escalation. WAIT counts as not cleared and is reported separately, never as a clear.
 - **Uncertainty:** report a 95% Wilson interval on the false escalation rate and an exact binomial interval on the safety-gate count. Paired McNemar tests on the 100 agreeing cases: arm 4 against arm 2 (does the harness on open models beat a bare frontier model?) and arm 4 against arm 5 (inside the same harness, does the open model match the frontier model?). A few lines of `statsmodels`.
 - `confidence` is logged, not scored.
@@ -274,6 +283,60 @@ Accuracy and F1 are not headline numbers. They hide missed discrepancies.
 | Arm 2 beats arm 4 | We say so. The benchmark is still the contribution. |
 
 Every outcome gets written up. None get hidden.
+
+---
+
+## 4a. The business dial
+
+Mentor feedback, 1:00 PM: the right amount of checking is a business decision, not a model property. A hospital buying $40,000 infusion pumps wants every doubt checked and proof shown. A shop selling $8 phone cases would rather write off a small error than pay $10 for someone to look. The product is the dial, with a sensible default the company can move.
+
+### The rule
+
+The harness gives every invoice a `risk` and an `at_risk_usd`. Code then escalates when the expected loss from paying beats the cost of a review:
+
+```text
+escalate  if  risk × cost_of_miss  >  (1 − risk) × cost_of_review
+cost_of_review = $10 by default (Ardent: $9.84 per invoice)
+cost_of_miss   = at_risk_usd × category weight × supplier weight
+```
+
+Equivalently, escalate when `risk` is above `cost_of_review / (cost_of_review + cost_of_miss)`. Expensive, critical goods drive that threshold toward zero, so almost any doubt escalates. Cheap goods push it up, so only likely problems do.
+
+### Where the default comes from: what the system already knows
+
+This is where the company knowledge pays off twice. The same wiki that helps the reader also sets the default dial.
+
+| Signal | Source | Effect |
+|---|---|---|
+| Dollars at risk | Computed in code from the case: disputed quantity × unit price, price difference × quantity, or the whole invoice for a duplicate, wrong PO or unreadable critical field | Bigger possible loss, stricter |
+| Item value and category | `wiki/items`: unit value and category. `wiki/policy`: category weights, illustrative: medical device 25, industrial 3, consumer 1 | Critical goods, stricter |
+| Supplier history | `wiki/suppliers`: past problem rate. Synthetic for the benchmark and labeled so. Weight 0.5 to 2 | A supplier with a history of short shipments, stricter |
+| Company override | `wiki/policy`: the company's own review cost and per-category or per-supplier overrides | The business moves its own dial |
+
+### Where `risk` comes from
+
+- **Clearly read check failure:** risk 0.98. The papers disagree; only a reading error could make it fine.
+- **Every check passes on fields read cleanly:** risk from the three re-reads. Re-run the checks on each read; risk is the share that fail, smoothed as (failing + 0.5) / (reads + 1).
+- **Critical field unreadable after re-reads:** high risk, but now a question of dollars. A $3 doubt on a phone case may pay; a doubt on an infusion pump never does.
+- **Calibrated on dev only.** Fit one monotone mapping from raw risk to observed error rate on the 50 dev cases. Report the Brier score and a reliability table on test, because a dial on uncalibrated numbers is a dial on nothing.
+- **Fair to the frontier.** Arms 2, 3 and 5 sample three times at temperature 0.7; risk is their share of ESCALATE answers. The same dial and costs apply to every arm. Self-reported confidence is logged too.
+
+WAIT is not on the dial. It follows the shipping-notice rule.
+
+### Two example companies in the data
+
+| Company | Goods | Unit values | Default posture |
+|---|---|---|---|
+| Northside Hospital Supply | infusion pumps, monitors, surgical kits | $2,000 to $60,000 | Prove it to me. Near-zero threshold. |
+| Caseworks | phone cases, chargers, screen protectors | $3 to $15 | Don't waste a person on a few dollars. |
+
+The 200 test cases split 100 and 100, each half keeping the stratum mix from section 3.2. Both companies share suppliers' writing habits, so the reading problem is identical and only the stakes differ.
+
+### What the scorer reports for the dial
+
+- Per company, at its default dial: reviews per 100, misses per 100, dollars lost on misses, total business cost per 100.
+- The curve: sweep the threshold from 0 to 1 and plot reviews per 100 against dollars missed per 100, one line per arm, with each company's default marked. Lower and to the left is better.
+- The line that sells it: "At Northside's default, X reviews per 100 and zero misses. At Caseworks' default, Y reviews per 100 and $Z written off, versus $W in review time saved."
 
 ---
 
@@ -302,7 +365,7 @@ We write the generator and the harness, so the harness could end up as the inver
 2. **Extract.** Small open text model on Fireworks turns each document into structured JSON. Every field carries `status: ok | unreadable | absent`. The model may not guess a value it cannot read.
 3. **Check in code.** Line quantities times prices equal line totals. Lines sum to subtotal. PO number matches across documents. Invoice unit price within 1% of PO price. Invoice quantity equals received quantity (handwritten value wins if present). Invoice number not in paid list. GR present, or shipping notice dated within 10 days of the as-of date.
 4. **Re-read only failures.** Fields that fail a check or are marked unreadable go to the larger open text model, with the relevant wiki pages as hints. Three reads, majority vote.
-5. **Decide in code, fail closed.** All checks pass on readable fields means CLEAR. Any check fails on clearly read fields means ESCALATE with the matching reason code. A decision-critical field still unreadable after the re-read means ESCALATE with `unreadable_field`. That escalation counts against us in the primary metric, which is exactly right: it is the document-only escalation we are trying to eliminate by reading better, and it never risks the safety gate. GR absent with a shipping notice inside the window means WAIT. GR absent with no notice or a stale notice means ESCALATE.
+5. **Score risk and dollars, then apply the dial.** Code computes `risk` and `at_risk_usd` as section 4a describes, looks up the default dial from the wiki, and decides. For a quantity problem it compares shipping notice, GR and invoice to name the leg: short_shipped or lost_in_transit, with the next step. GR absent with a shipping notice inside the window means WAIT. GR absent with no notice or a stale notice is scored like any other risk.
 
 Wiki pages are reading hints only. They never widen a tolerance or approve anything.
 
@@ -322,10 +385,10 @@ Documents are text for the main benchmark, so no vision model is needed there. A
 
 | Person | Owns | First deliverable |
 |---|---|---|
-| 1 | Generator: canonical records, three templates per doc type, noise injector, mutations, case mix, train/test split, wiki pages | Schema at 12:15; 50 dev cases at 12:30; 200 test cases frozen and hashed at 1:15 |
-| 2 | Runner interface, scorer, rules-only arm, results table built only from saved outputs | Scorer with intervals and McNemar on dev at 12:50 |
+| 1 | Generator: canonical records, three templates per doc type, noise injector, mutations including short_shipped and lost_in_transit, two companies with item values and categories, synthetic supplier history, case mix, splits, wiki pages | Schema at 12:15; 50 dev cases at 12:30; 200 test cases frozen and hashed at 1:15 |
+| 2 | Runner interface, scorer with the dial, per-company costs, threshold sweep and curve, calibration, rules-only arm, results table built only from saved outputs | Scorer with intervals and McNemar on dev at 12:50 |
 | 3 | Frontier baseline (arm 2), then arm 5 by swapping the frontier model into person 4's harness | Model named at 12:15; baseline on dev at 12:45; test run at 1:20; arm 5 on test at 2:25 |
-| 4 | Fireworks harness with wiki lookup, arms 3 and 4. Writes the normalizer blind to the generator. | Live-test the models by 12:15; harness on dev at 1:45; test run at 2:20 |
+| 4 | Fireworks harness with wiki lookup, risk and dollars-at-risk per case, chain-break diagnosis, arms 3 and 4. Writes the normalizer blind to the generator. | Live-test the models by 12:15; harness on dev at 1:45; test run at 2:20 |
 | 5 | Stretch goals (section 9), then repo public, README results, tradeoffs, limitations, and the demo video | Repo public and README at 2:45; video at 3:15 |
 
 | Clock (PT) | Checkpoint |
@@ -347,10 +410,10 @@ The runner interface, agreed at 12:15, is one function per arm: `run(case) -> {o
 
 | Criterion | Weight | What we show |
 |---|---:|---|
-| Benchmark evaluation | 40% | Same 200 held-out cases, five arms including the frontier model inside our harness, frozen scorer, co-headline metrics with a safety gate, counts and intervals, two paired tests, per-stratum table, raw outputs committed. |
-| Business value | 25% | AP analyst as user. Ardent: 18.4% exception rate, $9.84 per review. Our claim is expressed as reviews avoided per 100 invoices at zero missed discrepancies. |
+| Benchmark evaluation | 40% | Same 200 held-out cases, five arms including the frontier model inside our harness, frozen scorer, false escalations and total business cost per company, a cost curve per arm, calibration, counts and intervals, two paired tests, raw outputs committed. |
+| Business value | 25% | The dial: the right amount of checking is the business's call, and the system sets a sensible default from what it knows about the company. Hospital versus phone cases, in dollars per 100 invoices. Plus the chain-break diagnosis that tells AP who to call. |
 | Technical execution | 20% | Deterministic checks around open models, extraction with unreadable status, targeted re-read, blind normalizer, ablations of arm 3 versus arm 4 and arm 4 versus arm 5. |
-| Presentation | 10% | Video under 120 seconds: one messy invoice, the frontier model escalates, our harness clears it with evidence, then the results table. |
+| Presentation | 10% | Video under 120 seconds: the messy-but-fine invoices, the dial with two companies, then the results table and curve. |
 | Documentation | 5% | README with setup, one command to regenerate data, one command to run each arm, one command to score. |
 
 Fireworks is required for every prize. Arms 3 and 4 run on Fireworks. Fine-tuning is optional under the rules and is future work for us: a fine-tuned model needs a dedicated deployment, which does not fit today.
@@ -359,7 +422,8 @@ Fireworks is required for every prize. Arms 3 and 4 run on Fireworks. Fine-tunin
 
 ## 8. Decisions already made
 
-- Real discrepancies always escalate. No auto-adjust or partial payment today.
+- Escalation is set by the business dial (section 4a), with defaults from the company wiki. At the hospital default every real discrepancy escalates. At the phone-case default a small one may be written off by design, and is reported. No partial payments today.
+- Quantity problems name the leg of the chain where goods went missing, using the shipping notice.
 - Documents are OCR-style noisy text, not images. (Claude's call, for time.)
 - Latency is measured but not optimized. The team ranked accuracy first, cost second.
 - No fine-tuning today. Future work.
@@ -367,10 +431,10 @@ Fireworks is required for every prize. Arms 3 and 4 run on Fireworks. Fine-tunin
 - Company knowledge is a small typed wiki looked up by ID, not a graph or vector RAG. No tool calling today.
 - No agent emails suppliers.
 - Nothing extracted from a document is ever written back into a supplier note.
-- Unreadable decision-critical field means ESCALATE, never CLEAR. The system fails closed.
+- An unreadable decision-critical field is never guessed. It raises the risk, and the dial decides. At the hospital default that always means ESCALATE.
 - Every arm gets the identical case packet, including the paid-invoices list and supplier profile. Without the paid list, duplicate_invoice is undetectable and the safety gate is unreachable by construction.
 - Price tolerance is 1%, applied in code by arms 1, 4 and 5 and stated in the prompt for arms 2 and 3. Mutations sit at 3% or more.
-- Eight noise types and four mutation types. Wrong-warehouse and tool calling are future work.
+- Eight noise types and six mutation types, including the two chain-break cases. Wrong-warehouse and tool calling are future work.
 - A fifth arm runs the frontier model inside our harness.
 - Cost per 100 invoices is a co-headline, not a footnote.
 - The normalizer is written blind to the generator.
