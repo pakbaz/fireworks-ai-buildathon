@@ -67,6 +67,7 @@ Say "recommends", not "pays": no system here makes payments. The $396,506 is exp
 
 - All cases are synthetic. The history test covers the seven anomaly types the checks were written for (new examples, unseen seed), not new kinds of fraud.
 - On plain document problems, Kimi alone raises fewer false alarms, and GLM 5.3 Flash alone does too (117/117, 0/148 on the 300). The next step is to route ordinary invoices around the history checks.
+- On scanned images (100 invoices), Kimi K3 reads better: both catch nearly every problem (25/25 vs 24/25), but ours sends 18 of 50 fine invoices to a person against 2 for Kimi, because GLM misreads scans. Ours costs $0.13 per 100 against $1.90. Use the text results for claims; the reader for scans is the next thing to improve.
 - Our system is slower per invoice (median about 4.6 s against 3.4 s for Kimi on the 1,000) but runs many invoices in parallel.
 
 ## Where each number comes from
@@ -82,6 +83,7 @@ Say "recommends", not "pays": no system here makes payments. The $396,506 is exp
 | Default-reasoning comparison, document problems (300) | `runs/glm_harness_wiki/test.jsonl` |
 | Default-reasoning comparison, history problems | `runs/glm_harness_wiki_v2/test_context.jsonl` |
 | GLM 5.3 Flash alone (for the next-step note) | `runs/glm_alone_low/test.jsonl` |
+| Scanned images (limits note) | `runs/glm_harness_wiki_low/test_images.jsonl`, `runs/kimi_alone_v2/test_images.jsonl` |
 | Answer keys | `data/test.jsonl`, `data/test_context.jsonl` |
 | Demo case | `examples/demo/TESTCTX-0149.json` |
 
