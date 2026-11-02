@@ -2,6 +2,8 @@
 
 **Demo video (1 min 53 s):** [watch on Google Drive](https://drive.google.com/file/d/1cEZZ00eSJBZlKE0aDoeYgAf1HcPLOe6y/view?usp=sharing) · narration script: [media/narration.md](media/narration.md)
 
+**Headline result (test set, 210 invoices where all four documents agree but the supplier's history says something is wrong):** our harness on GLM 5.3 Flash caught 139 of 140 problems; the frontier model Kimi K3, given the same documents and the same history, caught 19 of 140. Neither flagged any of the 70 benign look-alikes. Ours costs $0.12 per 100 invoices, Kimi $0.99. Details: [docs/comparison.md](docs/comparison.md).
+
 An evidence-first open-model evaluation for **Fireworks: Deploy with Microsoft and NVIDIA**, November 2, 2026.
 
 > Can a rules-first system use an open model only for genuine ambiguity, reduce unnecessary human review, and still catch cases that require a person?

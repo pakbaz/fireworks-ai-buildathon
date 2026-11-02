@@ -92,4 +92,20 @@ Kimi did the three-way match perfectly and paid $53,602 to a new bank in another
 | Benign look-alikes paid correctly | 14 / 14 | 14 / 14 |
 | Cost for the 42 cases | $0.41 | $0.05 |
 
-The 210-case context test set is running now; this table will be replaced with test numbers.
+**Test, 210 history cases** (`data/test_context.jsonl`, frozen, never tuned on):
+
+| Type (20 cases each) | Kimi K3 alone | Our harness |
+|---|---:|---:|
+| Near-duplicate invoice number | 6 | 20 |
+| New item for this supplier | 0 | 20 |
+| Pack size changed | 11 | 20 |
+| Price above this supplier's history | 0 | 20 |
+| Quantity spike | 0 | 20 |
+| Payment address changed | 2 | 20 |
+| Unusual ship-from site | 0 | 19 |
+| **All anomalies** | **19 / 140** | **139 / 140** |
+| Benign look-alikes paid correctly | 70 / 70 | 70 / 70 |
+| Model cost per 100 invoices | $0.99 | $0.12 |
+| Median seconds per invoice | 3.2 | 7.0 |
+
+Live dashboard with every comparison: https://claude.ai/artifact/NyWmdZFGwhRAp6yQZBsFue
