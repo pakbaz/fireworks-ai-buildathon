@@ -117,6 +117,20 @@
   "min": 8,
   "max": 11
  },
+ "remit_to": [
+  "Hamburg, DE"
+ ],
+ "ship_from": [
+  "Hamburg, DE"
+ ],
+ "qty_max_by_company_sku": {
+  "northside|NS-DEF-3300": 11,
+  "northside|NS-ANS-5000": 11,
+  "northside|NS-MON-7100": 11,
+  "northside|NS-VEN-0450": 11,
+  "northside|NS-INF-2200": 11,
+  "northside|NS-USP-0912": 9
+ },
  "timeline_last_20": [
   {
    "date": "2026-09-12",

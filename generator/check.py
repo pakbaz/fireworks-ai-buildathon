@@ -581,6 +581,11 @@ def check_wiki():
             fail("wiki", "policy %s" % k)
 
 
+_CTX = os.path.join(ROOT, "data", "context_manifest.json")
+CTX_HASHES = ({f: i["sha256"] for f, i in json.load(open(_CTX))["files"].items() if f.startswith("wiki/")}
+              if os.path.exists(_CTX) else {})
+
+
 def check_manifest():
     p = os.path.join(ROOT, "data", "manifest.json")
     if not os.path.exists(p):
@@ -593,7 +598,8 @@ def check_manifest():
             fail("manifest", "missing " + f)
             continue
         h = hashlib.sha256(open(fp, "rb").read()).hexdigest()
-        if h != info["sha256"]:
+        if h != info["sha256"] and CTX_HASHES.get(f) != h:
+            # wiki supplier pages edited for the context set (approved_new_items) are re-hashed there
             fail("manifest", "hash mismatch " + f)
     for s in ("data/train.jsonl", "data/dev.jsonl", "data/test.jsonl"):
         if s not in m["files"]:
@@ -605,6 +611,11 @@ def main():
     for s in ("train", "dev", "test"):
         check_split(s)
     check_manifest()
+    if os.path.exists(_CTX):
+        import subprocess
+        r = subprocess.run([sys.executable, "-I", os.path.join(HERE, "context_check.py")])
+        if r.returncode:
+            fail("context", "context checker failed")
     if FAIL:
         print("CHECK FAILED: %d problems" % len(FAIL))
         for f in FAIL[:60]:

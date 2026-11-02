@@ -232,7 +232,9 @@ def model_invoice(b, g, ctx):
     return {"from": supplier_lines(b, ctx["supplier_id"]), "to_key": "to_inv",
             "to": company_lines(b, ctx["company"]), "header": hdr,
             "columns": ["line", "sku", "desc", "qty", "unit_price", "amount"], "rows": rows,
-            "totals": totals, "remarks": ["Please quote invoice number with remittance. Thank you for your business."]}
+            "totals": totals, "remarks": (["Remit payment to: %s / Bank: %s" % (v["remit_to"], v["remit_bank"])]
+                                          if v.get("remit_bank") else [])
+            + ["Please quote invoice number with remittance. Thank you for your business."]}
 
 
 # ---------------------------------------------------------------- layouts

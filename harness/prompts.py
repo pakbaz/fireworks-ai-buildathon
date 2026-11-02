@@ -17,9 +17,9 @@ Rules:
 - Reference numbers: copy them as printed (po_ref "P.O. 4471" stays "P.O. 4471").
 Reply with JSON only:
 {"po": {"po_number": str, "supplier": str, "lines": [{"sku": str, "desc": str, "qty": num, "uom": str, "qty_text": str, "unit_price": num, "price_text": str}]},
- "shipping_notice": null or {"po_ref": str, "ship_date": str, "lines": [{"sku": str, "qty_shipped": num, "uom": str}]},
+ "shipping_notice": null or {"po_ref": str, "ship_date": str, "ship_from": str, "lines": [{"sku": str, "qty_shipped": num, "uom": str}]},
  "gr": null or {"po_ref": str, "received_date": str, "lines": [{"sku": str, "qty_received": num, "uom": str, "qty_text": str, "handwritten": bool}], "note": str},
- "invoice": {"invoice_number": str, "po_ref": str, "date": str, "supplier": str, "lines": [{"sku": str, "desc": str, "qty": num, "uom": str, "qty_text": str, "unit_price": num, "price_text": str, "amount": num, "amount_text": str}], "total": num},
+ "invoice": {"invoice_number": str, "po_ref": str, "date": str, "supplier": str, "remit_to": str (where payment goes: address or bank block),  "lines": [{"sku": str, "desc": str, "qty": num, "uom": str, "qty_text": str, "unit_price": num, "price_text": str, "amount": num, "amount_text": str}], "total": num},
  "unreadable": [paths]}
 Use null for a document that is not present."""
 

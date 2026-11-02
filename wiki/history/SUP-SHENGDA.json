@@ -243,6 +243,29 @@
   "min": 8,
   "max": 11
  },
+ "remit_to": [
+  "Shenzhen, CN"
+ ],
+ "ship_from": [
+  "Shenzhen, CN"
+ ],
+ "qty_max_by_company_sku": {
+  "caseworks|CW-CSE-IP15C": 6860,
+  "caseworks|CW-SCR-LENS": 8300,
+  "caseworks|CW-CHG-MAG15": 7980,
+  "caseworks|CW-CSE-GS24S": 8400,
+  "caseworks|CW-CHG-CAR30": 6350,
+  "caseworks|CW-SCR-IP15T": 5110,
+  "caseworks|CW-CBL-CL2M": 7200,
+  "caseworks|CW-CSE-PX8W": 5472,
+  "caseworks|CW-SCR-GS24P": 6340,
+  "caseworks|CW-CSE-IP15M": 7730,
+  "caseworks|CW-CHG-45GN": 8664,
+  "caseworks|CW-CBL-BR3M": 5000,
+  "caseworks|CW-CBL-CC1M": 8700,
+  "caseworks|CW-CHG-20WC": 4850,
+  "caseworks|CW-CSE-IP15R": 4920
+ },
  "timeline_last_20": [
   {
    "date": "2026-09-14",

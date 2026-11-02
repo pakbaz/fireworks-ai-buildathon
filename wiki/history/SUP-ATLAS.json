@@ -202,6 +202,26 @@
   "min": 2,
   "max": 5
  },
+ "remit_to": [
+  "Dallas, TX"
+ ],
+ "ship_from": [
+  "Dallas, TX"
+ ],
+ "qty_max_by_company_sku": {
+  "caseworks|CW-CHG-CAR30": 7510,
+  "northside|NS-DRS-0510": 590,
+  "northside|NS-ECG-0200": 950,
+  "caseworks|CW-CBL-CL2M": 8700,
+  "caseworks|CW-CHG-45GN": 6384,
+  "northside|NS-GLV-0710": 754,
+  "caseworks|CW-CHG-20WC": 7750,
+  "caseworks|CW-CBL-CC1M": 6800,
+  "caseworks|CW-CBL-BR3M": 9260,
+  "northside|NS-DEF-3300": 11,
+  "northside|NS-GWN-1410": 850,
+  "caseworks|CW-CHG-MAG15": 7740
+ },
  "timeline_last_20": [
   {
    "date": "2026-09-24",

@@ -37,3 +37,18 @@ Python 3 standard library plus Pillow. Fully deterministic: same code and seeds 
   A handwritten received quantity is authoritative.
 - Numeric dates (`25/11/26` EU, `11/25/2026` US) are only used when the day is > 12, so they are never ambiguous;
   otherwise the date_format noise uses `3 Nov 2026`, `Nov 3, 2026` or `03-NOV-26`.
+
+## Context-anomaly set
+
+```bash
+python3 -I generator/context.py   # writes data/dev_context.jsonl (seed 2102), data/test_context.jsonl (seed 3103),
+                                  # data/context_manifest.json, then runs generator/context_check.py
+```
+
+All four documents agree (a three-way match passes); the problem is visible only against supplier history built from
+`data/train.jsonl` gold (and `wiki/history/` when present) or the wiki. Seven anomaly types (stratum `context_anomaly`)
+and five benign look-alikes (stratum `context_benign`, `label.benign_type`). Each label has `context_basis` (one
+sentence) and `signal_sku`. Invoices in this set carry a `Remit payment to / Bank` line (`gold.invoice.remit_bank`).
+Pack-change lines carry `stated_pack` in gold. The only wiki edit is `approved_new_items` on SUP-MERIDIAN,
+SUP-VOLTEDGE and SUP-KESTREL (`world.APPROVED_NEW_ITEMS`); their new hashes are in `data/context_manifest.json`, which
+`check.py` accepts. `check.py` also runs the context checker when the context files exist.

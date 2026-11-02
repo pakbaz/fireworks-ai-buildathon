@@ -131,6 +131,21 @@
   "min": 4,
   "max": 7
  },
+ "remit_to": [
+  "San Jose, CA"
+ ],
+ "ship_from": [
+  "San Jose, CA"
+ ],
+ "qty_max_by_company_sku": {
+  "caseworks|CW-CHG-45GN": 6238,
+  "caseworks|CW-CHG-MAG15": 7554,
+  "caseworks|CW-CBL-CC1M": 8400,
+  "caseworks|CW-CBL-BR3M": 8460,
+  "caseworks|CW-CBL-CL2M": 9460,
+  "caseworks|CW-CHG-20WC": 8450,
+  "caseworks|CW-CHG-CAR30": 8500
+ },
  "timeline_last_20": [
   {
    "date": "2026-08-27",

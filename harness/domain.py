@@ -102,6 +102,20 @@ def recover(read):
         read["unreadable"] = [u for u in read["unreadable"] if not any(u.startswith(f.rsplit(".", 1)[0]) and u.endswith(f.rsplit(".", 1)[1]) for f in fixed)]
     return fixed
 
+def _near(a, b):
+    """True if b is a one-edit variant of a, or one is the other plus a short suffix."""
+    if a == b:
+        return False
+    if a.startswith(b) or b.startswith(a):
+        return abs(len(a) - len(b)) <= 2
+    if len(a) == len(b):
+        diff = [i for i in range(len(a)) if a[i] != b[i]]
+        return len(diff) == 1 or (len(diff) == 2 and a[diff[0]] == b[diff[1]] and a[diff[1]] == b[diff[0]])
+    if abs(len(a) - len(b)) == 1:
+        s, l = (a, b) if len(a) < len(b) else (b, a)
+        return any(l[:i] + l[i + 1:] == s for i in range(len(l)))
+    return False
+
 def analyze(read, case, wiki, policy):
     """Return (issues, features, at_risk_usd, wait). wiki is None for the no-wiki row."""
     recovered = recover(read or {})
@@ -132,6 +146,16 @@ def analyze(read, case, wiki, policy):
     if inv_no and any(re.sub(r"[^A-Z0-9]", "", str(h.get("invoice_number", "")).upper().translate(OCR)) == inv_no for h in hist):
         issues.append(("duplicate_invoice", "investigate", f"invoice {inv.get('invoice_number')} already paid"))
         risk_usd = max(risk_usd, inv_total or 0)
+    elif inv_no:
+        # Near-duplicate: a paid invoice on the same PO with the same amount and a number one edit away (suffix, typo, swap).
+        for h in hist:
+            hn = re.sub(r"[^A-Z0-9]", "", str(h.get("invoice_number", "")).upper().translate(OCR))
+            h_amt = sum(num(l.get("amount")) or 0 for l in h.get("lines") or [])
+            same_po = (ref(h.get("po_number")) == ref(inv.get("po_ref"))) if h.get("po_number") else True
+            if hn and same_po and inv_total and abs(h_amt - inv_total) <= max(0.01, 0.001 * inv_total) and _near(hn, inv_no):
+                issues.append(("near_duplicate_invoice", "investigate", f"invoice {inv.get('invoice_number')} looks like paid {h.get('invoice_number')}: same PO and amount"))
+                risk_usd = max(risk_usd, inv_total or 0)
+                break
 
     # Missing receipt: in transit or not
     wait = False
@@ -158,6 +182,13 @@ def analyze(read, case, wiki, policy):
             unreadable.append(f"po.line.{sku}")
             continue
         inv_ea = line_ea(il, "qty", sku, items)
+        # Pack-size change: the document states fewer EA per pack than the company's item page says.
+        ex = explicit_ea(il.get("qty_text"))
+        ps_wiki = pack_size(il.get("uom"), None, sku, items) if items is not None else None
+        if ex is not None and ps_wiki and ps_wiki > 1 and num(il.get("qty")) and ex < num(il.get("qty")) * ps_wiki - 1e-9:
+            po_u = num(pl.get("unit_price")) or 0
+            issues.append(("pack_size_changed", "dispute_with_supplier", f"{sku}: {il.get('qty_text')} but 1 {il.get('uom')} = {ps_wiki:g} EA on our item page"))
+            risk_usd = max(risk_usd, (num(il.get("qty")) * ps_wiki - ex) * po_u)
         po_ea = line_ea(pl, "qty", sku, items)
         if inv_ea is None:
             unreadable.append(f"invoice.qty.{sku}"); continue

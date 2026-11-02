@@ -145,6 +145,22 @@
   "min": 7,
   "max": 10
  },
+ "remit_to": [
+  "Long Beach, CA"
+ ],
+ "ship_from": [
+  "Long Beach, CA"
+ ],
+ "qty_max_by_company_sku": {
+  "caseworks|CW-SCR-LENS": 6800,
+  "caseworks|CW-CSE-PX8W": 8300,
+  "caseworks|CW-SCR-IP15T": 7750,
+  "caseworks|CW-CSE-IP15M": 6984,
+  "caseworks|CW-CSE-IP15R": 6980,
+  "caseworks|CW-SCR-GS24P": 8570,
+  "caseworks|CW-CSE-GS24S": 7890,
+  "caseworks|CW-CSE-IP15C": 7950
+ },
  "timeline_last_20": [
   {
    "date": "2026-09-03",

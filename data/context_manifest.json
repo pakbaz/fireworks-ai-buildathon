@@ -1,0 +1,105 @@
+{
+  "generator_version": "1.0.0",
+  "entry_command": "python3 -I generator/context.py",
+  "history_source": "data/train.jsonl",
+  "splits": {
+    "dev_context": {
+      "seed": 2102,
+      "n": 42,
+      "by_stratum": {
+        "context_anomaly": 28,
+        "context_benign": 14
+      },
+      "by_type_company": {
+        "benign_near_match_other_po/caseworks": 1,
+        "benign_near_match_other_po/northside": 1,
+        "benign_new_item_approved/caseworks": 2,
+        "benign_new_item_approved/northside": 1,
+        "benign_price_within_band/caseworks": 1,
+        "benign_price_within_band/northside": 2,
+        "benign_qty_moderate/caseworks": 2,
+        "benign_qty_moderate/northside": 1,
+        "benign_remit_reformatted/caseworks": 1,
+        "benign_remit_reformatted/northside": 2,
+        "near_duplicate_invoice/caseworks": 2,
+        "near_duplicate_invoice/northside": 2,
+        "new_item_for_supplier/caseworks": 2,
+        "new_item_for_supplier/northside": 2,
+        "pack_size_changed/caseworks": 2,
+        "pack_size_changed/northside": 2,
+        "price_above_history/caseworks": 2,
+        "price_above_history/northside": 2,
+        "quantity_spike/caseworks": 2,
+        "quantity_spike/northside": 2,
+        "remit_to_changed/caseworks": 2,
+        "remit_to_changed/northside": 2,
+        "ship_from_unusual/caseworks": 2,
+        "ship_from_unusual/northside": 2
+      },
+      "by_company": {
+        "caseworks": 21,
+        "northside": 21
+      }
+    },
+    "test_context": {
+      "seed": 3103,
+      "n": 210,
+      "by_stratum": {
+        "context_benign": 70,
+        "context_anomaly": 140
+      },
+      "by_type_company": {
+        "benign_near_match_other_po/caseworks": 7,
+        "benign_near_match_other_po/northside": 7,
+        "benign_new_item_approved/caseworks": 7,
+        "benign_new_item_approved/northside": 7,
+        "benign_price_within_band/caseworks": 7,
+        "benign_price_within_band/northside": 7,
+        "benign_qty_moderate/caseworks": 7,
+        "benign_qty_moderate/northside": 7,
+        "benign_remit_reformatted/caseworks": 7,
+        "benign_remit_reformatted/northside": 7,
+        "near_duplicate_invoice/caseworks": 10,
+        "near_duplicate_invoice/northside": 10,
+        "new_item_for_supplier/caseworks": 10,
+        "new_item_for_supplier/northside": 10,
+        "pack_size_changed/caseworks": 10,
+        "pack_size_changed/northside": 10,
+        "price_above_history/caseworks": 10,
+        "price_above_history/northside": 10,
+        "quantity_spike/caseworks": 10,
+        "quantity_spike/northside": 10,
+        "remit_to_changed/caseworks": 10,
+        "remit_to_changed/northside": 10,
+        "ship_from_unusual/caseworks": 10,
+        "ship_from_unusual/northside": 10
+      },
+      "by_company": {
+        "caseworks": 105,
+        "northside": 105
+      }
+    }
+  },
+  "files": {
+    "data/dev_context.jsonl": {
+      "sha256": "db6417d10391410d55e82402efb324f2bd01456f8bd40c7b9cc3038ec05f2b89",
+      "bytes": 400711
+    },
+    "data/test_context.jsonl": {
+      "sha256": "20e170b4b9bbead964ac4983504200e0d59ce1ad2b89b19b34c8967ac8e26455",
+      "bytes": 2021996
+    },
+    "wiki/suppliers/SUP-KESTREL.json": {
+      "sha256": "c80f75011be58df8f7e00eedb7f7904b38717e2f40be13a897dc76f2deac4ff9",
+      "bytes": 1403
+    },
+    "wiki/suppliers/SUP-MERIDIAN.json": {
+      "sha256": "f73a0c070a901fd916049cde0dbaf02e3d82d9c25c350b980863a683ec3415ee",
+      "bytes": 1515
+    },
+    "wiki/suppliers/SUP-VOLTEDGE.json": {
+      "sha256": "8583138613165b6d304bc386f595ad6ad44de9762d26aa04d7a917a4652f68f9",
+      "bytes": 1197
+    }
+  }
+}

@@ -29,9 +29,13 @@
     "synthetic": true,
     "note": "Synthetic history for the benchmark, not a real track record."
   },
-  "author": "j.morales (AP analyst)",
+  "author": "r.castillo (category manager)",
   "approved_by": "AP lead",
-  "version": 3,
-  "updated": "2026-01-15",
-  "expires": "2027-12-31"
+  "version": 4,
+  "updated": "2026-05-01",
+  "expires": "2027-12-31",
+  "approved_new_items": [
+    "NS-GLV-0710"
+  ],
+  "approved_new_items_note": "Newly sourced from this supplier; approved by category manager 2026-05-01. Prices and quantities still follow normal checks."
 }

@@ -99,6 +99,11 @@ def harness(case, model, use_images, with_wiki):
             issues2, feats2, at_risk2, wait2 = domain.analyze(read2, case, wiki, policy)
             agree = (feats2["codes"] == feats["codes"])
             issues, feats, at_risk, wait = issues2, feats2, at_risk2, wait2
+    if with_wiki:
+        ctx = supplier_history.context_issues(case, read2 or read, wiki_full.get("history"), wiki_full.get("supplier"), wiki["items"])
+        for code, step, detail, usd in ctx:
+            issues.append((code, step, detail)); at_risk = max(at_risk, round(usd or 0, 2))
+        feats["n_issues"] = len(issues); feats["codes"] = [i[0] for i in issues]
     risk = dial.raw_risk(feats, agree)
     feats["reads_agree"] = agree
     action = dial.decide(risk, at_risk, wait, wiki_full, policy)  # the business dial uses company config in every row

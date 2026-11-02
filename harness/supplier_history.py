@@ -29,7 +29,8 @@ def build(history_path=None):
     for line in open(path):
         c = json.loads(line); L = c["label"]; g = L["gold"]
         s = sup.setdefault(c["supplier_id"], {"supplier_id": c["supplier_id"], "invoices": 0, "companies": {}, "problems": {},
-                                               "prices": {}, "qty": {}, "totals": [], "lead_days": [], "timeline": []})
+                                               "prices": {}, "qty": {}, "totals": [], "lead_days": [], "timeline": [],
+                                               "remit_to": set(), "ship_from": set(), "qty_max": {}})
         s["invoices"] += 1
         s["companies"][c["company"]] = s["companies"].get(c["company"], 0) + 1
         if L["real_discrepancy"]:
@@ -38,7 +39,13 @@ def build(history_path=None):
             if (ln.get("uom") or "EA") == "EA" and ln.get("unit_price") is not None:
                 s["prices"].setdefault(ln["sku"], []).append(ln["unit_price"])
                 s["qty"].setdefault(ln["sku"], []).append(ln.get("qty"))
+        for ln in (g.get("po") or {}).get("lines") or []:
+            k = f"{c['company']}|{ln['sku']}"
+            if ln.get("qty") is not None:
+                s["qty_max"][k] = max(s["qty_max"].get(k, 0), ln["qty"])
         inv = g.get("invoice") or {}
+        if inv.get("remit_to"): s["remit_to"].add(str(inv["remit_to"]))
+        if (g.get("shipping_notice") or {}).get("ship_from"): s["ship_from"].add(str(g["shipping_notice"]["ship_from"]))
         if inv.get("total") is not None:
             s["totals"].append(inv["total"])
         asn, gr = g.get("shipping_notice"), g.get("gr")
@@ -59,6 +66,7 @@ def build(history_path=None):
                 "unit_price_by_sku": {k: _stats(v) for k, v in s["prices"].items()},
                 "qty_by_sku": {k: _stats(v) for k, v in s["qty"].items()},
                 "invoice_total": _stats(s["totals"]), "lead_days": _stats(s["lead_days"]),
+                "remit_to": sorted(s["remit_to"]), "ship_from": sorted(s["ship_from"]), "qty_max_by_company_sku": s["qty_max"],
                 "timeline_last_20": sorted(s["timeline"], key=lambda e: str(e["date"]))[-20:]}
         json.dump(prof, open(os.path.join(HIST_DIR, f"{sid}.json"), "w"), indent=1)
         index["suppliers"][sid] = {"invoices": s["invoices"], "problem_rate": prof["problem_rate"]}
@@ -76,6 +84,58 @@ def supplier_weight(profile, policy):
         return float((policy or {}).get("new_supplier_weight", 1.5))
     r = profile.get("relative_to_all_suppliers")
     return 1.0 if r is None else min(hi, max(lo, r))
+
+COUNTRY = {"de": "germany", "nl": "netherlands", "us": "usa", "cn": "china", "uk": "united kingdom", "gb": "united kingdom",
+           "ca": "canada", "mx": "mexico", "jp": "japan", "kr": "korea", "tw": "taiwan", "fr": "france", "it": "italy", "in": "india"}
+
+def _place_tokens(s):
+    import re
+    toks = [t for t in re.split(r"[^a-z]+", str(s or "").lower()) if len(t) > 1]
+    return {COUNTRY.get(t, t) for t in toks}
+
+def _place_known(value, known):
+    """A place matches history if it shares its city token with any known value (formatting may differ)."""
+    v = _place_tokens(value)
+    if not v:
+        return True
+    for k in known or []:
+        kt = _place_tokens(k)
+        city = [t for t in kt if t not in COUNTRY.values() and len(t) > 2][:1]
+        if city and city[0] in v:
+            return True
+        if len(v & kt) >= 2:
+            return True
+    return False
+
+def context_issues(case, read, profile, supplier_page, wiki_items=None):
+    """Things that are wrong only in light of history: returns (code, next_step, detail, at_risk_usd) tuples.
+    These escalate, unlike the informational flags in anomalies()."""
+    out = []
+    if profile is None:
+        return out
+    inv = (read or {}).get("invoice") or {}
+    approved = {norm_sku(x) for x in ((supplier_page or {}).get("approved_new_items") or [])}
+    known_skus = {norm_sku(k) for k in (profile.get("unit_price_by_sku") or {})}
+    total = num(inv.get("total")) or sum(num(l.get("amount")) or 0 for l in inv.get("lines") or [])
+    for il in inv.get("lines") or []:
+        sku = il.get("sku"); ns = norm_sku(sku)
+        qea = line_ea(il, "qty", sku, wiki_items); amt = num(il.get("amount"))
+        unit = (amt / qea) if (amt and qea) else None
+        if ns and ns not in known_skus and ns not in approved:
+            out.append(("new_item_for_supplier", "investigate", f"{sku}: never supplied by {case.get('supplier_id')} before", total))
+            continue
+        hist = next((v for k, v in (profile.get("unit_price_by_sku") or {}).items() if norm_sku(k) == ns), None)
+        if unit and hist and hist["n"] >= 5 and unit > hist["mean"] * 1.10:
+            out.append(("price_above_history", "dispute_with_supplier", f"{sku}: {unit:,.2f}/EA vs usual {hist['mean']:,.2f} from this supplier", (unit - hist["mean"]) * qea))
+        qmax = next((v for k, v in (profile.get("qty_max_by_company_sku") or {}).items() if k.split("|")[0] == case.get("company") and norm_sku(k.split("|", 1)[1]) == ns), None)
+        if qea and qmax and qea > 3 * qmax:
+            out.append(("quantity_spike", "investigate", f"{sku}: {qea:g} EA vs at most {qmax:g} ever ordered", (qea - qmax) * (unit or 0)))
+    if inv.get("remit_to") and profile.get("remit_to") and not _place_known(inv["remit_to"], profile["remit_to"]):
+        out.append(("remit_to_changed", "investigate", f"pay to '{inv['remit_to']}' but this supplier is always paid at {', '.join(profile['remit_to'][:2])}", total))
+    asn = (read or {}).get("shipping_notice") or {}
+    if asn.get("ship_from") and profile.get("ship_from") and not _place_known(asn["ship_from"], profile["ship_from"]):
+        out.append(("ship_from_unusual", "investigate", f"shipped from '{asn['ship_from']}', never seen for this supplier", total))
+    return out
 
 def anomalies(case, read, profile, wiki_items=None):
     """Informational flags: unusual for THIS supplier, even if every check passed."""

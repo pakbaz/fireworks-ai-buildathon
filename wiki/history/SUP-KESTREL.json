@@ -216,6 +216,27 @@
   "min": 6,
   "max": 9
  },
+ "remit_to": [
+  "Rotterdam, NL"
+ ],
+ "ship_from": [
+  "Rotterdam, NL"
+ ],
+ "qty_max_by_company_sku": {
+  "northside|NS-CTH-0418": 840,
+  "northside|NS-SUT-0340": 860,
+  "northside|NS-CVK-0090": 864,
+  "northside|NS-USP-0912": 11,
+  "northside|NS-DEF-3300": 10,
+  "caseworks|CW-SCR-IP15T": 7390,
+  "caseworks|CW-CSE-IP15M": 8760,
+  "caseworks|CW-CSE-GS24S": 8900,
+  "caseworks|CW-CSE-IP15C": 9350,
+  "caseworks|CW-SCR-GS24P": 7810,
+  "caseworks|CW-SCR-LENS": 8570,
+  "caseworks|CW-CSE-IP15R": 8616,
+  "caseworks|CW-CSE-PX8W": 7080
+ },
  "timeline_last_20": [
   {
    "date": "2026-09-23",

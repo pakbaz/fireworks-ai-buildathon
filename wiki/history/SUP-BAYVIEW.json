@@ -159,6 +159,23 @@
   "min": 2,
   "max": 5
  },
+ "remit_to": [
+  "Tampa, FL"
+ ],
+ "ship_from": [
+  "Tampa, FL"
+ ],
+ "qty_max_by_company_sku": {
+  "northside|NS-SUT-0340": 740,
+  "northside|NS-DRS-0510": 518,
+  "northside|NS-CTH-0418": 840,
+  "northside|NS-SKT-0330": 822,
+  "northside|NS-IVT-0120": 850,
+  "northside|NS-ECG-0200": 600,
+  "northside|NS-GLV-0710": 792,
+  "northside|NS-GWN-1410": 633,
+  "northside|NS-CVK-0090": 564
+ },
  "timeline_last_20": [
   {
    "date": "2026-09-05",
