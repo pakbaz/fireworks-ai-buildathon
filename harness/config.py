@@ -24,6 +24,8 @@ ROWS = {
     "glm_alone": dict(kind="alone", model=HARNESS_MODEL),
     "glm_harness": dict(kind="harness", model=HARNESS_MODEL, wiki=False),
     "glm_harness_wiki": dict(kind="harness", model=HARNESS_MODEL, wiki=True),
+    # Same harness and checks with the frontier model as the reader: separates the checks' gain from the model's.
+    "kimi_harness_wiki": dict(kind="harness", model=FRONTIER_MODEL, wiki=True),
 }
 
 
