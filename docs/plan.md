@@ -2,7 +2,7 @@
 
 Fireworks: Deploy with Microsoft and NVIDIA. November 2, 2026. Five people, two hours of build, submission open 3:30 PM, closed 4:30 PM Pacific.
 
-This page is the single source of truth for what we build today. It replaces earlier plans where they conflict. Background and sources: [IDEA.md](../IDEA.md), [ideas-review.md](ideas-review.md), [research.md](research.md).
+This page is the single source of truth for what we build today. It replaces earlier plans where they conflict. Suggested changes (12:00 PM review): [plan-review.md](plan-review.md). Background and sources: [IDEA.md](../IDEA.md), [ideas-review.md](ideas-review.md), [research.md](research.md).
 
 ## Overview
 
