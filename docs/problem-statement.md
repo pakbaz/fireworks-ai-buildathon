@@ -1,52 +1,107 @@
 # Problem statement
 
-Invoice reconciliation for the Fireworks: Deploy hackathon, November 2, 2026. The build plan is in [plan.md](plan.md), the system flow in [system-flow.md](system-flow.md), and the source notes in [notes/](notes/).
+**Claim.** On invoices that are messy but correct, a frontier model escalates to a human far more often than it needs to. A harness of open models on Fireworks, with code as the authority and the model limited to reading, can cut those false escalations while still catching every real problem, at a fraction of the cost. We measure this on a published benchmark with a hard safety constraint.
 
-## 1. Why this matters
+The build plan is in [plan.md](plan.md), the system flow in [system-flow.md](system-flow.md), and the source notes in [notes/](notes/).
 
-Three-way matching is the control that stops a company paying for goods it did not order or did not receive. Before an invoice is paid, it is reconciled against the purchase order (PO) and the goods receipt (GR) on price, quantity, and reference. [Microsoft Dynamics 365](https://learn.microsoft.com/en-us/dynamics365/finance/accounts-payable/accounts-payable-invoice-matching) and [Oracle](https://docs.oracle.com/cd/A60725_05/html/comnls/us/ap/point04.htm) define it the same way: invoice price against PO price, invoice quantity against received quantity, inside configured tolerances.
+---
 
-The control is expensive because it fails open to humans:
+## 1. The domain in sixty seconds
+
+Every company that buys things runs the same check before paying a supplier. Three documents must agree:
+
+| Document | Who creates it | What it proves |
+|---|---|---|
+| **Purchase order (PO)** | The buyer | What was ordered, at what price |
+| **Goods receipt (GR)** | The buyer's warehouse, when the shipment lands | What actually arrived |
+| **Invoice** | The supplier | What the supplier wants to be paid for |
+
+If quantity and price line up across all three, within a small tolerance, the invoice is paid automatically. If not, a person investigates. This is called three-way matching, and it is the control that stops a company paying for things it never ordered or never received.
+
+A concrete case:
+
+```
+PO  #4471      Blue Widget      qty 12 EA    @ $8.00
+GR  for #4471  Blue Widget      qty 12       (handwritten "12 ✓ JM" at the top)
+Invoice INV-8812, ref "P.O. 4471"   1 CS (12 EA) Blue Widget   $96.00
+```
+
+A human clears this in five seconds. The case, the handwriting, and the reference format are noise. The documents agree. Most automated systems escalate it, because a parser cannot read "1 CS (12 EA)" as 12, or does not trust a handwritten number, or cannot find a PO reference in a format it has not seen.
+
+## 2. Why it matters
 
 | Figure | Source |
 |---|---|
-| 18.4% of invoices raise an exception that a person must handle | [Ardent Partners, State of ePayables 2025](https://payablesplace.ardentpartners.com/2026/01/state-of-epayables-part-nine-ap-benchmarks-and-best-in-class-performance/) |
-| $9.84 average fully loaded cost per invoice, 8.2 days average cycle time | Ardent Partners 2025 |
-| Best-in-class teams run at 9%, roughly half the average | [Ardent Partners 2024](https://payablesplace.ardentpartners.com/2025/01/best-of-2024-ap-performance-advantages-of-best-in-class/) |
-| About 49% touchless rate even for top performers | Hackett Group 2025, via [Corpay](https://www.corpay.com/en-CHI/resources/blog/ap-team-productivity-benchmarks) |
-| In one open reconciliation project, rules were correct on 99.3% of clean documents, yet 48.4% of documents still went to human review because line-item extraction scored F1 0.37 | [docmatch](https://github.com/franklinmdev/docmatch) |
+| 18.4% of invoices are escalated to a person | [Ardent Partners, 2025](https://payablesplace.ardentpartners.com/2026/01/state-of-epayables-part-nine-ap-benchmarks-and-best-in-class-performance/) |
+| $9.84 fully loaded cost per invoice, 8.2 days to process | Ardent Partners, 2025 |
+| Even best-in-class teams escalate 9% and reach only about 49% touchless | [Ardent 2024](https://payablesplace.ardentpartners.com/2025/01/best-of-2024-ap-performance-advantages-of-best-in-class/); Hackett via [Corpay](https://www.corpay.com/en-CHI/resources/blog/ap-team-productivity-benchmarks) |
+| In an open reconciliation project, matching rules were right on 99.3% of clean documents, yet 48.4% of documents still went to review, because line-item extraction scored F1 0.37 | [docmatch](https://github.com/franklinmdev/docmatch) |
 
-The last row is the mechanism. Matching logic is a solved problem on clean structured data. What breaks is upstream: the data is not clean. Invoices arrive as scans and PDFs in hundreds of layouts. Goods receipts are often paper, signed by a carrier, annotated by hand. When extraction cannot read a decision-critical field, or reads it with low confidence, every commercial system does the same thing: it escalates. [Stampli's documented design](https://www.stampli.com/resources/how-ai-invoice-processing-works/), for example, routes any field below a confidence threshold to review regardless of whether the documents agree.
+The last row is the whole story. **The matching logic is solved. The reading is not.** Invoices arrive in hundreds of layouts as scans and PDFs. Goods receipts are paper, signed by a driver, annotated by hand. When the extraction step cannot read a critical field, the only safe move is to hand the case to a person. Every commercial product does exactly that: [Stampli](https://www.stampli.com/resources/how-ai-invoice-processing-works/) routes any field under a confidence threshold to review whether or not the documents agree, and [Basware's new agent](https://customer.basware.com/en/features/matching-agent-ai-powered-guidance-for-invoice-matching-discrepancies) only explains a discrepancy after a human opens it.
 
-The result is a review queue dominated by false positives. Public benchmarks do not measure this directly, but the arithmetic is unavoidable: if 18% of invoices are exceptions and the true discrepancy rate on PO-backed invoices is a few percent, most reviewed invoices were fine. Each one costs an analyst's time and delays payment, which forfeits early-payment discounts. No vendor publishes a false-escalation rate with a denominator.
+So the human review queue is dominated by invoices that were fine. If roughly one in five invoices is escalated and the true discrepancy rate on PO-backed invoices is a few percent, most of an analyst's day is spent confirming that nothing was wrong. At enterprise volume that is thousands of reviews a month and real money in delayed payments and forfeited early-payment discounts. **No vendor publishes a false-escalation rate with a denominator.** That is the gap we fill.
 
-## 2. The problem, stated precisely
+## 3. The machine learning problem
 
-Given a case packet consisting of a purchase order, an invoice, a goods receipt that may be absent, an optional shipping notice, the list of invoice numbers already paid against that PO, company reference knowledge, and an as-of date, produce one decision:
+Strip away the domain and this is **selective classification with an asymmetric cost and a hard constraint**, in the sense of [Geifman and El-Yaniv](https://arxiv.org/abs/1705.08500) and the learning-to-defer framing of [Mozannar and Sontag](https://proceedings.mlr.press/v119/mozannar20b.html).
 
-| Decision | Meaning |
-|---|---|
-| **CLEAR** | The documents agree on item, quantity, and price within policy tolerance. Pay without human review. |
-| **ESCALATE** | The documents disagree on a clearly read field, or a decision-critical field cannot be read. A human must act. A reason code is attached. |
-| **WAIT** | The receipt is absent but a shipping notice places the goods in transit. Re-check later. |
+Input: a case packet. PO text, invoice text, GR text (may be absent), an optional shipping notice, the list of invoice numbers already paid on that PO, company reference knowledge, and an as-of date.
 
-The two error types have asymmetric costs. A false CLEAR on a real discrepancy leaks money and breaks an audit control. A false ESCALATE on an agreeing invoice costs one manual review. This is a selective classification problem, in the sense of [Geifman and El-Yaniv](https://arxiv.org/abs/1705.08500), and a learning-to-defer problem, in the sense of [Mozannar and Sontag](https://proceedings.mlr.press/v119/mozannar20b.html): the system must decide not only what the answer is but whether it is safe to answer at all.
+Output: one of three actions.
 
-That shape dictates the metric. The objective is to minimize false escalations on agreeing cases subject to a hard constraint of 100% recall on real discrepancies, with uncertainty intervals on both. Accuracy and F1 are the wrong headline numbers because they trade the two error types against each other at the class mix of the test set.
+| Action | Meaning | Human involved |
+|---|---|---|
+| **CLEAR** | Documents agree within tolerance. Pay. | No |
+| **WAIT** | GR absent, shipping notice says goods are in transit. Re-check later. | No |
+| **ESCALATE** | Documents disagree on a clearly read field, or a critical field could not be read. | Yes |
 
-## 3. Why it is not already solved
+The two errors are not symmetric:
 
-- **Rules cannot read.** Deterministic matching requires structured input. On a handwritten quantity or a reordered layout, a parser fails and the only safe rule is to escalate.
-- **General OCR is not solved on messy documents.** On [OCRBench v2](https://arxiv.org/abs/2501.00321), most models score below 50 out of 100, weakest on handwriting, fine detail, and tables. [CC-OCR](https://arxiv.org/abs/2412.02210) documents hallucinated repeated line items as a common failure, and a hallucinated line looks exactly like a quantity discrepancy.
-- **A frontier model alone is unsafe and expensive.** It will produce an answer for an unreadable field rather than abstain. Its output shifts materially with prompt formatting ([Sclar et al.](https://arxiv.org/abs/2310.11324)). Its self-reported confidence is not calibrated. At 100 invoices per analyst per day across an enterprise, per-token cost is a real line item.
-- **The useful knowledge is local.** Whether a handwritten number on this supplier's receipt is authoritative, whether "1 CS" means 12 units for this SKU, whether this supplier ships from Reno though the PO says Dallas, is tribal knowledge held by analysts and absent from every model's training data.
+- A **false CLEAR** on a real discrepancy leaks money and breaks an audit control. This must not happen.
+- A **false ESCALATE** on an agreeing invoice costs one human review, about $10. This is what we minimize.
 
-## 4. What we test
+That asymmetry fixes the metric. We report the **false escalation rate on agreeing cases, subject to 100% recall on real discrepancies**, both with confidence intervals. Accuracy and F1 are the wrong headline numbers for this problem: they trade the two error types against each other at whatever class mix the test set happens to have, and they hide a missed discrepancy behind a hundred correct clears.
 
-Whether a harness built on open models on Fireworks, with deterministic checks as the authority, per-field abstention, targeted re-reading of only the fields that fail a check, and typed company knowledge looked up by ID, can lower the false escalation rate on agreeing invoices below that of a frontier model given identical inputs, while both catch every real discrepancy, at lower cost per invoice.
+## 4. Why a frontier model alone does not win here
 
-The benchmark, generator, scorer, and raw outputs are published so the claim can be checked. The exact case mix, metric definitions, baseline arms, and timeline are in [plan.md](plan.md).
+A judge's natural question: why not just give GPT-class model the three documents and ask? We run exactly that as the baseline. We expect it to lose on this task, for four reasons that are structural rather than about model size.
 
-## 5. In one sentence
+1. **It answers when it should abstain.** Asked for a quantity it cannot read, a generative model produces a number. On this task a confident wrong number on a critical field is the worst possible output. The system needs per-field abstention, and that has to be enforced outside the model.
+2. **It does arithmetic and cross-referencing in tokens.** Twelve times eight, lines summing to a subtotal, an invoice number appearing in a paid list, a date inside a ten-day window. These are deterministic checks that code gets right every time and a model gets right most of the time. "Most of the time" is not acceptable when a miss is a leaked payment.
+3. **Its output is sensitive to things that should not matter.** Prompt formatting alone moves accuracy by double digits ([Sclar et al.](https://arxiv.org/abs/2310.11324)). Document order, layout, and field position are exactly the noise in our data.
+4. **It does not know this company.** Whether a handwritten count on this supplier's receipt is authoritative, whether "1 CS" is 12 units for this SKU, whether this supplier ships from Reno although the PO says Dallas: that is tribal knowledge held by analysts and absent from any model's training data. It has to be supplied, in a form code can use.
+
+None of these are fixed by a bigger model. All of them are fixed by a harness. And once the model's job is reduced to reading fields it is pointed at, a small open model is enough, which is where the cost advantage comes from.
+
+## 5. What we built
+
+A reconciliation harness where code is the authority and the model is a reader. Full diagram in [system-flow.md](system-flow.md).
+
+1. **Look up and normalize.** Pull the company's typed wiki pages for the supplier, items and warehouse named on the PO. Canonicalize dates, numbers, currencies, pack sizes and aliases in code.
+2. **Extract.** A small open model on Fireworks turns each document into JSON. Every field carries `ok`, `unreadable` or `absent`. It is not allowed to guess.
+3. **Check.** Deterministic arithmetic and cross-document checks, with the policy tolerance applied in code.
+4. **Re-read only what failed.** Fields that failed a check or were unreadable go to a larger open model, with wiki hints about where to look and which value is authoritative. Three reads, majority vote. Tokens are spent only where they change the outcome.
+5. **Decide, fail closed.** The only path to CLEAR is every check passing on fields marked readable. Anything else escalates with a reason code and the evidence, or waits if the goods are in transit.
+
+The wiki is deliberately simple: typed JSON looked up by ID, written by humans, describing how to read, never what to conclude. Pages can be stale, irrelevant, or adversarial, and the test set includes all three.
+
+## 6. How we prove it
+
+- **150 held-out synthetic cases** with known labels: 45 clean, 60 messy but agreeing, 38 real discrepancies across five types, 7 in transit. Twelve noise types. One document layout and one supplier appear only in the test set. A separate 50-case dev set is used for all tuning; the test file is hashed before any system runs on it.
+- **Four arms on identical inputs:** a rules-only matcher (the industry status quo), a frontier model with one prompt and the same output schema (the judged baseline), the same open model without the harness (the ablation), and our harness.
+- **One scorer.** False escalation rate on the 105 agreeing cases with a 95% interval, the safety gate as a count out of 38 with an exact interval, a paired McNemar test between our harness and the baseline, per-stratum breakdowns, and tokens, dollars and latency per case. The table is generated only from saved raw outputs, which are committed.
+
+What a win looks like:
+
+| Arm | Real discrepancies caught | False escalations on agreeing cases | $ per 100 invoices |
+|---|---:|---:|---:|
+| Rules only | 38/38 | high | ~0 |
+| Frontier baseline | 38/38 | X% | high |
+| Open model, no harness | ? | ? | low |
+| **Our harness** | **38/38** | **well below X%** | **low** |
+
+The claim we make is only as strong as that table, and we say so in the limitations: synthetic data shows controlled task performance, not enterprise generalization or payment safety.
+
+## 7. One sentence
 
 We teach open models to tell the difference between an invoice that is wrong and an invoice that is merely hard to read, so people only look at the ones that are actually wrong.
