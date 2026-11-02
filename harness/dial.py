@@ -54,7 +54,8 @@ def skip_check(case, wiki, policy):
     from .domain import invoice_total_from_text
     review = float((policy or {}).get("review_cost_usd", 10))
     over = ((policy or {}).get("overrides") or {}).get(case.get("company"), {})
-    limit = float(over.get("skip_check_if_max_loss_below_usd", (policy or {}).get("skip_check_if_max_loss_below_usd", review)))
+    # Off by default (limit 0): a company must opt in. Never skips the duplicate, payee or authorization checks by default.
+    limit = float(over.get("skip_check_if_max_loss_below_usd", (policy or {}).get("skip_check_if_max_loss_below_usd", 0.0)))
     total = invoice_total_from_text((case.get("documents") or {}).get("invoice"))
     if total is None:
         return False, {"invoice_total_usd": None, "max_loss_usd": None, "limit_usd": limit}
