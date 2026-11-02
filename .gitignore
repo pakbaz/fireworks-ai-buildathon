@@ -1,0 +1,15 @@
+# Secrets: never commit API keys
+.env
+.env.*
+*.env
+!.env.example
+secrets/
+*.key
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS
+.DS_Store
