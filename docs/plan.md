@@ -2,7 +2,7 @@
 
 Fireworks: Deploy with Microsoft and NVIDIA. November 2, 2026. Five people. Build from 12:15 PM. Start submitting 3:30 PM, video due 4:00 PM, submissions close 4:30 PM Pacific.
 
-This page is the single source of truth for what we build today. **1:15 PM update from mentor feedback:** one open model, Kimi K2.5, compared against itself: bare (before), inside the harness without the wiki (ablation), and inside the harness with the wiki (after). No closed models, no multi-model leaderboard, no fine-tuning. It replaces earlier plans where they conflict. Review items 1 to 5 and 7 from [plan-review.md](plan-review.md) are folded in (12:30 PM). Background and sources: [IDEA.md](../IDEA.md), [ideas-review.md](ideas-review.md), [research.md](research.md).
+This page is the single source of truth for what we build today. **1:15 PM update from mentor feedback:** one open model, Kimi K2.5, compared against itself: bare (before), inside the harness without the wiki (ablation), and inside the harness with the wiki (after). No closed models, no multi-model leaderboard, no fine-tuning. It replaces earlier plans where they conflict. Review items 1 to 5 and 7 from [plan-review.md](plan-review.md) are folded in (12:30 PM). Second review: [plan-review-2.md](plan-review-2.md) (1:25 PM). Background and sources: [IDEA.md](../IDEA.md), [ideas-review.md](ideas-review.md), [research.md](research.md).
 
 ## Overview
 

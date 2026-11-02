@@ -10,7 +10,7 @@ This repository currently contains the project idea and research, not a working 
 - Build plan: [docs/plan.md](docs/plan.md)
 - Original concept: [IDEA.md](IDEA.md)
 - Full source-backed report: [docs/research.md](docs/research.md)
-- Build plan: [docs/plan.md](docs/plan.md), with suggested changes in [docs/plan-review.md](docs/plan-review.md)
+- Build plan: [docs/plan.md](docs/plan.md), with reviews in [docs/plan-review.md](docs/plan-review.md) and [docs/plan-review-2.md](docs/plan-review-2.md)
 - Review of brainstorm sessions 2 and 3, with our take and a plan for today: [docs/ideas-review.md](docs/ideas-review.md)
 
 ## Status
