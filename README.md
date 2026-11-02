@@ -37,10 +37,10 @@ An evidence-first open-model evaluation for **Fireworks: Deploy with Microsoft a
 | Document test | Complete for Kimi-alone and GLM low+wiki across all 1,000 invoices; other arms have partial runs |
 | Scanned-image subset | Complete for 100 synthetic rendered scans; GLM has substantially more false reviews than Kimi |
 | Calibration + production integration | Not complete: risk scores heuristic; no verified payee bank registry or live ERP/payment workflow |
-| Analyst dashboard | Design/prototype; some interactions and image highlights are simulated (see \`dashboard/README.md\`) |
+| Analyst dashboard | Design/prototype; some interactions and image highlights are simulated (see `dashboard/README.md`) |
 | Submission artifacts | [Final results](results.md), [demo figures](docs/results/demo/README.md), [HTML slide deck](docs/results/demo/index.html); repository visibility is an owner-controlled action |
 
-The summary and deck describe **saved test predictions**, not claims of production fraud detection or financial losses prevented. For the currently selected low-reasoning model use \`GLM_REASONING=low\`. For reproducibility, distinguish prompt/reasoning versions and never overwrite frozen outputs.
+The summary and deck describe **saved test predictions**, not claims of production fraud detection or financial losses prevented. For the currently selected low-reasoning model use `GLM_REASONING=low`. For reproducibility, distinguish prompt/reasoning versions and never overwrite frozen outputs.
 
 ## The root problem
 
