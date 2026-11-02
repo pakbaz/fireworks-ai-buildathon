@@ -42,6 +42,8 @@ That's what we're building. A reconciliation harness where code is the authority
 
 ## What we are building
 
+One open model, Kimi K2.5 on Fireworks, with a small team of experts around it. A reading expert turns each document, typed or scanned, into fields and says plainly when it can't read one. A domain expert knows the company: it normalizes units and supplier quirks, does the math, and works out where in the chain goods went missing. A classifier turns all of that into one probability, and the business dial turns the probability into Pay, Wait or Ask a person. No fine-tuning: the gain has to come from what we build around the model.
+
 One invoice moves through it like this. Blue boxes are code, orange are the only two model calls, purple are people. The dotted loop at the bottom is how it gets smarter per company, and that part we describe rather than build today.
 
 ```mermaid
@@ -69,7 +71,7 @@ flowchart TB
         EXT["4 · Extract to JSON<br/>small open model on Fireworks<br/>every field: ok / unreadable / absent"]:::model
         CHK{"5 · Deterministic checks<br/>qty × price = line total<br/>lines sum to subtotal<br/>PO ref matches across docs<br/>price within policy tolerance<br/>invoice qty = received qty<br/>invoice no. not already paid<br/>GR present, or notice in window"}:::code
         RR["6 · Targeted re-read<br/>only fields that failed or were unreadable<br/>large open model on Fireworks<br/>wiki hints · 3 reads · majority vote"]:::model
-        DEC{"7 · Decide in code<br/>fail closed"}:::code
+        DEC{"7 · Classifier + business dial<br/>risk × dollars at stake"}:::code
     end
 
     subgraph WIKI["Company wiki (typed JSON, written by humans)"]
@@ -118,7 +120,7 @@ flowchart TB
 | 4 Extract | small model | Structured JSON with a status per field. The model may not guess a value it cannot read. |
 | 5 Checks | code | Arithmetic and cross-document comparison. This is the authority. A model never overrides it. |
 | 6 Re-read | large model | Spends tokens only on fields that failed. Wiki pages tell it where to look and what is authoritative. |
-| 7 Decide | code | Fail closed. The only path to CLEAR is every check passing on fields marked readable. |
+| 7 Classify and decide | model + code | One risk probability from the reading and the checks, calibrated. The business dial turns risk and dollars into Pay, Wait or Ask a person. A clearly read mismatch never scores as low risk. |
 
 ### Where the model is and is not
 
@@ -156,26 +158,28 @@ It also answers the question every AP lead actually asks when quantities don't m
 
 This is where we would rather lose honestly than win on vibes.
 
-We generate 200 invoices where we know the truth, split between two example companies: a hospital supplier selling equipment worth thousands, and a phone-accessory shop selling things worth a few dollars. Some invoices are clean, some messy but correct, 75 have real problems like short shipments, goods lost in transit, price changes, the wrong PO, or duplicate billing, and 25 are for goods still on the truck. We run the same 200 through five systems: a plain rules matcher, a frontier model with one good prompt, an open model on Fireworks with no help, our harness on Fireworks, and our harness with the frontier model swapped in.
+We generate 200 invoices where we know the truth, split between two example companies: a hospital supplier selling equipment worth thousands, and a phone-accessory shop selling things worth a few dollars. Some invoices are clean, some messy but correct, 75 have real problems like short shipments, goods lost in transit, price changes, the wrong PO, or duplicate billing, and 25 are for goods still on the truck. Forty of them are also drawn as scanned-looking images, with handwriting, stamps and a bit of blur. We pick one open frontier model, Kimi K2.5 on Fireworks, and run it three ways on the same invoices: on its own, inside our harness without the company knowledge, and inside the harness with it.
 
-That last one matters. Without it, anyone can say we compared engineering against no engineering. With it, we can separate what the harness buys from what the model buys. Whoever writes our harness also never sees the code that generates the test data, so we are not grading ourselves with our own answer key.
+Same model in every row, so the only thing that changes is what we built around it. The middle row separates what the harness buys from what the company knowledge buys. Whoever writes our harness also never sees the code that generates the test data, so we are not grading ourselves with our own answer key.
 
 Then we ask two questions, in this order:
 
 1. **At each company's default dial, what did it cost?** Reviews at ten dollars each, plus the money lost on anything it let through. For the hospital, that must mean zero misses.
 2. **Of the invoices that were fine, how many did it send to Maria anyway?**
 
-We also slide the dial end to end and draw the curve, reviews against dollars missed, for every system. That curve is the business case: it shows a buyer exactly what they trade at every setting.
+We also slide the dial end to end and draw the curve, reviews against dollars missed, for every row. That curve is the business case: it shows a buyer exactly what they trade at every setting.
 
-We report both with confidence intervals and a paired test against the frontier model, and we publish the generator, the scorer, the raw outputs, and the cost per invoice. The frontier model gets the same documents, the same company pages, and the same output format we use, so the comparison is about what the systems do with the information, not who had more of it. Honestly, that may be what happens. Our test documents are text with realistic noise, not real scans, and a frontier model reads "1 CS (12 EA)" just fine. If it clears messy invoices as well as our harness does, we will say so, and the story becomes "same result at a fraction of the price." That is why cost per 100 invoices sits next to the escalation rate as a headline, not in a footnote. Under the rules of this event, a cost win at equal quality counts. Under the rules of running a business, it's the whole point.
+We report both with confidence intervals and paired tests, before against after and after against the middle row, and we publish the dataset, the generator, the scorer, the raw outputs and the cost per invoice. The model on its own gets the same documents and the same company pages pasted into its prompt, so the comparison is about what the harness does with the information, not who had more of it.
 
-| Arm | Real problems caught | Fine invoices sent to a human | Business cost per 100 invoices |
+Honestly, the model on its own may do fine on the text versions: "1 CS (12 EA)" is not hard to read. That is why the image table matters, and why we will report a tie as a tie.
+
+| Kimi K2.5 on Fireworks | Real problems caught | Fine invoices sent to a human | Business cost per 100 invoices |
 |---|---:|---:|---:|
-| Rules only | to be measured | to be measured | ~$0 |
-| Frontier model, one prompt | to be measured | to be measured | to be measured |
-| Open model on Fireworks, no harness | to be measured | to be measured | to be measured |
-| **Our harness on Fireworks** | to be measured | to be measured | to be measured |
-| Our harness with the frontier model | to be measured | to be measured | to be measured |
+| Before: the model alone | to be measured | to be measured | to be measured |
+| Middle: with the harness, no company knowledge | to be measured | to be measured | to be measured |
+| **After: harness and company knowledge** | to be measured | to be measured | to be measured |
+
+Each row is reported twice, once on the text invoices and once on the image set.
 
 The exact case mix, metric definitions, and timeline are in [plan.md](plan.md).
 

@@ -2,7 +2,7 @@
 
 Fireworks: Deploy with Microsoft and NVIDIA. November 2, 2026. Five people. Build from 12:15 PM. Start submitting 3:30 PM, video due 4:00 PM, submissions close 4:30 PM Pacific.
 
-This page is the single source of truth for what we build today. It replaces earlier plans where they conflict. Review items 1 to 5 and 7 from [plan-review.md](plan-review.md) are folded in (12:30 PM). Background and sources: [IDEA.md](../IDEA.md), [ideas-review.md](ideas-review.md), [research.md](research.md).
+This page is the single source of truth for what we build today. **1:15 PM update from mentor feedback:** one open model, Kimi K2.5, compared against itself: bare (before), inside the harness without the wiki (ablation), and inside the harness with the wiki (after). No closed models, no multi-model leaderboard, no fine-tuning. It replaces earlier plans where they conflict. Review items 1 to 5 and 7 from [plan-review.md](plan-review.md) are folded in (12:30 PM). Background and sources: [IDEA.md](../IDEA.md), [ideas-review.md](ideas-review.md), [research.md](research.md).
 
 ## Overview
 
@@ -14,19 +14,17 @@ flowchart TB
         GEN --> WIKI[("Company wiki<br/>suppliers · items · policy")]
         CASES --> ARMS
         WIKI --> ARMS
-        subgraph ARMS["Five arms, identical packet"]
+        subgraph ARMS["One model, Kimi K2.5, three ways"]
             direction TB
-            A1["1 · Rules only"]
-            A2["2 · Frontier baseline"]
-            A3["3 · Open model, no harness"]
-            A4["4 · Fireworks harness"]
-            A5["5 · Frontier model in the same harness"]
+            A1["Before · Kimi K2.5 alone"]
+            A2["Ablation · harness, no wiki"]
+            A3["After · harness + company wiki"]
         end
         ARMS --> SCORE["Scorer<br/>false escalation rate on agreeing cases<br/>business dial per company<br/>reviews · misses · $ per 100 invoices<br/>cost curve · calibration · latency"]
         SCORE --> TABLE["Results table<br/>built only from saved outputs"]
     end
 
-    subgraph HARNESS["Arm 4: the Fireworks harness (person 4)"]
+    subgraph HARNESS["After: the harness on Kimi K2.5 (person 4)"]
         direction TB
         PKT["Case packet<br/>PO · invoice · GR · shipping notice<br/>paid invoices · as-of date"] --> LOOK["Wiki lookup by ID<br/>supplier, item, policy pages"]
         LOOK --> NORM["Normalize in code<br/>dates · numbers · currency · pack sizes · aliases"]
@@ -44,7 +42,7 @@ flowchart TB
     A4 -.-> PKT
 ```
 
-Reading the diagram: the top half is what gets judged. The bottom half is the only arm with engineering in it. Every path out of the harness ends in one of three actions, and the only path to CLEAR runs through code checks on fields the model marked readable.
+Reading the diagram: the top half is what gets judged. The bottom half is the "after" system. Every path out of the harness ends in one of three actions, and the only path to CLEAR runs through code checks on fields the model marked readable.
 
 ---
 
@@ -59,7 +57,7 @@ Today's tools escalate far too often. Industry average is roughly one invoice in
 | **Real discrepancy** | Goods received differ from what the invoice bills: short shipment, price change, wrong PO, duplicate invoice. | A human. No model can fix this. Out of scope for automation. |
 | **Document-only escalation** | The three documents actually agree, but scans, handwriting, moved fields, odd formats or notes confuse the system. | Should be cleared automatically. **This is our target.** |
 
-**Hypothesis:** a large share of today's escalations are document-only, and a harness built on open models on Fireworks can clear them without missing any real discrepancy, at lower cost than a frontier model.
+**Hypothesis:** a large share of today's escalations are document-only, and putting an open frontier model on Fireworks inside a harness with company knowledge clears far more of them than the same model alone, without missing real problems.
 
 **User:** the AP analyst. **Value:** fewer invoices on their desk each morning, with no increase in missed problems.
 
@@ -83,13 +81,13 @@ Two patterns hold across all of them:
 1. **Matching is deterministic and the AI explains or triages.** No product we found lets a model clear an invoice that rules could not read. Stampli comes closest, and it escalates on low confidence.
 2. **Nobody publishes a benchmark.** Claimed no-touch rates have no stated denominator, case mix or safety constraint. Industry research (Ardent) reports exception rates, not what caused them.
 
-**Where we differ.** We keep the deterministic core and the fixed tolerances. We put the open model in the one place the products do not: reading a messy document well enough that the deterministic checks can run at all, with an explicit `unreadable` status so it never guesses. And we publish the benchmark: case mix, safety gate, counts, per-stratum results, raw outputs. And we give the business the dial: how much checking is worth it is their call, with a default set from what the system knows about their goods and suppliers. The claim is narrow and testable: fewer needless reviews at the same or lower business cost, versus a frontier model on identical cases.
+**Where we differ.** We keep the deterministic core and the fixed tolerances. We put the open model in the one place the products do not: reading a messy document well enough that the deterministic checks can run at all, with an explicit `unreadable` status so it never guesses. And we publish the benchmark: case mix, safety gate, counts, per-stratum results, raw outputs. And we give the business the dial: how much checking is worth it is their call, with a default set from what the system knows about their goods and suppliers. The claim is narrow and testable: the same open model sends fewer fine invoices to a person, at the same or lower business cost, once it has the harness and the company knowledge.
 
 ---
 
 ## 2. The task
 
-Input: one case packet = PO text + invoice text + GR text (may be absent) + shipping notice text (may be absent) + list of invoice numbers already paid on that PO + looked-up wiki pages (section 3a) + as-of date. **Every arm receives the whole packet.** Arms 2 and 3 get it in one shared prompt. Arm 4 uses its own prompts but no extra information.
+Input: one case packet = PO text + invoice text + GR text (may be absent) + shipping notice text (may be absent) + list of invoice numbers already paid on that PO + looked-up wiki pages (section 3a) + as-of date. **All three rows see the same documents.** The before row gets the packet in one prompt, wiki pages included, so the comparison is about what the harness does with the information, not who has it. The after row uses its own prompts and adds no information the before row lacked.
 
 Output: one JSON object.
 
@@ -188,12 +186,16 @@ Cut for time: wrong_warehouse. It needs transfer records and a receipt search, w
 
 `label` is never shown to any system. The `gold` block holds the canonical structured records for debugging.
 
+### 3.5a Text and images
+
+All 200 test cases exist as OCR-style text. A fixed subset of 40 (10 per stratum, both companies) is also rendered as scanned-looking images: each document drawn with PIL in its layout template, handwriting in a script face, a stamp, slight rotation, blur and paper texture. The image cases carry the same labels. All three rows run on both: text for the headline numbers, images as the second table that shows the reading problem for real.
+
 ### 3.6 Splits
 
 | Split | Size | Seed | Purpose |
 |---|---:|---|---|
 | dev | 50 | A | Everyone builds and tunes against this. Prompts, regexes, thresholds, wiki wording. |
-| test | 200 | B | Frozen and hashed at 1:15 PM before any arm runs on it. No arm runs on test until every arm runs on dev. |
+| test | 200 | B | Frozen and hashed at 1:15 PM before anything runs on it. Nothing runs on test until all three rows run on dev. |
 
 The test set uses the same generator with a different seed, plus the held-out template and supplier. Nothing is tuned on it. The hash of the test file is recorded in the README.
 
@@ -209,7 +211,7 @@ Session 2 called this "supplier wiki / memory." It is the tribal knowledge a new
 |---|---|---|
 | `wiki/suppliers/<id>.json` | aliases and sites, PO reference style, pack sizes, whether handwritten quantities on their GR are authoritative, typical lead days, where key fields sit on their layouts, past problem rate (synthetic history, labeled as such) | vendor_alias, po_ref_format, uom_pack, handwritten_note, in transit |
 | `wiki/items/<sku>.json` | description variants, unit of measure, approved conversions, unit value, category | uom_pack, and the dial defaults |
-| `wiki/policy.json` | price tolerance 1%, in-transit window 10 days, duplicate rule, what counts as decision-critical, review cost, category weights, the company's overrides | all arms read this; the dial reads it |
+| `wiki/policy.json` | price tolerance 1%, in-transit window 10 days, duplicate rule, what counts as decision-critical, review cost, category weights, the company's overrides | every row reads it; the dial reads it |
 
 Pages are typed JSON, not free text, so code can apply pack sizes and aliases during normalization and the model can read the rest as hints.
 
@@ -223,7 +225,7 @@ Pages are typed JSON, not free text, so code can apply pack sizes and aliases du
 - Pages describe how to read and interpret. They never state an outcome. No page may say a supplier is reliable or pre-approved.
 - Pages never widen a tolerance. Tolerances live only in `policy.json`.
 - Humans write pages. Nothing extracted from a document is ever written back automatically. The learning loop is the production story we describe in the video, not something we build today.
-- Arms 2, 3 and 5 receive the same looked-up pages. The comparison is about how the information is used, not who has it.
+- The before row receives the same looked-up pages in its prompt. The comparison is about how the information is used, not who has it.
 
 ### Making the ablation honest
 
@@ -243,7 +245,7 @@ Person 1 writes the pages alongside the generator, which already knows every sup
 
 ## 4. The metric
 
-**Co-headlines.** We report two numbers side by side, because the most likely honest outcome is that a frontier model reads text noise about as well as we do, and then cost is the result.
+**Co-headlines.** Two numbers side by side, for before, ablation and after, on the same model:
 
 > 1. False escalation rate on cases with no real discrepancy, at each company's default dial.
 > 2. Total business cost per 100 invoices at that dial: reviews at $10 each plus the weighted dollars lost on misses. Model cost per 100 invoices is reported beside it.
@@ -267,9 +269,9 @@ Scoring rules:
 
 - **Caught:** on a Real-discrepancy case only an ESCALATE prediction counts as caught. CLEAR or WAIT there is a miss. Nobody looks at a WAIT.
 - **False escalation metric:** on an agreeing case, ESCALATE counts as a false escalation. WAIT counts as not cleared and is reported separately, never as a clear.
-- **Uncertainty:** report a 95% Wilson interval on the false escalation rate and an exact binomial interval on the safety-gate count. Paired McNemar tests on the 100 agreeing cases: arm 4 against arm 2 (does the harness on open models beat a bare frontier model?) and arm 4 against arm 5 (inside the same harness, does the open model match the frontier model?). A few lines of `statsmodels`.
+- **Uncertainty:** report a 95% Wilson interval on the false escalation rate and an exact binomial interval on the safety-gate count. Paired McNemar tests on the 100 agreeing cases: after against before (does the harness beat the bare model?) and after against ablation (does the company wiki add anything on top of the harness?). A few lines of `statsmodels`.
 - `confidence` is logged, not scored.
-- An arm that fails the safety gate still gets its false escalation rate reported, with the gate result shown next to it in red.
+- A row that fails the safety gate still gets its false escalation rate reported, with the gate result shown next to it in red.
 
 Accuracy and F1 are not headline numbers. They hide missed discrepancies.
 
@@ -277,10 +279,10 @@ Accuracy and F1 are not headline numbers. They hide missed discrepancies.
 
 | Outcome | Claim |
 |---|---|
-| Arm 4 beats arm 2 and matches arm 5 | The harness drives the gain, and open models on Fireworks do it at Z% of the frontier cost. Strongest result. |
-| Arm 4 ties arm 2 | Same safety and false-escalation rate at Z% of the cost. A valid win under the event rules. |
-| Arm 5 beats arm 4 | The frontier model reads better inside the harness. We report it, and report the cost per point of false-escalation rate. |
-| Arm 2 beats arm 4 | We say so. The benchmark is still the contribution. |
+| After beats ablation beats before | The harness helps and the company knowledge helps on top. Strongest result. |
+| After beats before, ablation about equal to after | The harness does the work; the wiki adds little on this data. We say so. |
+| After ties before on text, beats it on images | The model reads clean text fine; the harness earns its keep on real-looking scans. |
+| No gain | We say so. The benchmark, the dial and the dataset are still the contribution. |
 
 Every outcome gets written up. None get hidden.
 
@@ -319,7 +321,7 @@ This is where the company knowledge pays off twice. The same wiki that helps the
 - **Every check passes on fields read cleanly:** risk from the three re-reads. Re-run the checks on each read; risk is the share that fail, smoothed as (failing + 0.5) / (reads + 1).
 - **Critical field unreadable after re-reads:** high risk, but now a question of dollars. A $3 doubt on a phone case may pay; a doubt on an infusion pump never does.
 - **Calibrated on dev only.** Fit one monotone mapping from raw risk to observed error rate on the 50 dev cases. Report the Brier score and a reliability table on test, because a dial on uncalibrated numbers is a dial on nothing.
-- **Fair to the frontier.** Arms 2, 3 and 5 sample three times at temperature 0.7; risk is their share of ESCALATE answers. The same dial and costs apply to every arm. Self-reported confidence is logged too.
+- **Fair to the before row.** Bare Kimi K2.5 is sampled three times at temperature 0.7; its risk is its share of ESCALATE answers, calibrated on dev the same way. The same dial and costs apply to every row. Self-reported confidence is logged too.
 
 WAIT is not on the dial. It follows the shipping-notice rule.
 
@@ -335,22 +337,22 @@ The 200 test cases split 100 and 100, each half keeping the stratum mix from sec
 ### What the scorer reports for the dial
 
 - Per company, at its default dial: reviews per 100, misses per 100, dollars lost on misses, total business cost per 100.
-- The curve: sweep the threshold from 0 to 1 and plot reviews per 100 against dollars missed per 100, one line per arm, with each company's default marked. Lower and to the left is better.
+- The curve: sweep the threshold from 0 to 1 and plot reviews per 100 against dollars missed per 100, one line per row, with each company's default marked. Lower and to the left is better.
 - The line that sells it: "At Northside's default, X reviews per 100 and zero misses. At Caseworks' default, Y reviews per 100 and $Z written off, versus $W in review time saved."
 
 ---
 
 ## 5. Systems compared
 
-All five run on identical cases, identical packet, identical output schema, identical scorer.
+All three rows use the same model, `accounts/fireworks/models/kimi-k2p5`, on the same cases, with the same output schema, dial and scorer. Kimi K2.5 is an open frontier model with image input, served on Fireworks.
 
-| Arm | What it is | Why it is there |
+| Row | What it is | What it shows |
 |---|---|---|
-| 1. Rules only | Regex parsers for the three shared templates, exact comparison of PO number, quantities and received quantities, price within 1% tolerance, invoice number not in paid list. Parse failure, the held-out template, or any mismatch means ESCALATE. | The industry status quo: a matching engine configured for known layouts. Shows how much messiness alone drives escalation. |
-| 2. Frontier baseline | One closed frontier model, name and version pinned once a key is confirmed. One prompt, temperature 0, JSON output. | **The judged baseline.** Required by the rules. |
-| 3. Open model, simple | One open model on Fireworks, same prompt as arm 2, no harness. | Shows the harness adds value beyond the model swap. |
-| 4. Fireworks harness | Below. | **Our system.** |
-| 5. Frontier model in the same harness | Arm 4 with the frontier model from arm 2 swapped in for both the extractor and the re-read. Same code, same wiki, same checks. | Separates harness gain from model gain. Without it a judge can say "you compared engineering against no engineering." One model swap, no new code. |
+| Before | Kimi K2.5 alone. One prompt with the whole packet and the wiki pages pasted in, sampled three times, JSON output. | The best the model does on its own. |
+| Ablation | Kimi K2.5 inside the harness, without the wiki: reading expert, code checks, classifier, dial. | What the harness buys. |
+| After | The full system: reading expert, domain expert with the company wiki, classifier, dial. | What the company knowledge buys on top. |
+
+The mentors asked for exactly this: pick one model and make it better, before and after, reproducible. Fine-tuning would be another way to make it better; it is out of scope today.
 
 ### Keeping the harness honest
 
@@ -359,7 +361,16 @@ We write the generator and the harness, so the harness could end up as the inver
 - **Blind normalizer.** Person 4 writes the normalizer and extraction prompts from the noise descriptions in section 3.3 only. They do not read the generator code or the test cases. Person 1, who writes the generator, does not touch the harness.
 - **Held-out surface.** The test-only template and supplier use spellings, layouts and reference styles that never appear in dev. Gains on that slice are reported separately.
 
-### The harness (arm 4)
+### The harness: three experts and a classifier
+
+The team calls this a mixture of experts. Concretely it is a fixed pipeline of specialized calls, not a mixture-of-experts architecture inside a model:
+
+- **Reading expert:** Kimi K2.5 reads each document, text or image, into fields with a status of ok, unreadable or absent.
+- **Domain expert:** code plus the company wiki. Normalizes units and aliases, runs the arithmetic and cross-document checks, names the leg of the chain for quantity problems, and supplies dollars at risk and the dial defaults.
+- **Classifier:** combines both into one risk probability. A Kimi K2.5 call given the extracted fields, read agreement, check results and wiki facts, returning a probability, with code floors: a clearly read check failure sets risk to at least 0.98. Calibrated on dev only.
+- **Dial:** turns risk and dollars into Pay, Wait or Ask a person (section 4a).
+
+### The harness, step by step
 
 1. **Look up and normalize.** Code loads the wiki pages for the supplier and items named on the PO, then strips currency symbols, unifies dates and number formats, expands pack sizes and resolves aliases using those pages.
 2. **Extract.** Small open text model on Fireworks turns each document into structured JSON. Every field carries `status: ok | unreadable | absent`. The model may not guess a value it cannot read.
@@ -369,15 +380,14 @@ We write the generator and the harness, so the harness could end up as the inver
 
 Wiki pages are reading hints only. They never widen a tolerance or approve anything.
 
-### Models (text, serverless, prices per 1M tokens input / cached / output, from the Fireworks pricing page)
+### Model
 
-| Role | Model | Price | Why |
-|---|---|---|---|
-| Extractor | `accounts/fireworks/models/nemotron-lightning-3p5-30b-a3b` | $0.05 / $0.01 / $0.20 | Cheapest. NVIDIA model, which makes us a candidate for the NVIDIA Best-Use Award. |
-| Extractor fallback | `accounts/fireworks/models/glm-5p3-flash` | $0.15 / $0.03 / $0.50 | Used in the Fireworks structured-output docs. |
-| Re-read, and arm 3 | `accounts/fireworks/models/deepseek-v4p1-flash` or `gpt-oss-120b` | $0.30 / $0.006 / $1.20 or $0.15 / $0.015 / $0.60 | Stronger, still cheap. Arm 3 uses the same model so the arm 3 versus arm 4 ablation is clean. |
+| Role | Model | Why |
+|---|---|---|
+| Every row, every role | `accounts/fireworks/models/kimi-k2p5` | Open frontier model on Fireworks with image input; used in the Fireworks vision docs. One model keeps the before and after honest. |
+| Fallback if Kimi K2.5 is not reachable at 12:15 | `accounts/fireworks/models/qwen3-vl-235b-a22b-instruct` | Same role, same rules: swap it into all three rows, never just one. |
 
-Documents are text for the main benchmark, so no vision model is needed there. Arm 5 uses the arm 2 frontier model in both model slots. Live-test each model with one JSON-schema call at 12:15. A catalog listing does not prove account access. Budget: 250 cases at about 3,000 tokens each across arms 3 and 4 is about $1, so never cut a run to save credits.
+Live-test Kimi K2.5 at 12:15 with one text call and one image call, each with a JSON schema. Record the exact model ID and settings in the README. Budget: a few hundred cases times three rows times a few calls each stays within the $50 credit; check the live price before the full run and never cut a run to save credits.
 
 ---
 
@@ -386,23 +396,23 @@ Documents are text for the main benchmark, so no vision model is needed there. A
 | Person | Owns | First deliverable |
 |---|---|---|
 | 1 | Generator: canonical records, three templates per doc type, noise injector, mutations including short_shipped and lost_in_transit, two companies with item values and categories, synthetic supplier history, case mix, splits, wiki pages | Schema at 12:15; 50 dev cases at 12:30; 200 test cases frozen and hashed at 1:15 |
-| 2 | Runner interface, scorer with the dial, per-company costs, threshold sweep and curve, calibration, rules-only arm, results table built only from saved outputs | Scorer with intervals and McNemar on dev at 12:50 |
-| 3 | Frontier baseline (arm 2), then arm 5 by swapping the frontier model into person 4's harness | Model named at 12:15; baseline on dev at 12:45; test run at 1:20; arm 5 on test at 2:25 |
-| 4 | Fireworks harness with wiki lookup, risk and dollars-at-risk per case, chain-break diagnosis, arms 3 and 4. Writes the normalizer blind to the generator. | Live-test the models by 12:15; harness on dev at 1:45; test run at 2:20 |
+| 2 | Runner interface, scorer with the dial, per-company costs, threshold sweep and curve, calibration, results tables for text and images built only from saved outputs | Scorer with intervals and McNemar on dev at 12:50 |
+| 3 | The before row (bare Kimi K2.5), then the 40-case image renderer with scan noise | Kimi K2.5 live at 12:15; before row on dev at 12:45; on test at 1:20; images ready at 1:45 |
+| 4 | The harness on Kimi K2.5: reading expert, domain expert, classifier, dial; ablation and after rows. Writes the normalizer blind to the generator. | Live-test the models by 12:15; harness on dev at 1:45; test run at 2:20 |
 | 5 | Stretch goals (section 9), then repo public, README results, tradeoffs, limitations, and the demo video | Repo public and README at 2:45; video at 3:15 |
 
 | Clock (PT) | Checkpoint |
 |---|---|
-| 12:15 | Schema frozen. Fireworks models verified live with one JSON-schema call each. Frontier model named and key confirmed. Credits redeemed. |
+| 12:15 | Schema frozen. Kimi K2.5 verified live on text and image with a JSON schema. Credits redeemed. |
 | 12:30 | 50 dev cases in the repo. Everyone builds against them. |
-| 12:45 | First baseline run on dev. The organizers say to run the baseline early, so this comes before the harness. |
-| 1:15 | Test set frozen and hashed. Baseline run on test started. |
-| 2:30 | All five arms run on test. Results table with intervals generated from saved outputs. |
+| 12:45 | First before-row run on dev. The organizers say to run the baseline early, so this comes before the harness. |
+| 1:15 | Test set frozen and hashed. Before row on test started. |
+| 2:30 | All three rows run on text and images. Results table with intervals generated from saved outputs. |
 | 2:45 | Repo public, link tested signed out. README results, tradeoffs, limitations. |
 | 3:15 | Video recorded, under 60 seconds if possible. |
 | 3:30 | Start submitting. Video uploaded by 4:00. Confirmed processed by 4:30. |
 
-The runner interface, agreed at 12:15, is one function per arm: `run(case) -> {output, tokens_in, tokens_out, latency_ms, raw}`. The scorer never looks at anything else.
+The runner interface, agreed at 12:15, is one function per row: `run(case) -> {output, tokens_in, tokens_out, latency_ms, raw}`. The scorer never looks at anything else.
 
 ---
 
@@ -410,13 +420,13 @@ The runner interface, agreed at 12:15, is one function per arm: `run(case) -> {o
 
 | Criterion | Weight | What we show |
 |---|---:|---|
-| Benchmark evaluation | 40% | Same 200 held-out cases, five arms including the frontier model inside our harness, frozen scorer, false escalations and total business cost per company, a cost curve per arm, calibration, counts and intervals, two paired tests, raw outputs committed. |
+| Benchmark evaluation | 40% | Same 200 held-out cases plus 40 image cases, one open model before, ablation and after, frozen scorer, false escalations and total business cost per company, a cost curve per arm, calibration, counts and intervals, two paired tests, raw outputs committed. |
 | Business value | 25% | The dial: the right amount of checking is the business's call, and the system sets a sensible default from what it knows about the company. Hospital versus phone cases, in dollars per 100 invoices. Plus the chain-break diagnosis that tells AP who to call. |
-| Technical execution | 20% | Deterministic checks around open models, extraction with unreadable status, targeted re-read, blind normalizer, ablations of arm 3 versus arm 4 and arm 4 versus arm 5. |
+| Technical execution | 20% | Deterministic checks around open models, extraction with unreadable status, targeted re-read, blind normalizer, the ablation without the wiki, image and text tables. |
 | Presentation | 10% | Video under 120 seconds: the messy-but-fine invoices, the dial with two companies, then the results table and curve. |
-| Documentation | 5% | README with setup, one command to regenerate data, one command to run each arm, one command to score. |
+| Documentation | 5% | README with setup, one command to regenerate data, one command to run each row, one command to score. A 10-minute walkthrough. |
 
-Fireworks is required for every prize. Arms 3 and 4 run on Fireworks. Fine-tuning is optional under the rules and is future work for us: a fine-tuned model needs a dedicated deployment, which does not fit today.
+Fireworks is required for every prize. Every row runs on Fireworks. Fine-tuning is optional under the rules and is future work for us: a fine-tuned model needs a dedicated deployment, which does not fit today.
 
 ---
 
@@ -427,32 +437,31 @@ Fireworks is required for every prize. Arms 3 and 4 run on Fireworks. Fine-tunin
 - Documents are OCR-style noisy text, not images. (Claude's call, for time.)
 - Latency is measured but not optimized. The team ranked accuracy first, cost second.
 - No fine-tuning today. Future work.
-- Text models for the main benchmark. The images stretch goal uses a Fireworks vision model.
 - Company knowledge is a small typed wiki looked up by ID, not a graph or vector RAG. No tool calling today.
 - No agent emails suppliers.
 - Nothing extracted from a document is ever written back into a supplier note.
 - An unreadable decision-critical field is never guessed. It raises the risk, and the dial decides. At the hospital default that always means ESCALATE.
-- Every arm gets the identical case packet, including the paid-invoices list and supplier profile. Without the paid list, duplicate_invoice is undetectable and the safety gate is unreachable by construction.
-- Price tolerance is 1%, applied in code by arms 1, 4 and 5 and stated in the prompt for arms 2 and 3. Mutations sit at 3% or more.
+- Every row gets the identical case packet, including the paid-invoices list and supplier profile. Without the paid list, duplicate_invoice is undetectable and the safety gate is unreachable by construction.
+- Price tolerance is 1%, applied in code by the harness and stated in the before row's prompt. Mutations sit at 3% or more.
 - Eight noise types and six mutation types, including the two chain-break cases. Wrong-warehouse and tool calling are future work.
-- A fifth arm runs the frontier model inside our harness.
+- One open model, Kimi K2.5, in every row. No closed models, no model leaderboard. (Mentor feedback.)
+- Text for all 200 cases, images for a 40-case subset.
 - Cost per 100 invoices is a co-headline, not a footnote.
 - The normalizer is written blind to the generator.
-- The rules arm knows the three shared templates. It fails on the held-out template and on noise, like a real matching engine configured for known suppliers.
 
 ---
 
 ## 9. Stretch goals, in order
 
-1. **Real images.** Render 20 test cases to PNG with PIL and scan-style noise. Run arm 2 and arm 4 with a Fireworks vision model as the extractor. Report as a separate small table. This is the version of the problem the team actually believes in, so even a small result is worth more than any other stretch.
-2. **Wiki ablation.** Run arm 4 with and without the wiki pages. Cheap, one extra run. Report the gain on cases with a relevant page separately.
-3. **Second baseline prompt.** Run arm 2 with a second prompt wording on dev and report the spread, to show the baseline got a fair shot.
+1. **Images for all 200 cases**, not just the 40.
+2. **A second open model** swapped into all three rows, to show the harness gain is not specific to Kimi K2.5.
+3. **Second baseline prompt.** Run the before row with a second prompt wording on dev and report the spread, to show the baseline got a fair shot.
 
 ---
 
 ## 10. Open decisions for the team, now
 
-1. **Which frontier model is the baseline?** Must be one somebody has a working key for in the next 15 minutes. Nobody writes a prompt until the model and version are named and recorded in the README. The rules require the baseline to be a frontier model and the site says to run it early.
+1. **Kimi K2.5 access.** Confirm the model ID answers on text and image at 12:15, or switch every row to the fallback.
 2. **Who is person 1 through 5?**
 3. **When does the repo go public?** The rules say an inaccessible repo is unscored. The owner must flip it before submitting and test the URL signed out.
 
@@ -460,4 +469,4 @@ Fireworks is required for every prize. Arms 3 and 4 run on Fireworks. Fine-tunin
 
 ## 11. What we will not claim
 
-Synthetic results show controlled task performance. They do not show real-enterprise generalization, fraud detection, or payment safety. The share of real-world escalations that are document-only is our hypothesis, not a measured fact. Text-level noise is easier than real scans; a frontier model may read it fine, and if so we say that.
+Synthetic results show controlled task performance. They do not show real-enterprise generalization, fraud detection, or payment safety. The share of real-world escalations that are document-only is our hypothesis, not a measured fact. Text-level noise is easier than real scans; Kimi K2.5 alone may read it fine, and if so we say that and lean on the image table.
