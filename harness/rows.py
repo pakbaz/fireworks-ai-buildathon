@@ -40,6 +40,11 @@ def alone(case, model, use_images, frontier):
     _acc(stats, model, r)
     j = client.parse_json(client.content(r)) or {}
     model_action = str(j.get("action", "")).upper() or None
+    if model_action not in ("PAY", "WAIT", "ESCALATE"):
+        # Empty, malformed or truncated output: never a payment recommendation.
+        return dict(model=model, action="ESCALATE", model_action=model_action, risk=None, at_risk_usd=None,
+                    reason_code="invalid_model_output", next_step="investigate", evidence="model output was missing or invalid; sent for review",
+                    features=None, read=None, issues=None, dial=None, **stats)
     risk = _action_prob(r) if frontier else None
     if risk is None:
         risk = domain.num(j.get("risk"))
@@ -70,6 +75,11 @@ def harness(case, model, use_images, with_wiki):
     r = client.chat(model, [{"role": "user", "content": [{"type": "text", "text": prompts.READ}] + docs}], max_tokens=6000)
     _acc(stats, model, r)
     read = client.parse_json(client.content(r)) or {}
+    if not read.get("invoice") or not read.get("po"):
+        # Reader produced no invoice or PO: never pay on an empty read.
+        return dict(model=model, action="ESCALATE", model_action=None, risk=None, at_risk_usd=None, reason_code="invalid_model_output",
+                    next_step="investigate", evidence="reader returned no invoice or purchase order; sent for review",
+                    features=None, read=read, issues=None, dial=None, **stats)
     # 1b. A document that exists but came back empty is a reading failure, not an absent document: read it alone.
     present = {k for k in ("po", "shipping_notice", "gr", "invoice")
                if (case.get("documents") or {}).get(k) or (use_images and k in packet.images_of(case))}
