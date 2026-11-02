@@ -2,7 +2,7 @@
 
 Fireworks: Deploy with Microsoft and NVIDIA. November 2, 2026. Five people. Build from 12:15 PM. **Re-planned 1:25 PM** (section 6a: cut line, re-based clock). Start submitting 3:30 PM, video due 4:00 PM, submissions close 4:30 PM Pacific.
 
-This page is the single source of truth for what we build today. **1:15 PM update from mentor feedback:** one open model, Kimi K2.5, compared against itself: bare (before), inside the harness without the wiki (ablation), and inside the harness with the wiki (after). No closed models, no multi-model leaderboard, no fine-tuning. It replaces earlier plans where they conflict. Review items 1 to 5 and 7 from [plan-review.md](plan-review.md) are folded in (12:30 PM). Second review: [plan-review-2.md](plan-review-2.md) (1:25 PM), folded in at 1:30 PM. Background and sources: [IDEA.md](../IDEA.md), [ideas-review.md](ideas-review.md), [research.md](research.md).
+This page is the single source of truth for what we build today. **Rule since 1:45 PM: the plan describes only what has been run and seen to work.** Untested options are not listed. **1:15 PM update from mentor feedback:** one open model, Kimi K3, compared against itself: bare (before), inside the harness without the wiki (ablation), and inside the harness with the wiki (after). No closed models, no multi-model leaderboard, no fine-tuning. It replaces earlier plans where they conflict. Review items 1 to 5 and 7 from [plan-review.md](plan-review.md) are folded in (12:30 PM). Second review: [plan-review-2.md](plan-review-2.md) (1:25 PM), folded in at 1:30 PM. Background and sources: [IDEA.md](../IDEA.md), [ideas-review.md](ideas-review.md), [research.md](research.md).
 
 ## Overview
 
@@ -14,9 +14,9 @@ flowchart TB
         GEN --> WIKI[("Company wiki<br/>suppliers · items · policy")]
         CASES --> ARMS
         WIKI --> ARMS
-        subgraph ARMS["One model, Kimi K2.5, three ways"]
+        subgraph ARMS["One model, Kimi K3, three ways"]
             direction TB
-            A1["Before · Kimi K2.5 alone"]
+            A1["Before · Kimi K3 alone"]
             A2["Ablation · harness, no wiki"]
             A3["After · harness + company wiki"]
         end
@@ -24,14 +24,14 @@ flowchart TB
         SCORE --> TABLE["Results table<br/>built only from saved outputs"]
     end
 
-    subgraph HARNESS["After: the harness on Kimi K2.5 (person 4)"]
+    subgraph HARNESS["After: the harness on Kimi K3 (person 4)"]
         direction TB
         PKT["Case packet<br/>PO · invoice · GR · shipping notice<br/>paid invoices · as-of date"] --> LOOK["Wiki lookup by ID<br/>supplier, item, policy pages"]
         LOOK --> NORM["Normalize in code<br/>dates · numbers · currency · pack sizes · aliases"]
-        NORM --> EXT["Extract: Kimi K2.5 (read)<br/>every field has status ok / unreadable / absent"]
+        NORM --> EXT["Extract: Kimi K3 (read)<br/>every field has status ok / unreadable / absent"]
         EXT --> CHK{"Code checks<br/>math · PO ref · price ≤1% · qty = received<br/>not in paid list · GR or notice"}
         CHK -- "all pass, all readable" --> CLEAR([CLEAR])
-        CHK -- "fails or unreadable fields" --> RR["Re-read failing fields only<br/>Kimi K2.5 (re-read) · wiki hints · 3 reads, majority"]
+        CHK -- "fails or unreadable fields" --> RR["Re-read failing fields only<br/>Kimi K3 · wiki hints · one call<br/>confidence from token probabilities"]
         RR --> DEC{"Decide in code<br/>fail closed"}
         DEC -- "now passes" --> CLEAR
         DEC -- "mismatch on readable field" --> ESC([ESCALATE + reason code])
@@ -321,7 +321,7 @@ This is where the company knowledge pays off twice. The same wiki that helps the
 - **Every check passes on fields read cleanly:** risk from the three re-reads. Re-run the checks on each read; risk is the share that fail, smoothed as (failing + 0.5) / (reads + 1).
 - **Critical field unreadable after re-reads:** high risk, but now a question of dollars. A $3 doubt on a phone case may pay; a doubt on an infusion pump never does.
 - **Calibrated on dev only.** Fit one monotone mapping from raw risk to observed error rate on the 50 dev cases. Report the Brier score and a reliability table on test, because a dial on uncalibrated numbers is a dial on nothing.
-- **Fair to the before row.** Bare Kimi K2.5 is sampled three times at temperature 0.7; its risk is its share of ESCALATE answers, calibrated on dev the same way. The same dial and costs apply to every row. Self-reported confidence is logged too.
+- **Fair to the before row.** Bare Kimi K3 answers once. Its risk is the probability it gives its own answer token (Fireworks returns token probabilities; verified), calibrated on dev the same way as the harness. The same dial and costs apply to every row.
 
 WAIT is not on the dial. It follows the shipping-notice rule.
 
@@ -344,12 +344,12 @@ The 200 test cases split 100 and 100, each half keeping the stratum mix from sec
 
 ## 5. Systems compared
 
-All three rows use the same model, `accounts/fireworks/models/kimi-k2p5`, on the same cases, with the same output schema, dial and scorer. Kimi K2.5 is an open frontier model with image input, served on Fireworks.
+All three rows use the same model, `accounts/fireworks/models/kimi-k3`, on the same cases, with the same output schema, dial and scorer. Kimi K3 is an open frontier model with image input, served on Fireworks.
 
 | Row | What it is | What it shows |
 |---|---|---|
-| Before | Kimi K2.5 alone. One prompt with the whole packet and the wiki pages pasted in, sampled three times, JSON output. | The best the model does on its own. |
-| Ablation | Kimi K2.5 inside the harness, without the wiki: reading expert, code checks, classifier, dial. | What the harness buys. |
+| Before | Kimi K3 alone. One call with the whole packet and the wiki pages pasted in. JSON output with the action first; risk from the token probability of that action. | The best the model does on its own. |
+| Ablation | Kimi K3 inside the harness, without the wiki: reading expert, code checks, classifier, dial. | What the harness buys. |
 | After | The full system: reading expert, domain expert with the company wiki, classifier, dial. | What the company knowledge buys on top. |
 
 The mentors asked for exactly this: pick one model and make it better, before and after, reproducible. Fine-tuning would be another way to make it better; it is out of scope today.
@@ -365,50 +365,62 @@ We write the generator and the harness, so the harness could end up as the inver
 
 The team calls this a mixture of experts. Concretely it is a fixed pipeline of specialized calls, not a mixture-of-experts architecture inside a model:
 
-- **Reading expert:** Kimi K2.5 reads each document, text or image, into fields with a status of ok, unreadable or absent.
+- **Reading expert:** Kimi K3 reads each document, text or image, into fields with a status of ok, unreadable or absent.
 - **Domain expert:** code plus the company wiki. Normalizes units and aliases, runs the arithmetic and cross-document checks, names the leg of the chain for quantity problems, and supplies dollars at risk and the dial defaults.
-- **Classifier:** combines both into one risk probability. A Kimi K2.5 call given the extracted fields, read agreement, check results and wiki facts, returning a probability, with code floors: a clearly read check failure sets risk to at least 0.98. Calibrated on dev only.
+- **Classifier:** code, not a model call. A small logistic formula fitted on dev turns the features (which checks failed, field confidences, number of unreadable fields, dollars at risk) into one risk probability. A clearly read check failure sets risk to at least 0.98.
 - **Dial:** turns risk and dollars into Pay, Wait or Ask a person (section 4a).
 
 ### The harness, step by step
 
 1. **Look up and normalize.** Code loads the wiki pages for the supplier and items named on the PO, then strips currency symbols, unifies dates and number formats, expands pack sizes and resolves aliases using those pages.
-2. **Extract.** Kimi K2.5 turns each document into structured JSON. Every field carries `status: ok | unreadable | absent`. The model may not guess a value it cannot read.
+2. **Extract.** Kimi K3 turns each document into structured JSON. Every field carries `status: ok | unreadable | absent`. The model may not guess a value it cannot read.
 3. **Check in code.** Line quantities times prices equal line totals. Lines sum to subtotal. PO number matches across documents. Invoice unit price within 1% of PO price. Invoice quantity equals received quantity (handwritten value wins if present). Invoice number not in paid list. GR present, or shipping notice dated within 10 days of the as-of date.
-4. **Re-read only failures.** Fields that fail a check or are marked unreadable go back to Kimi K2.5 with a field-specific prompt and the relevant wiki pages as hints. Three reads, majority vote.
+4. **Re-read only failures.** Only when a check fails or a critical field is unreadable. One call per case with all failing fields batched, the relevant wiki pages as hints, and token probabilities on each value as its confidence.
 5. **Score risk and dollars, then apply the dial.** Code computes `risk` and `at_risk_usd` as section 4a describes, looks up the default dial from the wiki, and decides. For a quantity problem it compares shipping notice, GR and invoice to name the leg: short_shipped or lost_in_transit, with the next step. GR absent with a shipping notice inside the window means WAIT. GR absent with no notice or a stale notice is scored like any other risk.
 
 Wiki pages are reading hints only. They never widen a tolerance or approve anything.
 
-### Model
+### Model: what was tested and works (1:25 to 1:45 PM, team key)
 
-| Role | Model | Why |
-|---|---|---|
-| Every row, every role | `accounts/fireworks/models/kimi-k2p5` | Open frontier model on Fireworks with image input; used in the Fireworks vision docs. One model keeps the before and after honest. |
-| Fallback 1 | `accounts/fireworks/models/qwen3-vl-235b-a22b-instruct` | Same role, same rules. |
-| Fallback 2 | Any model on the [serverless pricing page](https://docs.fireworks.ai/serverless/pricing) that answers live, for example Kimi K3 | Swap into all three rows, never just one. |
+**Model:** `accounts/fireworks/models/kimi-k3` in every row and every role. Kimi K2.5 is not served on this account.
 
-**Access check.** The serverless pricing page lists Kimi K3, not Kimi K2.5, and the K2.5 model page describes on-demand (dedicated GPU) deployment. An on-demand deployment does not fit the time or the $50. Use K2.5 only if a plain serverless call to `accounts/fireworks/models/kimi-k2p5` already returned. Record the exact model ID, settings and the date of the price check in the README.
+| Tested | Result |
+|---|---|
+| Text: do PO, slip and invoice agree? | Correct, with the right reason. JSON output. |
+| Image: blurred, tilted slip with a handwritten "12 JM" | Read PO-4471, qty 12, status ok, initials JM. About 500 input tokens per image. |
+| `reasoning_effort: "none"` | 58 output tokens instead of about 300, under 2 s, same answer |
+| Token probabilities (`logprobs`, `top_logprobs`) | Returned. "ESCALATE" at 99.6% on a short-delivery case. One call gives a probability. |
+| `accounts/fireworks/routers/kimi-k3-fast` | Answers, routes to the same Kimi K3, about 0.9 s. Price not checked, so not used until it is. |
+| Several answers in one request (`n` > 1) | **Does not work:** "n > 1 is not supported". Not used. |
+| Prompt caching | **Does not work here:** 0 cached tokens on repeated 2,100-token prefixes, with and without affinity hints. Budget assumes no cache discount. |
 
-**Settings, identical in every row:** reasoning off (or the lowest setting), JSON output, max tokens capped, temperature 0 except the before row's three risk samples.
+**Settings, identical in every row:** `reasoning_effort: "none"`, temperature 0, JSON output, `logprobs: true`, max tokens capped per call type.
 
-**Budget guard.**
+### 5b. Making every call count
 
-1. Run every row on the 50 dev cases first. Sum `usage` from the responses.
-2. Projected test cost = dev cost × 4.8 (240 / 50), plus the image subset.
-3. If the projection is over $40: before row drops to 1 sample (risk from self-reported score, labeled so), then images drop to 20 cases, then the ablation drops.
-4. Cache every response to disk keyed by row, case ID and prompt hash. A crash or rerun never re-bills.
-5. Run cases with concurrency 8 to 16 and exponential backoff on 429 and 5xx. Serial runs will not finish.
+Each item below uses only what the tests showed works.
 
-### 5a. Closed-model reference row (Should)
+| Change | Calls saved |
+|---|---|
+| **One read call per case.** All documents go in one request, as text or as several images in one message. | 3 to 4 calls become 1 |
+| **The ablation and after rows share that read.** The first read uses no wiki hints in either row; the rows differ only in what code and the re-read do next. | The ablation costs no extra calls |
+| **Re-read only when needed.** Only cases with a failed check or an unreadable critical field, about a third. One call, all failing fields batched, confidence from token probabilities. | Replaces three-read voting, which the API cannot batch |
+| **Classifier in code.** Fitted on dev from the features the harness already has. | No model call |
+| **Before row in one call.** Risk from the token probability of its action. | 3 samples become 1 |
+| **Disk cache of every response,** keyed by a hash of model, settings and messages. Reruns, crashes and scorer changes never call the model again. The cache doubles as the committed raw outputs. | Every rerun is free |
+| **Everything after the model runs offline.** Dial, thresholds, sweep, company profiles and calibration read saved outputs. | Changing the dial costs nothing |
+| **Small inputs.** Only the looked-up wiki pages, compact JSON keys, images in grayscale at about 1,000 px on the long side, and the re-read sends only the one document it needs. | Fewer tokens per call |
+| **Throughput.** 8 to 16 calls at a time, backoff on 429 and 5xx, retries served from the cache. | Runs finish in minutes |
 
-The official rubric scores "a meaningful, reliable advantage over a **frontier-model baseline**." Our before row is an open frontier-class model prompted directly, which is the mentors' recommendation. To remove doubt for judges, if anyone has a working closed-model key:
+**Calls per case:** before 1, shared read 1, re-read about 0.35 on average. About 2.4 in total, against about 15 in the unoptimized design.
 
-- Run one closed frontier model, one prompt, temperature 0, with the same packet, wiki pages and schema, on the test set. Pin the exact model ID and date.
-- Show it as a **reference row** in the results table, not as a competitor in a leaderboard.
-- About 15 minutes of work; cost is outside the Fireworks credit.
+**Budget, from measured token counts** at the review's $3 input and $15 output per million tokens: about 2 cents per text case for all three rows. The 1,000-case test set is about $20, the 300-case dev set about $6, and 100 image cases a few dollars more. That fits the $50 credit with room for one full rerun.
 
-If no key is available, the README says: "Our baseline is Kimi K2.5, an open frontier-class model, given the same documents, wiki pages and output schema and prompted directly." Ask a mentor to confirm this reading before 3:00.
+**Budget guard.** Run all rows on 50 dev cases first, sum `usage`, and project before starting test. Report model calls and dollars per 100 invoices for every row in the results table.
+
+### 5a. Baseline wording for judges
+
+No closed-model key has been tested, so there is no closed-model row. The README says: "Our baseline is Kimi K3, an open frontier-class model, given the same documents, wiki pages and output schema and prompted directly." Ask a mentor to confirm this reading before 3:00.
 
 ---
 
@@ -418,13 +430,13 @@ If no key is available, the README says: "Our baseline is Kimi K2.5, an open fro
 |---|---|---|
 | 1 | Generator: canonical records, three templates per doc type, noise injector, mutations including short_shipped and lost_in_transit, two companies with item values and categories, synthetic supplier history, case mix, splits, wiki pages | Schema at 12:15; 50 dev cases at 12:30; 200 test cases frozen and hashed at 1:15 |
 | 2 | Runner interface, scorer with the dial, per-company costs, threshold sweep and curve, calibration, results tables for text and images built only from saved outputs | Scorer with intervals and McNemar on dev at 12:50 |
-| 3 | The before row (bare Kimi K2.5), then the 40-case image renderer with scan noise | Kimi K2.5 live at 12:15; before row on dev at 12:45; on test at 1:20; images ready at 1:45 |
-| 4 | The harness on Kimi K2.5: reading expert, domain expert, classifier, dial; ablation and after rows. Writes the normalizer blind to the generator. | Live-test the models by 12:15; harness on dev at 1:45; test run at 2:20 |
+| 3 | The before row (bare Kimi K3), then the 40-case image renderer with scan noise | Kimi K3 live at 12:15; before row on dev at 12:45; on test at 1:20; images ready at 1:45 |
+| 4 | The harness on Kimi K3: reading expert, domain expert, classifier, dial; ablation and after rows. Writes the normalizer blind to the generator. | Live-test the models by 12:15; harness on dev at 1:45; test run at 2:20 |
 | 5 | Stretch goals (section 9), then repo public, README results, tradeoffs, limitations, and the demo video | Repo public and README at 2:45; video at 3:15 |
 
 | Clock (PT) | Checkpoint |
 |---|---|
-| 12:15 | Schema frozen. Kimi K2.5 verified live on text and image with a JSON schema. Credits redeemed. |
+| 12:15 | Schema frozen. Kimi K3 verified live on text and image (done 1:25 PM). |
 | 12:30 | 50 dev cases in the repo. Everyone builds against them. |
 | 12:45 | First before-row run on dev. The organizers say to run the baseline early, so this comes before the harness. |
 | 1:15 | Test set frozen and hashed. Before row on test started. |
@@ -455,7 +467,6 @@ At 1:25 PM `main` had docs only. The table above is the original plan. This one 
 | **Must** | README results, tradeoffs, limitations; repo public | — |
 | Should | Ablation row (harness, no wiki), McNemar after vs ablation | Future work |
 | Should | Business dial, two companies, cost per 100 invoices at default | One fixed threshold per company, no sweep |
-| Should | Closed-model reference row (section 5a) | One README sentence instead |
 | Could | 40 image cases, image table | 3 to 5 image cases shown in the video only |
 | Could | Calibration fit, threshold sweep curve | Brier score only |
 
@@ -493,8 +504,8 @@ Fireworks is required for every prize. Every row runs on Fireworks. Fine-tuning 
 - Every row gets the identical case packet, including the paid-invoices list and supplier profile. Without the paid list, duplicate_invoice is undetectable and the safety gate is unreachable by construction.
 - Price tolerance is 1%, applied in code by the harness and stated in the before row's prompt. Mutations sit at 3% or more.
 - Eight noise types and six mutation types, including the two chain-break cases. Wrong-warehouse and tool calling are future work.
-- One open model in every row (Kimi K2.5 if serverless, else the fallback). No model leaderboard. A closed model may appear only as a reference row (section 5a). (Mentor feedback.)
-- Reasoning off, responses cached, dev-run budget projection before test (section 5).
+- One open model, Kimi K3, in every row. No model leaderboard, no closed-model row. (Mentor feedback.)
+- Reasoning off, one read per case, classifier in code, responses cached to disk, dev-run budget projection before test (section 5b).
 - The cut line in section 6a is final after 1:35 PM.
 - Text for all 200 cases, images for a 40-case subset.
 - Cost per 100 invoices is a co-headline, not a footnote.
@@ -505,15 +516,15 @@ Fireworks is required for every prize. Every row runs on Fireworks. Fine-tuning 
 ## 9. Stretch goals, in order
 
 1. **Images for all 200 cases**, not just the 40.
-2. **A second open model** swapped into all three rows, to show the harness gain is not specific to Kimi K2.5.
+2. **A second open model** swapped into all three rows, to show the harness gain is not specific to Kimi K3.
 3. **Second baseline prompt.** Run the before row with a second prompt wording on dev and report the spread, to show the baseline got a fair shot.
 
 ---
 
 ## 10. Open decisions for the team, now
 
-1. **Model access.** Which model answered a serverless call? If not Kimi K2.5, switch every row now (section 5).
-2. **Closed-model reference row.** Does anyone have a key? (section 5a)
+1. **Model access.** Resolved: Kimi K3, tested on text and image (section 5).
+2. **Baseline wording.** Ask a mentor to confirm Kimi K3 alone counts as the frontier baseline (section 5a).
 3. **Who is person 1 through 5?**
 4. **Repo public at 3:00 PM** (section 6a). The rules say an inaccessible repo is unscored. Test the URL signed out.
 
@@ -521,4 +532,4 @@ Fireworks is required for every prize. Every row runs on Fireworks. Fine-tuning 
 
 ## 11. What we will not claim
 
-Synthetic results show controlled task performance. They do not show real-enterprise generalization, fraud detection, or payment safety. The share of real-world escalations that are document-only is our hypothesis, not a measured fact. Text-level noise is easier than real scans; Kimi K2.5 alone may read it fine, and if so we say that and lean on the image table.
+Synthetic results show controlled task performance. They do not show real-enterprise generalization, fraud detection, or payment safety. The share of real-world escalations that are document-only is our hypothesis, not a measured fact. Text-level noise is easier than real scans; Kimi K3 alone may read it fine, and if so we say that and lean on the image table.

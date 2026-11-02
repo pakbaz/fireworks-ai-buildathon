@@ -42,7 +42,7 @@ That's what we're building. A reconciliation harness where code is the authority
 
 ## What we are building
 
-One open model, Kimi K2.5 on Fireworks, with a small team of experts around it. A reading expert turns each document, typed or scanned, into fields and says plainly when it can't read one. A domain expert knows the company: it normalizes units and supplier quirks, does the math, and works out where in the chain goods went missing. A classifier turns all of that into one probability, and the business dial turns the probability into Pay, Wait or Ask a person. No fine-tuning: the gain has to come from what we build around the model.
+One open model, Kimi K3 on Fireworks, with a small team of experts around it. A reading expert turns each document, typed or scanned, into fields and says plainly when it can't read one. A domain expert knows the company: it normalizes units and supplier quirks, does the math, and works out where in the chain goods went missing. A classifier turns all of that into one probability, and the business dial turns the probability into Pay, Wait or Ask a person. No fine-tuning: the gain has to come from what we build around the model.
 
 One invoice moves through it like this. Blue boxes are code, orange are the only two model calls, purple are people. The dotted loop at the bottom is how it gets smarter per company, and that part we describe rather than build today.
 
@@ -68,9 +68,9 @@ flowchart TB
         PKT["1 · Assemble case packet<br/>+ as-of date"]:::code
         LOOK["2 · Wiki lookup by ID<br/>supplier · items · policy"]:::code
         NORM["3 · Normalize in code<br/>dates · numbers · currency<br/>pack sizes · aliases from wiki"]:::code
-        EXT["4 · Extract to JSON<br/>Kimi K2.5 on Fireworks<br/>every field: ok / unreadable / absent"]:::model
+        EXT["4 · Extract to JSON<br/>Kimi K3 on Fireworks<br/>every field: ok / unreadable / absent"]:::model
         CHK{"5 · Deterministic checks<br/>qty × price = line total<br/>lines sum to subtotal<br/>PO ref matches across docs<br/>price within policy tolerance<br/>invoice qty = received qty<br/>invoice no. not already paid<br/>GR present, or notice in window"}:::code
-        RR["6 · Targeted re-read<br/>only fields that failed or were unreadable<br/>Kimi K2.5 on Fireworks<br/>wiki hints · 3 reads · majority vote"]:::model
+        RR["6 · Targeted re-read<br/>only fields that failed or were unreadable<br/>Kimi K3 on Fireworks<br/>wiki hints · one call · token probabilities"]:::model
         DEC{"7 · Classifier + business dial<br/>risk × dollars at stake"}:::code
     end
 
@@ -158,7 +158,7 @@ It also answers the question every AP lead actually asks when quantities don't m
 
 This is where we would rather lose honestly than win on vibes.
 
-We generate 200 invoices where we know the truth, split between two example companies: a hospital supplier selling equipment worth thousands, and a phone-accessory shop selling things worth a few dollars. Some invoices are clean, some messy but correct, 75 have real problems like short shipments, goods lost in transit, price changes, the wrong PO, or duplicate billing, and 25 are for goods still on the truck. Forty of them are also drawn as scanned-looking images, with handwriting, stamps and a bit of blur. We pick one open frontier model, Kimi K2.5 on Fireworks, and run it three ways on the same invoices: on its own, inside our harness without the company knowledge, and inside the harness with it.
+We generate 200 invoices where we know the truth, split between two example companies: a hospital supplier selling equipment worth thousands, and a phone-accessory shop selling things worth a few dollars. Some invoices are clean, some messy but correct, 75 have real problems like short shipments, goods lost in transit, price changes, the wrong PO, or duplicate billing, and 25 are for goods still on the truck. Forty of them are also drawn as scanned-looking images, with handwriting, stamps and a bit of blur. We pick one open frontier model, Kimi K3 on Fireworks, and run it three ways on the same invoices: on its own, inside our harness without the company knowledge, and inside the harness with it.
 
 Same model in every row, so the only thing that changes is what we built around it. The middle row separates what the harness buys from what the company knowledge buys. Whoever writes our harness also never sees the code that generates the test data, so we are not grading ourselves with our own answer key.
 
@@ -173,7 +173,7 @@ We report both with confidence intervals and paired tests, before against after 
 
 Honestly, the model on its own may do fine on the text versions: "1 CS (12 EA)" is not hard to read. That is why the image table matters, and why we will report a tie as a tie.
 
-| Kimi K2.5 on Fireworks | Real problems caught | Fine invoices sent to a human | Business cost per 100 invoices |
+| Kimi K3 on Fireworks | Real problems caught | Fine invoices sent to a human | Business cost per 100 invoices |
 |---|---:|---:|---:|
 | Before: the model alone | to be measured | to be measured | to be measured |
 | Middle: with the harness, no company knowledge | to be measured | to be measured | to be measured |
