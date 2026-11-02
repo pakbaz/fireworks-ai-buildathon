@@ -8,6 +8,7 @@ An evidence-first open-model evaluation for **Fireworks: Deploy with Microsoft a
 
 This repository currently contains the project idea and research, not a working application or completed benchmark.
 
+- Review site for flagged invoices, which runs from this repo: [web/README.md](web/README.md)
 - Problem statement and system flow: [docs/problem-statement.md](docs/problem-statement.md)
 - Build plan: [docs/plan.md](docs/plan.md)
 - Original concept: [IDEA.md](IDEA.md)

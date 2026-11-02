@@ -11,7 +11,7 @@ Live version: [Invoice Review Dashboard](https://claude.ai/artifact/VxUudva72Qh8
 | `locate_disputes.py` | Finds where each disputed value sits on the scans in `data/images/` |
 | `located.json` | Output of that script for the 25 flagged test cases with scans |
 
-`Main.dc.html` runs inside the Claude Design canvas, not on its own. Its `/_blob/...` image links resolve only in the published artifact, and the same scans are in `data/images/`.
+`Main.dc.html` runs inside the Claude Design canvas, not on its own. Its `/_blob/...` image links resolve only in the published artifact, and the same scans are in `data/images/`. The version that runs from this repo is in [web/](../web/README.md).
 
 ## Rebuild the highlight boxes
 

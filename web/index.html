@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Invoice Reconciliation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <h1>Invoice Reconciliation</h1>
+    <div class="top-actions">
+      <button id="upload-toggle" class="btn btn-dark" data-act="toggleUpload" aria-expanded="false">Upload</button>
+      <div id="companies" class="segments" role="group" aria-label="Company"></div>
+    </div>
+  </header>
+
+  <section id="upload" class="upload" aria-label="Upload documents" hidden>
+    <div class="upload-head">
+      <h2>Drop a PO, invoice, goods receipt and shipping notice</h2>
+      <div class="upload-actions">
+        <button class="btn btn-line" data-act="useSample">Try a sample</button>
+        <label class="btn btn-dark">
+          <input id="file-input" class="vh" type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.tif,.tiff,.csv,.json,.txt">
+          Choose files
+        </label>
+      </div>
+    </div>
+    <div id="upload-files" class="file-list"></div>
+    <p id="upload-status" class="upload-status" role="status"></p>
+  </section>
+
+  <div id="load-error" class="load-error" role="alert" hidden></div>
+
+  <div class="layout">
+    <aside class="side">
+      <section class="dial" aria-label="Escalation threshold">
+        <div class="dial-top">
+          <div id="knob" class="knob">
+            <input id="range" class="vh" type="range" min="0" max="1000" step="5" aria-label="Escalation threshold">
+            <svg viewBox="0 0 280 270" aria-hidden="true">
+              <path id="knob-track" class="knob-track"></path>
+              <path id="knob-value" class="knob-value"></path>
+              <path id="knob-suggested" class="knob-suggested"></path>
+              <circle cx="140" cy="145" r="84" class="knob-focus"></circle>
+              <circle cx="140" cy="145" r="78" class="knob-face"></circle>
+              <path id="knob-pointer" class="knob-pointer"></path>
+              <text id="knob-label" x="140" y="158" class="knob-label"></text>
+            </svg>
+          </div>
+          <div class="dial-counts">
+            <div><div id="above-count" class="count-big"></div><div class="count-label">go to a person</div></div>
+            <div><div id="below-count" class="count-small"></div><div class="count-label">auto-pay</div></div>
+          </div>
+        </div>
+        <div class="dial-step">
+          <button class="step" data-act="stepDown" aria-label="Fewer reviews">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10"></path></svg>
+          </button>
+          <span id="offset-label"></span>
+          <button class="step" data-act="stepUp" aria-label="More cautious">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M8 3v10"></path></svg>
+          </button>
+        </div>
+        <div id="warn" class="warn" hidden>
+          <svg width="18" height="18" viewBox="0 0 22 22" aria-hidden="true"><path d="M11 3 20 19H2ZM11 9v5M11 16.5v.5"></path></svg>
+          <span id="warn-label"></span>
+        </div>
+        <div class="dial-buttons">
+          <button id="reset" class="btn btn-light" data-act="reset" hidden></button>
+          <button id="why-toggle" class="btn btn-ghost" data-act="toggleWhy" aria-expanded="false"></button>
+        </div>
+        <div id="why" class="why" hidden></div>
+      </section>
+
+      <section class="queue" aria-label="Review queue">
+        <div class="queue-head">
+          <h2>Queue</h2>
+          <div id="reviewed"></div>
+        </div>
+        <ol id="rows" class="rows"></ol>
+        <div id="rest" class="queue-rest"></div>
+      </section>
+    </aside>
+
+    <main class="detail">
+      <div id="case-head"></div>
+      <p id="case-autopay" class="case-autopay" hidden></p>
+      <p id="case-disagree" class="case-disagree" hidden></p>
+      <section id="case-crops" class="crops" aria-label="Where the documents disagree"></section>
+      <section id="case-docs" class="docs" aria-label="Full documents"></section>
+      <details id="case-why-wrap" class="case-why"><summary id="case-why-title"></summary><div id="case-why"></div></details>
+    </main>
+  </div>
+
+  <footer class="provenance">
+    Synthetic test data, and nothing here pays anyone. Risk, dollars at risk and ranking come from Kimi K3 reading the document text, not from the harness. Headlines and highlighted values come from the answer key.
+  </footer>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
