@@ -1,8 +1,8 @@
 # Invoice Reconciliation: Two-Hour Build Plan
 
-Fireworks: Deploy with Microsoft and NVIDIA. November 2, 2026. Five people, two hours of build, submission open 3:30 PM, closed 4:30 PM Pacific.
+Fireworks: Deploy with Microsoft and NVIDIA. November 2, 2026. Five people. Build from 12:15 PM. Start submitting 3:30 PM, video due 4:00 PM, submissions close 4:30 PM Pacific.
 
-This page is the single source of truth for what we build today. It replaces earlier plans where they conflict. Suggested changes (12:00 PM review): [plan-review.md](plan-review.md). Background and sources: [IDEA.md](../IDEA.md), [ideas-review.md](ideas-review.md), [research.md](research.md).
+This page is the single source of truth for what we build today. It replaces earlier plans where they conflict. Review items 1 to 5 and 7 from [plan-review.md](plan-review.md) are folded in (12:30 PM). Background and sources: [IDEA.md](../IDEA.md), [ideas-review.md](ideas-review.md), [research.md](research.md).
 
 ## Overview
 
@@ -171,9 +171,16 @@ Rules for noise:
 }
 ```
 
-`label` is never shown to any system. The `gold` block holds the canonical structured records for debugging and for the optional fine-tune.
+`label` is never shown to any system. The `gold` block holds the canonical structured records for debugging.
 
-Training split: 300 cases, same generator, different seed, shared templates and suppliers only. Generated only if the fine-tune stretch is attempted.
+### 3.6 Splits
+
+| Split | Size | Seed | Purpose |
+|---|---:|---|---|
+| dev | 50 | A | Everyone builds and tunes against this. Prompts, regexes, thresholds, wiki wording. |
+| test | 150 | B | Frozen and hashed at 1:15 PM before any arm runs on it. No arm runs on test until every arm runs on dev. |
+
+The test set uses the same generator with a different seed, plus the held-out template and supplier. Nothing is tuned on it. The hash of the test file is recorded in the README.
 
 ---
 
@@ -195,7 +202,7 @@ Pages are typed JSON, not free text, so code can apply pack sizes and aliases du
 ### Access
 
 1. **Deterministic lookup by ID (ship this).** The harness reads supplier, item and warehouse IDs from the PO, loads those pages, and adds them to the packet before any model call. No search, no retrieval error.
-2. **Tool calling (only if step 1 works by 1:15).** The model may call `lookup_supplier`, `lookup_item`, or `find_receipts(supplier, item, date_window)` through Fireworks function calling. The last one is what makes wrong-warehouse cases resolvable: the model goes looking for a receipt at another site. Better demo, more failure modes.
+2. **Tool calling (only if step 1 works on dev by 2:00 PM).** The model may call `lookup_supplier`, `lookup_item`, or `find_receipts(supplier, item, date_window)` through Fireworks function calling. The last one is what makes wrong-warehouse cases resolvable: the model goes looking for a receipt at another site. Better demo, more failure modes.
 
 ### Rules
 
@@ -241,7 +248,13 @@ Denominator: the 105 Clean plus Clean-but-messy cases. Numerator: those the syst
 | Tokens and cost per case | input + output tokens, times list price, including every retry |
 | Latency | p50 and p95 per case, end to end |
 
-Scoring rules: a WAIT prediction on a non-WAIT case counts as ESCALATE for the metrics (it is not a human escalation, but it is not a clear either, so it is scored conservatively). `confidence` is logged, not scored. An arm that fails the safety gate still gets its false escalation rate reported, with the gate result shown next to it in red.
+Scoring rules:
+
+- **Safety gate:** on a Real-discrepancy case only an ESCALATE prediction counts as caught. CLEAR or WAIT there is a miss. Nobody looks at a WAIT.
+- **False escalation metric:** on an agreeing case, ESCALATE counts as a false escalation. WAIT counts as not cleared and is reported separately, never as a clear.
+- **Uncertainty:** report a 95% Wilson interval on the false escalation rate and an exact binomial interval on the safety-gate count. Compare arm 4 against arm 2 with a paired McNemar test on the 105 agreeing cases, since both arms saw the same cases. A few lines of `statsmodels`.
+- `confidence` is logged, not scored.
+- An arm that fails the safety gate still gets its false escalation rate reported, with the gate result shown next to it in red.
 
 Accuracy and F1 are not headline numbers. They hide missed discrepancies.
 
@@ -263,12 +276,22 @@ All four run on identical cases, identical prompt where a model is involved, ide
 ### The harness (arm 4)
 
 1. **Look up and normalize.** Code loads the wiki pages for the supplier, items and warehouse named on the PO, then strips currency symbols, unifies dates and number formats, expands pack sizes and resolves aliases using those pages.
-2. **Extract.** Small open model on Fireworks (candidate: `qwen3-vl-8b-instruct` or `glm-5p3-flash`, whichever passes the live test) turns each document into structured JSON. Every field carries `status: ok | unreadable | absent`. The model may not guess a value it cannot read.
+2. **Extract.** Small open text model on Fireworks turns each document into structured JSON. Every field carries `status: ok | unreadable | absent`. The model may not guess a value it cannot read.
 3. **Check in code.** Line quantities times prices equal line totals. Lines sum to subtotal. PO number matches across documents. Invoice unit price within 1% of PO price. Invoice quantity equals received quantity (handwritten value wins if present). Invoice number not in paid list. GR present, or shipping notice dated within 10 days of the as-of date.
-4. **Re-read only failures.** Fields that fail a check or are marked unreadable go to the larger open model (candidate: `qwen3-vl-235b-a22b-instruct` or Kimi K2.5), with the relevant wiki pages as hints. Three reads, majority vote.
+4. **Re-read only failures.** Fields that fail a check or are marked unreadable go to the larger open text model, with the relevant wiki pages as hints. Three reads, majority vote.
 5. **Decide in code, fail closed.** All checks pass on readable fields means CLEAR. Any check fails on clearly read fields means ESCALATE with the matching reason code. A decision-critical field still unreadable after the re-read means ESCALATE with `unreadable_field`. That escalation counts against us in the primary metric, which is exactly right: it is the document-only escalation we are trying to eliminate by reading better, and it never risks the safety gate. GR absent with a shipping notice inside the window means WAIT. GR absent with no notice or a stale notice means ESCALATE.
 
-Supplier profile notes are reading hints only. They never widen a tolerance or approve anything.
+Wiki pages are reading hints only. They never widen a tolerance or approve anything.
+
+### Models (text, serverless, prices per 1M tokens input / cached / output, from the Fireworks pricing page)
+
+| Role | Model | Price | Why |
+|---|---|---|---|
+| Extractor | `accounts/fireworks/models/nemotron-lightning-3p5-30b-a3b` | $0.05 / $0.01 / $0.20 | Cheapest. NVIDIA model, which makes us a candidate for the NVIDIA Best-Use Award. |
+| Extractor fallback | `accounts/fireworks/models/glm-5p3-flash` | $0.15 / $0.03 / $0.50 | Used in the Fireworks structured-output docs. |
+| Re-read, and arm 3 | `accounts/fireworks/models/deepseek-v4p1-flash` or `gpt-oss-120b` | $0.30 / $0.006 / $1.20 or $0.15 / $0.015 / $0.60 | Stronger, still cheap. Arm 3 uses the same model so the arm 3 versus arm 4 ablation is clean. |
+
+Documents are text, so no vision model is needed. Live-test each model with one JSON-schema call at 12:15. A catalog listing does not prove account access. Budget: 200 cases at about 3,000 tokens each across arms 3 and 4 is under $1, so never cut a run to save credits.
 
 ---
 
@@ -276,22 +299,24 @@ Supplier profile notes are reading hints only. They never widen a tolerance or a
 
 | Person | Owns | First deliverable |
 |---|---|---|
-| 1 | Generator: canonical records, three templates per doc type, noise injector, mutations, case mix, train/test split, wiki pages | Case schema agreed at 0:15; 50 sample cases at 0:30; full 150 at 0:50 |
-| 2 | Runner interface, scorer, rules-only arm, results table built only from saved outputs | Scorer on the 50 samples at 0:45 |
-| 3 | Frontier baseline: confirm key, pin model, write the shared prompt, run and save raw outputs | Model named at 0:15; baseline on 50 samples at 0:40; full run at 1:10 |
-| 4 | Fireworks harness with wiki lookup, arms 3 and 4 | Live-test two Fireworks models by 0:15; harness on 50 samples at 1:15; full run at 1:45 |
-| 5 | Stretch (section 9), then README results, limitations, and the demo video | Video script at 1:30; video recorded at 2:00 |
+| 1 | Generator: canonical records, three templates per doc type, noise injector, mutations, case mix, train/test split, wiki pages | Schema at 12:15; 50 dev cases at 12:30; 150 test cases frozen and hashed at 1:15 |
+| 2 | Runner interface, scorer, rules-only arm, results table built only from saved outputs | Scorer with intervals and McNemar on dev at 12:50 |
+| 3 | Frontier baseline: confirm key, pin model, write the shared prompt, run and save raw outputs | Model named at 12:15; baseline on dev at 12:45; test run at 1:20 |
+| 4 | Fireworks harness with wiki lookup, arms 3 and 4 | Live-test the models by 12:15; harness on dev at 1:45; test run at 2:20 |
+| 5 | Wiki ablation (section 9), then repo public, README results, tradeoffs, limitations, and the demo video | Repo public and README at 2:45; video at 3:15 |
 
-| Clock | Checkpoint |
+| Clock (PT) | Checkpoint |
 |---|---|
-| 0:15 | Schema frozen. Two Fireworks models verified live. Frontier key confirmed. |
-| 0:30 | 50 sample cases in the repo. Everyone tests against them. |
-| 0:40 | First baseline run on the 50 samples. The organizers say to run the baseline early, so this comes before the harness. |
-| 1:00 | Full test set frozen. Full baseline run started. |
-| 1:45 | All four arms run. Results table generated. |
-| 2:00 | README updated. Video recorded. Repo made public. Submit. |
+| 12:15 | Schema frozen. Fireworks models verified live with one JSON-schema call each. Frontier model named and key confirmed. Credits redeemed. |
+| 12:30 | 50 dev cases in the repo. Everyone builds against them. |
+| 12:45 | First baseline run on dev. The organizers say to run the baseline early, so this comes before the harness. |
+| 1:15 | Test set frozen and hashed. Baseline run on test started. |
+| 2:30 | All four arms run on test. Results table with intervals generated from saved outputs. |
+| 2:45 | Repo public, link tested signed out. README results, tradeoffs, limitations. |
+| 3:15 | Video recorded, under 60 seconds if possible. |
+| 3:30 | Start submitting. Video uploaded by 4:00. Confirmed processed by 4:30. |
 
-The runner interface, agreed at 0:15, is one function per arm: `run(case) -> {output, tokens_in, tokens_out, latency_ms, raw}`. The scorer never looks at anything else.
+The runner interface, agreed at 12:15, is one function per arm: `run(case) -> {output, tokens_in, tokens_out, latency_ms, raw}`. The scorer never looks at anything else.
 
 ---
 
@@ -305,7 +330,7 @@ The runner interface, agreed at 0:15, is one function per arm: `run(case) -> {ou
 | Presentation | 10% | Video under 120 seconds: one messy invoice, the frontier model escalates, our harness clears it with evidence, then the results table. |
 | Documentation | 5% | README with setup, one command to regenerate data, one command to run each arm, one command to score. |
 
-Fireworks is required for every prize. Arms 3 and 4 run on Fireworks. Fine-tuning is optional and is a stretch here.
+Fireworks is required for every prize. Arms 3 and 4 run on Fireworks. Fine-tuning is optional under the rules and is future work for us: a fine-tuned model needs a dedicated deployment, which does not fit today.
 
 ---
 
@@ -314,6 +339,8 @@ Fireworks is required for every prize. Arms 3 and 4 run on Fireworks. Fine-tunin
 - Real discrepancies always escalate. No auto-adjust or partial payment today.
 - Documents are OCR-style noisy text, not images. (Claude's call, for time.)
 - Latency is measured but not optimized. The team ranked accuracy first, cost second.
+- No fine-tuning today. Future work.
+- Text models only. No vision models.
 - Company knowledge is a small typed wiki looked up by ID, not a graph or vector RAG. Tool calling is optional.
 - No agent emails suppliers.
 - Nothing extracted from a document is ever written back into a supplier note.
@@ -327,8 +354,7 @@ Fireworks is required for every prize. Arms 3 and 4 run on Fireworks. Fine-tunin
 ## 9. Stretch goals, in order
 
 1. **Wiki ablation.** Run arm 4 with and without the wiki pages. Cheap, one extra run. Report the gain on cases with a relevant page separately.
-2. **Fine-tune.** Supervised fine-tune of the small model on the 300 training cases (document text to gold JSON). Needs a dedicated Fireworks deployment. Launch by 0:45 or skip.
-3. **Real images.** Render 20 test cases to PNG with PIL and scan-style noise. Run arms 2 and 4 with vision input. Report as a separate small table.
+2. **Real images.** Render 20 test cases to PNG with PIL and scan-style noise. Run arms 2 and 4 with vision input. Report as a separate small table.
 
 ---
 
