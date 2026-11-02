@@ -38,7 +38,8 @@ const slides=[
  {file:"02-anomaly-types.svg",title:"Where the model slips",note:"A controlled Kimi-only versus Kimi-with-checks comparison. The biggest missed category is quantity spikes: 10/20 for the model alone and 20/20 with executable checks."},
  {file:"04-low-reasoning-dev.svg",title:"Engineering optimization",note:"On 300 matched document cases, low reasoning reduced median latency from 22.2 to 5.1 seconds and cost per 100 from $0.29 to $0.08, while both caught 117/117. On the 210 context set, low mode caught one fewer case than the default comparator."},
  {file:"03-document-tradeoff.svg",title:"The general-document tradeoff",note:"On all 1,000 document cases, Kimi catches 374/375 and GLM harness catches 373/375. GLM costs twelve times less to run, but has 27 false alerts compared with one. We will not claim this already saves AP staff time."},
- {file:"08-review-economics-backup.svg",title:"Backup: finance lens",note:"This is not a measured business ROI. The system saves $8.44 in inference across 1,000 documents, but 26 additional false reviews at a hypothetical $10 each can overwhelm that saving. Specialized routing and better extraction are the next steps."}
+ {file:"08-review-economics-backup.svg",title:"Backup: finance lens",note:"This is not a measured business ROI. The system saves $8.44 in inference across 1,000 documents, but 26 additional false reviews at a hypothetical $10 each can overwhelm that saving. Specialized routing and better extraction are the next steps."},
+ {file:"09-scanned-images-limit.svg",title:"Backup: scanned-image limitations",note:"On 100 synthetic rendered scans, Kimi detects 25/25 true problems and falsely flags 2/50 good cases; GLM harness catches 24/25 and flags 18/50. Low model cost does not equal reliability. Improved scan extraction is a top follow-up."}
 ];
 let index=0;
 const $=id=>document.getElementById(id);
