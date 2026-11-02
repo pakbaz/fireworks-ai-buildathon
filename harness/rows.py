@@ -49,6 +49,15 @@ def harness(case, model, use_images, with_wiki):
     stats = dict(calls=0, tokens_in=0, tokens_out=0, cost_usd=0.0, latency_ms=0)
     wiki_full, policy = packet.load_wiki(case)
     wiki = wiki_full if with_wiki else None
+    # 0. Low-value gate: pay without checking when even a total loss is cheaper than a check (text mode only;
+    #    with images the total is not known before reading).
+    if not use_images:
+        skip, info = dial.skip_check(case, wiki_full, policy)
+        if skip:
+            return dict(model=model, action="PAY", model_action=None, risk=None, at_risk_usd=info["invoice_total_usd"],
+                        reason_code="below_review_threshold", next_step="pay",
+                        evidence=f"invoice total ${info['invoice_total_usd']:,.2f}: worst-case loss ${info['max_loss_usd']:,.2f} is below the ${info['limit_usd']:,.2f} cost of checking",
+                        features={"skipped": True, **info}, read=None, issues=[], dial=None, **stats)
     docs = packet.document_parts(case, use_images)
     # 1. Reading expert. Identical request in both harness rows, so the disk cache shares it.
     r = client.chat(model, [{"role": "user", "content": [{"type": "text", "text": prompts.READ}] + docs}], max_tokens=6000)

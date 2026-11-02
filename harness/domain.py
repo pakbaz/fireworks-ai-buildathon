@@ -9,7 +9,9 @@ def num(x):
         return None
     if isinstance(x, (int, float)):
         return float(x)
-    s = re.sub(r"[^\d,.\-]", "", str(x).translate(OCR))
+    # OCR fixes (O->0, l->1, S->5) apply only inside tokens that contain a digit, so "USD" or "EUR" never become numbers.
+    toks = [t.translate(OCR) for t in str(x).split() if re.search(r"\d", t)]
+    s = re.sub(r"[^\d,.\-]", "", " ".join(toks))
     if not s:
         return None
     if "," in s and "." in s:
@@ -175,3 +177,15 @@ def analyze(read, case, wiki, policy):
     if not issues and unreadable:
         risk_usd = max(risk_usd, inv_total or 0)
     return issues, features, round(risk_usd, 2), wait
+
+
+def invoice_total_from_text(text):
+    """Best-effort invoice total from the invoice text, before any model call. None if not found."""
+    best = None
+    for line in str(text or "").splitlines():
+        if re.search(r"total|amount due|balance due|due", line, re.I):
+            for tok in re.findall(r"[\d][\d.,OolIS]*\d", line):
+                v = num(tok)
+                if v is not None and (best is None or v > best):
+                    best = v
+    return best

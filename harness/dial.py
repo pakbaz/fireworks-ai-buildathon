@@ -40,3 +40,17 @@ def decide(risk, at_risk_usd, wait, wiki, policy):
         return "WAIT"
     d = explain(risk, at_risk_usd, wiki, policy)
     return "ESCALATE" if d["expected_loss_if_paid_usd"] > d["expected_cost_of_review_usd"] else "PAY"
+
+
+def skip_check(case, wiki, policy):
+    """Low-value gate: if even losing the whole invoice would cost less than checking it, pay without checking.
+    Returns (skip, details). Uses only the invoice text and company config, no model call."""
+    from .domain import invoice_total_from_text
+    review = float((policy or {}).get("review_cost_usd", 10))
+    over = ((policy or {}).get("overrides") or {}).get(case.get("company"), {})
+    limit = float(over.get("skip_check_if_max_loss_below_usd", (policy or {}).get("skip_check_if_max_loss_below_usd", review)))
+    total = invoice_total_from_text((case.get("documents") or {}).get("invoice"))
+    if total is None:
+        return False, {"invoice_total_usd": None, "max_loss_usd": None, "limit_usd": limit}
+    max_loss = cost_of_miss(total, wiki, policy)
+    return max_loss < limit, {"invoice_total_usd": total, "max_loss_usd": round(max_loss, 2), "limit_usd": limit}

@@ -20,3 +20,13 @@ python3 -m harness.run --row glm_harness_wiki --split test --images   # the imag
 - Swap the harness model with `HARNESS_MODEL=accounts/fireworks/models/<id>`; add its price to `config.py`.
 - `risk` is uncalibrated; the scorer calibrates it on dev. `action` applies the business dial (escalate when risk × cost of a miss > (1 − risk) × review cost) with the company's wiki defaults.
 - Honesty note: the harness was written from the plan and the case format, without reading the generator code. The same assistant wrote the generator's brief, so the normalizer is not fully blind; the held-out template and supplier in test are the guard.
+
+## Low-value gate
+
+Before any model call, the harness reads the invoice total from the text. If losing the entire invoice, weighted by the item category and supplier, would still cost less than checking it, the invoice is paid without checking (`reason_code: below_review_threshold`, zero model calls). The limit defaults to the review cost ($10) and can be set per company in `wiki/policy.json`:
+
+```json
+"overrides": {"caseworks": {"skip_check_if_max_loss_below_usd": 2500}}
+```
+
+On the current test set no invoice is that small (smallest $343, median $34,061), so the gate never fires at the default. At a $2,500 limit for Caseworks it would skip 10 of 500 Caseworks invoices and pay 3 real problems worth $486 unchecked. Image mode does not use the gate, because the total is not known before reading.
