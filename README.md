@@ -6,9 +6,8 @@ An evidence-first open-model evaluation for **Fireworks: Deploy with Microsoft a
 
 This repository currently contains the project idea and research, not a working application or completed benchmark.
 
-- Problem statement: [docs/problem-statement.md](docs/problem-statement.md)
+- Problem statement and system flow: [docs/problem-statement.md](docs/problem-statement.md)
 - Build plan: [docs/plan.md](docs/plan.md)
-- System flow: [docs/system-flow.md](docs/system-flow.md)
 - Original concept: [IDEA.md](IDEA.md)
 - Full source-backed report: [docs/research.md](docs/research.md)
 - Build plan: [docs/plan.md](docs/plan.md), with suggested changes in [docs/plan-review.md](docs/plan-review.md)
