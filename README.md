@@ -2,7 +2,15 @@
 
 **Demo video (1 min 53 s):** [watch on Google Drive](https://drive.google.com/file/d/1cEZZ00eSJBZlKE0aDoeYgAf1HcPLOe6y/view?usp=sharing) · narration script: [media/narration.md](media/narration.md)
 
-**Headline result (test set, 210 invoices where all four documents agree but the supplier's history says something is wrong):** our harness on GLM 5.3 Flash caught 139 of 140 problems; the frontier model Kimi K3, given the same documents and the same history, caught 19 of 140. Neither flagged any of the 70 benign look-alikes. Ours costs $0.12 per 100 invoices, Kimi $0.99. Details: [docs/comparison.md](docs/comparison.md).
+**Headline result (test set, 210 invoices where all four documents agree but the supplier's history says something is wrong).** Every system got the same documents, the same supplier history and the same instructions to check it:
+
+| System | Problems caught | False alarms on 70 look-alikes | Model cost |
+|---|---:|---:|---:|
+| Kimi K3 alone (frontier) | 121 / 140 | 6 | $2.27 |
+| Kimi K3 + our checks | 140 / 140 | 0 | $2.92 |
+| **GLM 5.3 Flash + our checks (ours)** | **139 / 140** | **0** | **$0.25** |
+
+The checks are what matter: with them, a model about 20x cheaper matches the frontier model; without them, even a frontier model told what to look for misses 19 problems and raises 6 false alarms. The test covers the seven anomaly types the checks were written for (new examples, unseen seed), not new kinds of fraud. Details: [docs/comparison.md](docs/comparison.md).
 
 An evidence-first open-model evaluation for **Fireworks: Deploy with Microsoft and NVIDIA**, November 2, 2026.
 

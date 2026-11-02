@@ -75,7 +75,7 @@ Kimi did the three-way match perfectly and paid $53,602 to a new bank in another
 
 **Document problems** (`test.jsonl`, 1,000 cases): Kimi K3 alone caught 374 of 375 real problems and sent 1 of 500 fine invoices to a person, for $9.20. GLM rows are running.
 
-**Dev, 50 document cases:** our harness 15/15 caught, 0/28 fine invoices escalated, $0.22 per 100; Kimi 15/15, 0/28, $0.78 per 100.
+**Dev, 50 document cases (latest run):** our harness 15/15 caught, 2/28 fine invoices escalated (two GLM misreads), $0.22 per 100; Kimi 15/15, 0/28, $0.78 per 100.
 
 **Dev, 42 context cases:**
 
@@ -92,20 +92,22 @@ Kimi did the three-way match perfectly and paid $53,602 to a new bank in another
 | Benign look-alikes paid correctly | 14 / 14 | 14 / 14 |
 | Cost for the 42 cases | $0.41 | $0.05 |
 
-**Test, 210 history cases** (`data/test_context.jsonl`, frozen, never tuned on):
+**Test, 210 history cases** (`data/test_context.jsonl`, frozen, never tuned on). After reviewer feedback, Kimi K3 alone is explicitly asked to check supplier history and has the seven history reason codes; an earlier run without that instruction caught only 19 of 140 and is superseded.
 
-| Type (20 cases each) | Kimi K3 alone | Our harness |
-|---|---:|---:|
-| Near-duplicate invoice number | 6 | 20 |
-| New item for this supplier | 0 | 20 |
-| Pack size changed | 11 | 20 |
-| Price above this supplier's history | 0 | 20 |
-| Quantity spike | 0 | 20 |
-| Payment address changed | 2 | 20 |
-| Unusual ship-from site | 0 | 19 |
-| **All anomalies** | **19 / 140** | **139 / 140** |
-| Benign look-alikes paid correctly | 70 / 70 | 70 / 70 |
-| Model cost per 100 invoices | $0.99 | $0.12 |
-| Median seconds per invoice | 3.2 | 7.0 |
+| Type (20 cases each) | Kimi K3 alone | Kimi K3 + our checks | GLM 5.3 Flash + our checks |
+|---|---:|---:|---:|
+| Near-duplicate invoice number | 19 | 20 | 20 |
+| New item for this supplier | 15 | 20 | 20 |
+| Pack size changed | 19 | 20 | 20 |
+| Price above this supplier's history | 18 | 20 | 20 |
+| Quantity spike | 10 | 20 | 20 |
+| Payment address changed | 20 | 20 | 20 |
+| Unusual ship-from site | 20 | 20 | 19 |
+| **All anomalies** | **121 / 140** | **140 / 140** | **139 / 140** |
+| Benign look-alikes paid correctly | 64 / 70 | 70 / 70 | 70 / 70 |
+| Right reason code | 100 | 140 | 139 |
+| Model cost for the 210 | $2.27 | $2.92 | $0.25 |
+
+What this shows: the deterministic checks drive the result; the reader model is close to interchangeable once they are in place, so the cheap model is the right choice. Limits: the test uses new examples of the same seven anomaly types the checks were written for; GLM's one miss was a letterhead city read as the ship-from (prompt since tightened, rerun pending); GLM's p95 latency on this set was 30 s against Kimi's 5 s.
 
 Live dashboard with every comparison: https://claude.ai/artifact/NyWmdZFGwhRAp6yQZBsFue
