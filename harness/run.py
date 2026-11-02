@@ -13,7 +13,7 @@ def run_case(row, case, use_images):
         else:
             out = rows.harness(case, spec["model"], use_images, spec["wiki"])
     except Exception as e:
-        out = dict(model=spec["model"], action="ESCALATE", model_action=None, risk=None, at_risk_usd=None,
+        out = dict(model=spec["model"], action="ERROR", model_action=None, risk=None, at_risk_usd=None,
                    reason_code="error", next_step="investigate", evidence=str(e)[:300], features=None, read=None, issues=None, dial=None,
                    calls=0, tokens_in=0, tokens_out=0, cost_usd=0.0, latency_ms=0)
     return {"case_id": case["case_id"], "row": row, **out}

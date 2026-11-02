@@ -107,12 +107,15 @@ def _place_known(value, known):
             return True
     return False
 
-def context_issues(case, read, profile, supplier_page, wiki_items=None):
+def context_issues(case, read, profile, supplier_page, wiki_items=None, policy=None):
     """Things that are wrong only in light of history: returns (code, next_step, detail, at_risk_usd) tuples.
     These escalate, unlike the informational flags in anomalies()."""
     out = []
     if profile is None:
         return out
+    hc = (policy or {}).get("history_checks") or {}
+    p_ratio = float(hc.get("price_above_history_ratio", 1.10)); p_min = int(hc.get("price_history_min_observations", 5))
+    q_ratio = float(hc.get("quantity_spike_ratio", 3.0))
     inv = (read or {}).get("invoice") or {}
     approved = {norm_sku(x) for x in ((supplier_page or {}).get("approved_new_items") or [])}
     known_skus = {norm_sku(k) for k in (profile.get("unit_price_by_sku") or {})}
@@ -125,10 +128,10 @@ def context_issues(case, read, profile, supplier_page, wiki_items=None):
             out.append(("new_item_for_supplier", "investigate", f"{sku}: never supplied by {case.get('supplier_id')} before", total))
             continue
         hist = next((v for k, v in (profile.get("unit_price_by_sku") or {}).items() if norm_sku(k) == ns), None)
-        if unit and hist and hist["n"] >= 5 and unit > hist["mean"] * 1.10:
+        if unit and hist and hist["n"] >= p_min and unit > hist["mean"] * p_ratio:
             out.append(("price_above_history", "dispute_with_supplier", f"{sku}: {unit:,.2f}/EA vs usual {hist['mean']:,.2f} from this supplier", (unit - hist["mean"]) * qea))
         qmax = next((v for k, v in (profile.get("qty_max_by_company_sku") or {}).items() if k.split("|")[0] == case.get("company") and norm_sku(k.split("|", 1)[1]) == ns), None)
-        if qea and qmax and qea > 3 * qmax:
+        if qea and qmax and qea > q_ratio * qmax:
             out.append(("quantity_spike", "investigate", f"{sku}: {qea:g} EA vs at most {qmax:g} ever ordered", (qea - qmax) * (unit or 0)))
     if inv.get("remit_to") and profile.get("remit_to") and not _place_known(inv["remit_to"], profile["remit_to"]):
         out.append(("remit_to_changed", "investigate", f"pay to '{inv['remit_to']}' but this supplier is always paid at {', '.join(profile['remit_to'][:2])}", total))
