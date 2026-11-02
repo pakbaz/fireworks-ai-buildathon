@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Invoice review dashboard</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body { margin: 0; background: #EEF1F3; }
+a { color: #A63F00; } a:hover { color: #7A2E00; }
+button, input { font: inherit; }
+button { cursor: pointer; }
+summary { cursor: pointer; }
+button:focus-visible, label:focus-within, summary:focus-visible { outline: 3px solid #1F6FB2; outline-offset: 2px; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.knob { position: relative; cursor: grab; touch-action: none; user-select: none; }
+.knob:active { cursor: grabbing; }
+.knob-focus { opacity: 0; }
+.knob:focus-within .knob-focus { opacity: 1; }
+.q-row:hover { background: rgba(18, 32, 43, 0.05); }
+.reading { animation: slide 1.2s ease-in-out infinite; }
+@keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
+@media (prefers-reduced-motion: reduce) { .reading { animation: none; } }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; background: #EEF1F3; color: #12202B; font-family: Archivo, 'Helvetica Neue', Arial, sans-serif; font-size: 15px; line-height: 1.4;">
+<div style="max-width: 1440px; margin: 0 auto; padding: 16px 24px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">
+
+  <header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px;">
+    <h1 style="margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em;">Invoice Reconciliation</h1>
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+      <button onClick="{{toggleUpload}}" aria-expanded="{{showUpload}}" style="min-height: 44px; padding: 0 16px; background: #12202B; border: 0; border-radius: 4px; color: #FFFFFF; font-size: 14px; font-weight: 600;">Upload</button>
+      <div role="group" aria-label="Company" style="display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; background: #DDE3E7; border-radius: 6px;">
+        <sc-for list="{{companies}}" as="c" hint-placeholder-count="2">
+          <button onClick="{{c.pick}}" aria-pressed="{{c.selected}}" style="min-height: 40px; padding: 0 14px; border: 0; border-radius: 4px; font-size: 14px; font-weight: 600; background: {{c.bg}}; color: {{c.fg}};">{{c.name}}</button>
+        </sc-for>
+      </div>
+    </div>
+  </header>
+
+  <sc-if value="{{showUpload}}" hint-placeholder-val="{{false}}">
+    <section aria-label="Upload documents" onDragOver="{{dragOver}}" onDragLeave="{{dragLeave}}" onDrop="{{drop}}" style="background: {{dropBg}}; border: 1.5px dashed {{dropBorder}}; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
+        <h2 style="margin: 0; font-size: 15px; font-weight: 600;">Drop a PO, invoice, goods receipt and shipping notice</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <button onClick="{{useSample}}" style="min-height: 44px; padding: 0 14px; background: transparent; border: 1px solid #B9C3CB; border-radius: 4px; color: #12202B; font-size: 14px; font-weight: 600;">Try a sample</button>
+          <label style="display: flex; align-items: center; min-height: 44px; padding: 0 14px; background: #12202B; border-radius: 4px; color: #FFFFFF; font-size: 14px; font-weight: 600; cursor: pointer;">
+            <input class="vh" type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.tif,.tiff,.csv,.json,.txt" onChange="{{onFiles}}">
+            Choose files
+          </label>
+        </div>
+      </div>
+      <sc-if value="{{showFiles}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+          <sc-for list="{{files}}" as="f" hint-placeholder-count="4">
+            <div style="display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #EEF1F3; border-radius: 4px; font-size: 13px; max-width: 100%;">
+              <span style="font-weight: 600; white-space: nowrap;">{{f.type}}</span>
+              <span style="color: #55636F; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{f.name}}</span>
+            </div>
+          </sc-for>
+          <sc-if value="{{canRun}}" hint-placeholder-val="{{true}}">
+            <button onClick="{{runChecks}}" style="min-height: 44px; padding: 0 14px; background: #FF7A33; border: 0; border-radius: 4px; color: #12202B; font-size: 14px; font-weight: 700;">Run checks</button>
+          </sc-if>
+        </div>
+      </sc-if>
+      <sc-if value="{{isReading}}" hint-placeholder-val="{{false}}">
+        <div role="status" style="display: flex; flex-direction: column; gap: 6px; font-size: 14px;">
+          <span>Reading documents</span>
+          <div style="height: 4px; background: #DDE3E7; border-radius: 2px; overflow: hidden;"><div class="reading" style="width: 40%; height: 100%; background: #12202B; border-radius: 2px;"></div></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{hasUploadResult}}" hint-placeholder-val="{{false}}">
+        <p role="status" style="margin: 0; font-size: 14px; font-weight: 600;">{{uploadResult}}</p>
+      </sc-if>
+    </section>
+  </sc-if>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start;">
+
+    <aside style="flex: 1 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+
+      <section aria-label="Escalation threshold" style="background: #12202B; color: #EDF2F5; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div class="knob" onPointerDown="{{knobDown}}" onPointerMove="{{knobMove}}" onPointerUp="{{knobUp}}" onPointerCancel="{{knobUp}}" style="flex: 0 0 168px; width: 168px;">
+            <input class="vh" type="range" min="0" max="1000" step="5" value="{{pInt}}" onChange="{{onRange}}" aria-label="Escalation threshold" aria-valuetext="{{ariaValue}}" style="pointer-events: none;">
+            <svg viewBox="0 0 280 270" aria-hidden="true" style="display: block; width: 100%; height: auto;">
+              <path d="{{knob.track}}" style="fill: none; stroke: #2E4252; stroke-width: 10; stroke-linecap: round;"></path>
+              <path d="{{knob.value}}" style="fill: none; stroke: #FF7A33; stroke-width: 10; stroke-linecap: round;"></path>
+              <path d="{{knob.suggested}}" style="fill: none; stroke: #FFFFFF; stroke-width: 4; stroke-linecap: round;"></path>
+              <circle cx="140" cy="145" r="84" class="knob-focus" style="fill: none; stroke: #7FC1F0; stroke-width: 4;"></circle>
+              <circle cx="140" cy="145" r="78" style="fill: #243A4A; stroke: #3F5566; stroke-width: 2;"></circle>
+              <path d="{{knob.pointer}}" style="fill: none; stroke: #FF7A33; stroke-width: 6; stroke-linecap: round;"></path>
+              <text x="140" y="158" style="fill: #FFFFFF; font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 38px; font-weight: 600; text-anchor: middle;">{{tLabel}}</text>
+            </svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px; min-width: 0;">
+            <div>
+              <div style="font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 30px; font-weight: 600; line-height: 1.1;">{{aboveCount}}</div>
+              <div style="font-size: 14px; color: #B4C2CD;">go to a person</div>
+            </div>
+            <div>
+              <div style="font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 20px; font-weight: 600; line-height: 1.1;">{{belowCount}}</div>
+              <div style="font-size: 14px; color: #B4C2CD;">auto-pay</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+          <button onClick="{{stepDown}}" aria-label="Fewer reviews" style="width: 44px; height: 44px; flex: none; display: flex; align-items: center; justify-content: center; background: #1C2E3C; border: 1px solid #3F5566; border-radius: 6px; color: #EDF2F5;">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10" style="fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round;"></path></svg>
+          </button>
+          <span style="font-size: 14px; text-align: center;">{{offsetLabel}}</span>
+          <button onClick="{{stepUp}}" aria-label="More cautious" style="width: 44px; height: 44px; flex: none; display: flex; align-items: center; justify-content: center; background: #1C2E3C; border: 1px solid #3F5566; border-radius: 6px; color: #EDF2F5;">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M8 3v10" style="fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round;"></path></svg>
+          </button>
+        </div>
+
+        <sc-if value="{{hasWarn}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #FF7A33; border-radius: 4px; color: #12202B; font-size: 14px; font-weight: 600;">
+            <svg width="18" height="18" viewBox="0 0 22 22" aria-hidden="true" style="flex: none;"><path d="M11 3 20 19H2ZM11 9v5M11 16.5v.5" style="fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"></path></svg>
+            <span>{{warnLabel}}</span>
+          </div>
+        </sc-if>
+
+        <div style="display: flex; gap: 8px;">
+          <sc-if value="{{moved}}" hint-placeholder-val="{{false}}">
+            <button onClick="{{reset}}" style="flex: 1 1 0; min-height: 44px; padding: 0 12px; background: #EDF2F5; border: 0; border-radius: 4px; color: #12202B; font-size: 14px; font-weight: 600;">Back to {{suggestedLabel}}</button>
+          </sc-if>
+          <button onClick="{{toggleWhy}}" aria-expanded="{{showWhy}}" style="flex: 1 1 0; min-height: 44px; padding: 0 12px; background: {{whyBg}}; border: 1px solid #3F5566; border-radius: 4px; color: #EDF2F5; font-size: 14px; font-weight: 600;">Why {{suggestedLabel}}?</button>
+        </div>
+
+        <sc-if value="{{showWhy}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <p style="margin: 0; font-size: 14px; color: #B4C2CD;">{{posture}}</p>
+            <dl style="margin: 0; display: flex; flex-direction: column; gap: 6px;">
+              <sc-for list="{{why}}" as="w" hint-placeholder-count="4">
+                <div style="display: flex; justify-content: space-between; gap: 12px; font-size: 14px;">
+                  <dt style="color: #B4C2CD;">{{w.label}}</dt>
+                  <dd style="margin: 0; font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 13px;">{{w.value}}</dd>
+                </div>
+              </sc-for>
+            </dl>
+            <label style="display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 12px; border: 1px solid #3F5566; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer;">
+              <input class="vh" type="file" multiple accept=".pdf,.csv,.json,.txt,.md,.docx" onChange="{{onKnowledge}}">
+              Add supplier notes or policy
+            </label>
+            <sc-if value="{{hasKnowledge}}" hint-placeholder-val="{{false}}">
+              <p style="margin: 0; font-size: 13px;">{{knowledgeLabel}} waiting for approval.</p>
+            </sc-if>
+          </div>
+        </sc-if>
+      </section>
+
+      <section aria-label="Review queue" style="background: #FFFFFF; border-radius: 8px; overflow: hidden;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 8px 16px;">
+          <h2 style="margin: 0; font-size: 16px; font-weight: 600;">Queue</h2>
+          <sc-if value="{{hasReviewed}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #55636F;">
+              <span>{{reviewedLabel}}</span>
+              <button onClick="{{undo}}" style="min-height: 36px; padding: 0 10px; background: transparent; border: 1px solid #B9C3CB; border-radius: 4px; color: #12202B; font-size: 13px;">Undo</button>
+            </div>
+          </sc-if>
+        </div>
+        <ol style="list-style: none; margin: 0; padding: 0;">
+          <sc-for list="{{rows}}" as="row" hint-placeholder-count="8">
+            <li>
+              <sc-if value="{{row.showLine}}" hint-placeholder-val="{{false}}">
+                <div style="padding: 6px 16px; background: #FF7A33; color: #12202B; font-size: 13px; font-weight: 700;">Escalation line · {{tLabel}}</div>
+              </sc-if>
+              <button class="q-row" onClick="{{row.pick}}" aria-current="{{row.selected}}" style="width: 100%; min-height: 60px; padding: 10px 16px; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 2px 8px; align-items: baseline; border: 0; border-top: 1px solid #E3E8EC; background: {{row.bg}}; color: #12202B; text-align: left; box-sizing: border-box;">
+                <span style="font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 13px; color: #55636F;">{{row.rank}}</span>
+                <span style="font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{row.short}}</span>
+                <span style="font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 14px; font-weight: 600;">{{row.amount}}</span>
+                <span></span>
+                <span style="font-size: 13px; color: #55636F; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{row.sup}}</span>
+                <span style="font-size: 12px; font-weight: 600; color: #55636F;">{{row.tag}}</span>
+              </button>
+            </li>
+          </sc-for>
+        </ol>
+        <sc-if value="{{lineAtEnd}}" hint-placeholder-val="{{false}}">
+          <div style="padding: 6px 16px; background: #FF7A33; color: #12202B; font-size: 13px; font-weight: 700;">Escalation line · {{tLabel}}</div>
+        </sc-if>
+        <div style="padding: 12px 16px; background: #F4F6F7; border-top: 1px solid #E3E8EC; font-size: 13px; color: #3F4D59;">{{restLabel}}</div>
+      </section>
+    </aside>
+
+    <main style="flex: 999 1 640px; min-width: 0; background: #FFFFFF; border-radius: 8px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px;">
+      <sc-if value="{{hasCase}}" hint-placeholder-val="{{true}}">
+        <div style="display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px 24px;">
+          <div style="display: flex; flex-direction: column; gap: 4px; flex: 1 1 320px; min-width: 0;">
+            <div style="font-size: 14px; color: #55636F;">{{case.sup}} · {{case.inv}}</div>
+            <h2 style="margin: 0; font-size: 30px; font-weight: 700; line-height: 1.15; letter-spacing: -0.015em; text-wrap: balance;">{{case.verdict}}</h2>
+            <div style="font-size: 16px; color: #A63F00; font-weight: 600;">{{case.action}}</div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+            <button onClick="{{case.fine}}" style="min-height: 44px; padding: 0 14px; background: transparent; border: 1px solid #B9C3CB; border-radius: 4px; color: #12202B; font-size: 14px; font-weight: 600;">Not a problem</button>
+            <button onClick="{{case.done}}" style="min-height: 44px; padding: 0 14px; background: #12202B; border: 0; border-radius: 4px; color: #FFFFFF; font-size: 14px; font-weight: 600;">Mark done</button>
+          </div>
+        </div>
+
+        <sc-if value="{{case.isBelow}}" hint-placeholder-val="{{false}}">
+          <p style="margin: 0; font-size: 14px; font-weight: 600;">This one auto-pays at {{tLabel}}.</p>
+        </sc-if>
+
+        <section aria-label="Where the documents disagree" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 12px;">
+          <sc-for list="{{case.crops}}" as="crop" hint-placeholder-count="4">
+            <button onClick="{{crop.open}}" aria-label="{{crop.aria}}" style="padding: 0; display: flex; flex-direction: column; background: #FFFFFF; border: {{crop.border}}; border-radius: 6px; overflow: hidden; color: #12202B; text-align: left;">
+              <span style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 12px; width: 100%; padding: 10px 12px; box-sizing: border-box; background: {{crop.headBg}};">
+                <span style="font-size: 18px; font-weight: 700;">{{crop.says}}</span>
+                <span style="font-size: 13px; color: {{crop.headMuted}};">{{crop.label}}</span>
+              </span>
+              <span style="display: block; position: relative; width: 100%; aspect-ratio: {{crop.ar}}; overflow: hidden; background: #E6E9EB;">
+                <img src="{{crop.url}}" alt="{{crop.alt}}" style="position: absolute; max-width: none; width: {{crop.imgW}}%; left: {{crop.imgL}}%; top: {{crop.imgT}}%;">
+                <span aria-hidden="true" style="position: absolute; left: {{crop.boxL}}%; top: {{crop.boxT}}%; width: {{crop.boxW}}%; height: {{crop.boxH}}%; border: 2.5px solid {{crop.boxColor}}; border-radius: 3px; background: {{crop.boxFill}}; box-sizing: border-box;"></span>
+              </span>
+              <sc-if value="{{crop.hasNote}}" hint-placeholder-val="{{false}}">
+                <span style="padding: 6px 12px; font-size: 13px; color: #3F4D59;">{{crop.note}}</span>
+              </sc-if>
+            </button>
+          </sc-for>
+          <sc-if value="{{case.hasPaid}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 16px; background: #F4F6F7; border-radius: 6px;">
+              <span style="font-size: 13px; color: #55636F;">Payment history</span>
+              <span style="font-size: 18px; font-weight: 700;">{{case.inv}}</span>
+              <span style="font-size: 14px;">Paid {{case.paidLabel}} on {{case.po}}</span>
+            </div>
+          </sc-if>
+        </section>
+
+        <section aria-label="Full documents" style="display: flex; flex-direction: column; gap: 12px;">
+          <div role="group" aria-label="Document" style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <sc-for list="{{case.tabs}}" as="tab" hint-placeholder-count="4">
+              <button onClick="{{tab.pick}}" aria-pressed="{{tab.selected}}" style="min-height: 44px; padding: 0 14px; display: flex; align-items: center; gap: 8px; background: {{tab.bg}}; border: 1px solid {{tab.line}}; border-radius: 4px; color: {{tab.fg}}; font-size: 14px; font-weight: 600;">
+                <sc-if value="{{tab.flagged}}" hint-placeholder-val="{{false}}">
+                  <span aria-hidden="true" style="width: 8px; height: 8px; background: #FF7A33; border-radius: 50%;"></span>
+                </sc-if>
+                {{tab.label}}
+              </button>
+            </sc-for>
+          </div>
+          <div style="padding: 16px; background: #E6E9EB; border-radius: 6px; display: flex; justify-content: center; overflow-x: auto;">
+            <div style="position: relative; width: 100%; max-width: {{page.maxW}}px; line-height: 0; background: #FFFFFF;">
+              <img src="{{page.url}}" alt="{{page.alt}}" style="display: block; width: 100%; height: auto;">
+              <sc-if value="{{page.hasBox}}" hint-placeholder-val="{{false}}">
+                <span aria-hidden="true" style="position: absolute; left: {{page.boxL}}%; top: {{page.boxT}}%; width: {{page.boxW}}%; height: {{page.boxH}}%; border: 3px solid #E8590C; border-radius: 3px; background: rgba(255, 122, 51, 0.16); box-sizing: border-box;"></span>
+              </sc-if>
+            </div>
+          </div>
+        </section>
+
+        <details style="font-size: 14px;">
+          <summary style="min-height: 28px; font-weight: 600;">Why it ranks #{{case.rank}}</summary>
+          <p style="margin: 8px 0 0; font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 13px; text-wrap: pretty;">{{case.formula}}</p>
+        </details>
+      </sc-if>
+      <sc-if value="{{noCase}}" hint-placeholder-val="{{false}}">
+        <div style="padding: 80px 20px; text-align: center; font-size: 18px; font-weight: 600;">Queue is clear.</div>
+      </sc-if>
+    </main>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1760}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.data = this.dataset();
+    this.drag = false;
+    this.state = {
+      company: 'northside',
+      pos: { northside: this.pAt(2), caseworks: this.pAt(10) },
+      sel: {},
+      doc: null,
+      removed: {},
+      history: [],
+      added: {},
+      files: [],
+      phase: 'idle',
+      resultId: null,
+      resultCount: 0,
+      knowledge: [],
+      dragging: false,
+      showUpload: false,
+      showWhy: false
+    };
+  }
+
+  componentWillUnmount() { clearTimeout(this.timer); }
+
+  dataset() {
+    const C = (id, co, sup, inv, po, rc, car, item, risk, atRisk, loss, paid, u, land, m, held) => ({ id, co, sup, inv, po, rc, car, item, risk, atRisk, loss, paid, u, land, m, held: !!held });
+    const cases = [
+      C('TEST-00013','caseworks','Atlas Medical & Mobile Logistics LLC','ATL-25-68076','PO-054203','qty_mismatch',null,'20W USB-C Wall Charger',0.9786,2790,2574.74,null,{po:'56f856005a18bd0b44020c667c78b8d3',gr:'10cfc32fc93eabec1c7f42333439adf1',invoice:'d32eb6904f28a852521a6adcc3ba3c5b'},[],[['gr','Received 1,100',1,[582,315,661,336]],['invoice','Billed 1,550',1,[353,343,423,362]],['po','Ordered 1,550',0,[405,270,475,290]]]),
+      C('TEST-00033','caseworks','VoltEdge Electronics Inc.','VE381376','PO-007612','duplicate_invoice','DHL Express','USB-C to USB-C Cable 1m +2 more',0.8694,54164.5,47844.87,'2026-08-17',{po:'3c0e5a213c25ee1a838c592d3d348458',shipping_notice:'688bfd69b4350cd4daab1fc09435fbbb',gr:'957455cc6ca7d56bb122040b257f0474',invoice:'3cd5f0e497a21cf4835d6fca3678aae3'},[],[['invoice','Invoice VE381376',1,[155,246,232,268]]]),
+      C('TEST-00037','caseworks','Kestrel Global Trading Ltd.','KGT/26/5461','PO-093197','qty_mismatch',null,'Privacy Screen Protector Galaxy S24',0.9932,1484.8,1482.02,null,{po:'42a0f36a2cf916b08320e8692bc8cfd7',gr:'2710b38b6245fa4068f701cce2ad7193',invoice:'c324d00dfa87c5e1898c7d3082d3940c'},[],[['gr','Received 1,650',1,[335,456,394,479],'Written as 165 boxes'],['invoice','Billed 1,940',1,[383,269,436,287],'Written as 194 boxes'],['po','Ordered 1,940',0,[105,445,249,468]]]),
+      C('TEST-00068','northside','CardioLine Systems GmbH','RE-2500128','PO-014521','lost_in_transit','XPO Logistics','Infusion Pump, Large Volume, Model 2200',0.9918,9961.28,219581.93,null,{po:'7ad984122e9d987a4dd22eea0f25f2db',shipping_notice:'7ad43902a394e65190bac2db8003a3e2',gr:'9df7c250c94bc6e973849bd3114978e6',invoice:'886b653c20ac79b5a9c29afc35b6c4de'},['gr'],[['gr','Received 3',1,[530,344,796,383],'Handwritten'],['invoice','Billed 5',1,[102,502,140,524]],['shipping_notice','Shipped 5',0,[481,296,522,317]],['po','Ordered 5',0,[105,470,145,492]]]),
+      C('TEST-00097','northside','Bayview Surgical Supply Co.','3383893','PO-003551','wrong_po','UPS Freight','Nitrile Exam Gloves, box of 100, M +1 more',0.9853,11625.39,35187.08,null,{po:'7b2cbd52755a999818f74e91dbda3921',shipping_notice:'3bf8dfd10ff0cb4df2687aa21dcc9aa8',gr:'72baa70759b09ef445982659f3ff8131',invoice:'de6a18b1f72a13c93f9b9834329414a8'},[],[['invoice','Cites PO-056564',1,[186,285,270,306]],['po','Ordered on PO-003551',0,[210,202,300,226]],['gr','Received on PO-003551',0,[124,206,196,224]]]),
+      C('TEST-00100','caseworks','Kestrel Global Trading Ltd.','KGT/26/6858','PO-091721','duplicate_invoice','DHL Express','Slim Case Galaxy S24',0.9385,13317,12560.71,'2026-03-29',{po:'f8a096820a3c3cc1db3253ecddb9e01b',shipping_notice:'aa824a3bba35922ce3dadf9bb56518de',gr:'e5943e5c53a3169bf306b30173fb08e6',invoice:'d8d945895239b75ec69ee5cbfb3286cd'},[],[['invoice','Invoice KGT/26/6858',1,[89,188,169,207]]]),
+      C('TEST-00192','caseworks','Atlas Medical & Mobile Logistics LLC','ATL-25-34358','PO-080687','lost_in_transit','DHL Express','30W Car Charger USB-C',0.9976,3438,3234.24,null,{po:'a74fdae28a24601778847b0ff3d26e4f',shipping_notice:'622a7f6f0399500c01e8d78ef01ac48f',gr:'9baecaef9fb4b6111b1282d2921e9c35',invoice:'09673dba9fa2a1c6ade83ebf6bddb79d'},[],[['gr','Received 1,200',1,[371,518,572,558],'Handwritten'],['invoice','Billed 1,650',1,[347,338,417,358]],['shipping_notice','Shipped 1,650',0,[448,416,532,440]],['po','Ordered 1,650',0,[414,348,488,368]]]),
+      C('TEST-00221','caseworks','Kestrel Global Trading Ltd.','KGT/26/8883','PO-068302','lost_in_transit','FedEx Ground','Tempered Glass Protector iPhone 15',0.9982,1733.48,1738.95,null,{po:'58b668b0f8ad986d869f6c2a36a79673',shipping_notice:'d0d3593ee3d5efa884791f575d24d0d8',gr:'bdcc2ffbc2a732f5ab3e8a803715ac93',invoice:'d6efac4b21028e261449150ad4b90871'},[],[['gr','Received 1,599',1,[574,355,648,375]],['invoice','Billed 2,160',1,[397,358,467,377]],['shipping_notice','Shipped 2,160',0,[429,363,504,384]],['po','Ordered 2,160',0,[108,595,180,618]]]),
+      C('TEST-00237','caseworks','Kestrel Global Trading Ltd.','KGT/26/9532','PO-015689','short_shipped','XPO Logistics','Camera Lens Protector, universal',0.9941,346.43,346.1,null,{po:'999cecd7c2b852f67e4396b3848abfff',shipping_notice:'ce1f9a940ecdb7c61464cf5c704a4c6f',gr:'215e6113945ab3a4ba988c933c6c1f10',invoice:'41296a8dddf43df6aa4036e679e1c610'},[],[['gr','Received 1,279',1,[352,451,424,475]],['invoice','Billed 1,380',1,[402,289,476,309]],['shipping_notice','Shipped 1,279',0,[139,506,212,531]],['po','Ordered 1,380',0,[106,460,178,482]]]),
+      C('TEST-00252','northside','Meridian Medical Distributors Inc.','MMD-65987','PO-093964','lost_in_transit','UPS Freight','ECG Electrode Pack (30)',0.9983,667,2191.46,null,{po:'c276484baa22d47d3d92ac63f9ae7264',shipping_notice:'2438d4b669912edc5c824641719cba51',gr:'aa4d73b566d5f4c47dc6693bb9c56f8f',invoice:'c72b5349184c37c4f31333ecdcaaded7'},['gr'],[['gr','Received 300',1,[522,318,804,360],'Handwritten'],['invoice','Billed 400',1,[102,482,157,504]],['shipping_notice','Shipped 400',0,[143,526,201,549]],['po','Ordered 400',0,[107,448,166,470]]]),
+      C('TEST-00256','northside','Bayview Surgical Supply Co.','7993190','PO-067411','lost_in_transit','UPS Freight','Foley Catheter Tray 16Fr',0.9953,96.65,295.52,null,{po:'65ee6dfba627d660b4aa8a460f525023',shipping_notice:'985a1dcba53a92eb80234b477001dad9',gr:'6d02608b9bc1ccfe13e70bfa0c8ab22e',invoice:'083288dab3acd7d700fd9d17a6ff2be5'},['gr'],[['gr','Received 21',1,[515,319,788,354],'Handwritten'],['invoice','Billed 26',1,[105,626,151,647]],['shipping_notice','Shipped 26',0,[524,469,578,490]],['po','Ordered 426',0,[430,395,487,416]]]),
+      C('TEST-00258','northside','CardioLine Systems GmbH','RE-2577003','PO-029300','price_mismatch','Old Dominion','Ventilator Module, ICU, V450',0.9397,5402.25,112822.35,null,{po:'b52aeb45ef9c7ff5a6352ca31e097db1',shipping_notice:'4730725f5610a4206d03af0e79657ce7',gr:'9f4f21bfa0fc1485b7468047fd69407c',invoice:'cbe1f50178245647c1caf00c4812c088'},[],[['invoice','Billed $30,907.03',1,[495,312,584,334]],['po','PO price $29,826.58',0,[500,322,584,343]]]),
+      C('TEST-00271','caseworks','Nordhaven Supply AB','NH-136334','PO-086605','lost_in_transit','FedEx Ground','Wallet Case Pixel 8',0.9963,3049.91,4557.91,null,{po:'5972c4e9029eabf0ec19ec0204867fb7',shipping_notice:'438af5eb4eee3e0e82b63f2c2e4ac1b5',gr:'6d874b2778e5234707a41560faae60eb',invoice:'d5ae6d5fc0aa3aa764b7cda695c57f10'},['gr'],[['gr','Received 1,585',1,[505,339,797,379],'Handwritten'],['invoice','Billed 1,896',1,[406,287,476,307]],['shipping_notice','Shipped 1,896',0,[453,403,537,426]],['po','Ordered 1,896',0,[105,511,177,534]]]),
+      C('TEST-00403','caseworks','Nordhaven Supply AB','NH-960862','PO-054388','wrong_po','Estes Express','Wallet Case Pixel 8 +2 more',0.9923,3174.6,4725.1,null,{po:'7f4766764071533de56182205514964c',shipping_notice:'4abe15ac42c730c37e164c78e47c00ef',gr:'b3f2dbf321161e4283dcd78cb44b437d',invoice:'05026a04321f0f02ac3d47b283d724e3'},[],[['invoice','Cites PO-036359',1,[93,278,162,297]],['po','Ordered on PO-054388',0,[211,204,304,229]],['gr','Received on PO-054388',0,[315,142,404,164]]]),
+      C('TEST-00510','caseworks','Nordhaven Supply AB','NH-281207','PO-084373','lost_in_transit','UPS Freight','Clear Case iPhone 15',0.9929,2506.64,3733.18,null,{po:'411abd51de083630a5e2f3a3bac5b335',shipping_notice:'9cf9023e8b6cbe555e6da5dd31372618',gr:'c3c1db6161307150699cf8aa591bf789',invoice:'473e3e797ecffdfa374e89bc5b2d2fbf'},['shipping_notice'],[['gr','Received 1,489',1,[605,331,684,354]],['invoice','Billed 2,080',1,[100,482,168,504]],['shipping_notice','Shipped 2,080',0,[462,149,538,172]],['po','Ordered 2,080',0,[442,173,509,193]]]),
+      C('TEST-00538','caseworks','Pacific Rim Accessories Co.','PRA-97250','PO-010995','lost_in_transit','DHL Express','Clear Case iPhone 15',0.9959,743.76,808.14,null,{po:'167870b795f16144ffcdb724c9206cc2',shipping_notice:'2599f40a63b5e6a3bdfcf16674568ce4',gr:'eb0b33577dea076b8532f05a315e55c9',invoice:'98c53e80ad02f98134f417c6bd45485d'},['gr'],[['gr','Received 468',1,[541,344,829,386],'Handwritten'],['invoice','Billed 650',1,[420,301,473,320]],['shipping_notice','Shipped 650',0,[525,421,589,444]],['po','Ordered 650',0,[436,260,489,280]]]),
+      C('TEST-00546','northside','Kestrel Global Trading Ltd.','KGT/25/6474','PO-087393','duplicate_invoice','FedEx Ground','Foley Catheter Tray 16Fr +2 more',0.9547,41455.16,994400.52,'2025-03-20',{po:'adab906720900510a5fa3c941fba2c59',shipping_notice:'75be4eb510fa0500842844de143de06b',gr:'9041327943324e81c9cddcf540481693',invoice:'0fe02b9bb67660d30fe35eab5404c0ae'},['gr','invoice'],[['invoice','Invoice KGT/25/6474',1,[155,233,263,255]]]),
+      C('TEST-00664','northside','CardioLine Systems GmbH','RE-2638485','PO-043913','price_mismatch',null,'Defibrillator AED Pro 3300',0.9858,680.94,14918.28,null,{po:'ca36360a21f7bd07975daf120c6badb2',gr:'a83906bdf93cf284564ef13d619c49f7',invoice:'f9ceae289f1ce087f6ff64652476e8a3'},[],[['invoice','Billed $3,478.66',1,[505,288,580,309]],['po','PO price $3,251.68',0,[538,352,618,374]]]),
+      C('TEST-00721','northside','Meridian Medical Distributors Inc.','MMD-01627','PO-091621','short_shipped','DHL Express','IV Tubing Set, Primary, 20 drop',0.9968,624,2046.96,null,{po:'6e3c9ca8c3b7ade822dab13d0e8979b2',shipping_notice:'f7020faac76115231784e965259052a7',gr:'3a73aa54e74dbf017b51d6609f808e1c',invoice:'d4e6d523c0a561d3af190105dfe92c8e'},['gr','invoice'],[['gr','Received 175',1,[716,330,818,363],'Handwritten'],['invoice','Billed 250',1,[446,412,507,433]],['shipping_notice','Shipped 175',0,[139,575,197,597]],['po','Ordered 250',0,[451,362,511,383]]],true),
+      C('TEST-00753','northside','Bayview Surgical Supply Co.','7931163','PO-057461','duplicate_invoice','XPO Logistics','Isolation Gown, Level 2',0.8615,662.76,1754.03,'2025-05-03',{po:'ca02ea4a627b86171f2343e0800f0c65',shipping_notice:'3d002b88f85213a1e971135c5f9f2270',gr:'52495cee20f27f10c8ff352495511db7',invoice:'f2c2bb75a11d9792ab6dc1e2a3fc533e'},[],[['invoice','Invoice 7931163',1,[171,235,235,257]]]),
+      C('TEST-00755','northside','Kestrel Global Trading Ltd.','KGT/25/9861','PO-009686','wrong_po',null,'Foley Catheter Tray 16Fr',0.978,4884.3,14402.63,null,{po:'f9fe46374951041c0a8b91ef105f8118',gr:'e948f4dc6ed40dd1143e3baf5eb324af',invoice:'618b7877126ca0d357b915e06cfaab63'},[],[['invoice','Cites PO-066200',1,[347,142,436,164]],['po','Ordered on PO-009686',0,[210,204,300,227]],['gr','Received on PO-009686',0,[133,232,217,255]]]),
+      C('TEST-00882','northside','Kestrel Global Trading Ltd.','KGT/25/6674','PO-028859','duplicate_invoice','DHL Express','Suture, Absorbable, 3-0',0.9788,2783.2,8213.05,'2025-06-06',{po:'66f3c2cde01d80d5b0cafd4135fe677d',shipping_notice:'72596e7804366e38f9c419fd63124b7d',gr:'14bc1adfd80c0a2595f4f9c2b403a916',invoice:'00924353905a04deb88b6d95bf49f7e7'},['invoice'],[['invoice','Invoice KGT/25/6674',1,[166,206,275,230]]]),
+      C('TEST-00942','northside','CardioLine Systems GmbH','RE-2668633','PO-046344','lost_in_transit','DHL Express','Patient Monitor, 15in, 7100 series',0.9969,12484.99,276622.08,null,{po:'4585371a9762e144a26e8dc17c6c3d2c',shipping_notice:'35deee43d3122d46ae23f9c861912b85',gr:'266d98b0afd7bb87a5a9c61e24f1a53a',invoice:'422be036766ccfb0eb7589ba826fb057'},['gr'],[['gr','Received 1',1,[547,330,802,369],'Handwritten'],['invoice','Billed 2',1,[412,301,453,322]],['shipping_notice','Shipped 2',0,[530,396,574,418]],['po','Ordered 2',0,[106,456,145,478]]]),
+      C('TEST-00950','caseworks','Nordhaven Supply AB','NH-199738','PO-028723','short_shipped','XPO Logistics','Clear Case iPhone 15',0.9852,210,310.34,null,{po:'5a1a9591c81174ef2f03bb8493107716',shipping_notice:'5c2799ae3e369ea96507aa0257e5a473',gr:'3a1f1d739db4b1d013611b5fb4d0b298',invoice:'159fee76a8017a43e2b5c8d27da1ee22'},['shipping_notice'],[['gr','Received 200',1,[356,444,528,481],'Handwritten'],['invoice','Billed 250',1,[420,291,476,310]],['shipping_notice','Shipped 200',0,[468,146,526,170]],['po','Ordered 250',0,[423,343,484,365]]],true),
+      C('TEST-00963','northside','Atlas Medical & Mobile Logistics LLC','ATL-26-36650','PO-018526','lost_in_transit','Old Dominion','Foam Wound Dressing 10x10cm',0.994,53.3,149.88,null,{po:'170f72e9ba4de9581a508f10436afba6',shipping_notice:'c24e86f10ce0cd7fe0da2607062f5100',gr:'a3f1cf599be3ae55ad645261c2b476b2',invoice:'ac7a615c2e6f6c3184444a20d9decac3'},['gr'],[['gr','Received 209',1,[521,342,826,384],'Handwritten'],['invoice','Billed 219',1,[103,262,156,282]],['shipping_notice','Shipped 219',0,[330,389,394,412]],['po','Ordered 219',0,[338,449,396,472]]])
+    ];
+    return {
+      cases,
+      companies: {
+        northside: {
+          name: 'Northside Hospital Supply',
+          suggested: 2,
+          gate: true,
+          passed: 25,
+          waiting: 12,
+          posture: 'Patient-care goods. Prove it to me.',
+          why: [
+            { label: 'A review costs', value: '$10' },
+            { label: 'Caution margin', value: '÷5' },
+            { label: 'Medical device dollar', value: '×25' },
+            { label: 'Consumable dollar', value: '×3' }
+          ]
+        },
+        caseworks: {
+          name: 'Caseworks',
+          suggested: 10,
+          gate: false,
+          passed: 25,
+          waiting: 13,
+          posture: 'Low-cost goods. Don’t waste a person on a few dollars.',
+          why: [
+            { label: 'A review costs', value: '$10' },
+            { label: 'Caution margin', value: 'None' },
+            { label: 'Consumer goods dollar', value: '×1' }
+          ]
+        }
+      },
+      docNames: { po: 'Purchase order', shipping_notice: 'Shipping notice', gr: 'Goods receipt', invoice: 'Invoice' },
+      docOrder: ['po', 'shipping_notice', 'gr', 'invoice']
+    };
+  }
+
+  tAt(p) { return Math.pow(10, 6 - 6 * p); }
+  pAt(t) { return (6 - Math.log10(t)) / 6; }
+
+  fmt(v) {
+    if (v >= 1e6) return '$' + (v / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (v >= 1000) return '$' + (v / 1000).toFixed(v >= 1e4 ? 0 : 1).replace(/\.0$/, '') + 'k';
+    if (v >= 10) return '$' + Math.round(v);
+    return '$' + v.toFixed(1).replace(/\.0$/, '');
+  }
+
+  whole(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
+
+  date(iso) {
+    const [y, m, d] = iso.split('-').map(Number);
+    return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m - 1] + ' ' + d + ', ' + y;
+  }
+
+  polar(r, a) {
+    const t = a * Math.PI / 180;
+    return [140 + r * Math.sin(t), 145 - r * Math.cos(t)];
+  }
+
+  arc(r, a0, a1) {
+    const s = this.polar(r, a0), e = this.polar(r, a1);
+    return 'M' + s[0].toFixed(2) + ' ' + s[1].toFixed(2) + 'A' + r + ' ' + r + ' 0 ' + (a1 - a0 > 180 ? 1 : 0) + ' 1 ' + e[0].toFixed(2) + ' ' + e[1].toFixed(2);
+  }
+
+  radial(r0, r1, a) {
+    const s = this.polar(r0, a), e = this.polar(r1, a);
+    return 'M' + s[0].toFixed(2) + ' ' + s[1].toFixed(2) + 'L' + e[0].toFixed(2) + ' ' + e[1].toFixed(2);
+  }
+
+  says(c, doc) { return (c.m.find((x) => x[0] === doc) || [])[1] || ''; }
+
+  verdict(c) {
+    if (c.rc === 'duplicate_invoice') return 'Already paid on ' + this.date(c.paid);
+    if (c.rc === 'wrong_po') return 'Invoice ' + this.says(c, 'invoice').toLowerCase().replace('po-', 'PO-') + ', goods arrived on ' + c.po;
+    if (c.rc === 'price_mismatch') return this.says(c, 'invoice') + ', PO says ' + this.says(c, 'po').replace('PO price ', '');
+    return this.says(c, 'invoice') + ', ' + this.says(c, 'gr').toLowerCase();
+  }
+
+  short(c) {
+    if (c.rc === 'duplicate_invoice') return 'Already paid';
+    if (c.rc === 'wrong_po') return 'Wrong PO';
+    if (c.rc === 'price_mismatch') return 'Price above PO';
+    return this.says(c, 'invoice') + ', ' + this.says(c, 'gr').toLowerCase();
+  }
+
+  action(c) {
+    const a = this.whole(c.atRisk);
+    if (c.rc === 'lost_in_transit') return 'Lost in transit. Claim ' + a + ' from ' + c.car + '.';
+    if (c.rc === 'short_shipped') return 'Never shipped. Dispute ' + a + ' with the supplier.';
+    if (c.rc === 'qty_mismatch') return 'No shipping notice. Investigate ' + a + '.';
+    if (c.rc === 'price_mismatch') return 'Dispute ' + a + ' with the supplier.';
+    if (c.rc === 'wrong_po') return 'Investigate before paying ' + a + '.';
+    return 'Do not pay ' + a + ' twice.';
+  }
+
+  size(c, doc) { return c.land.indexOf(doc) >= 0 ? [1000, 773] : [773, 1000]; }
+
+  crop(c, mark) {
+    const doc = mark[0], b = mark[3], sz = this.size(c, doc);
+    const cw = Math.max(320, b[2] - b[0] + 120), ch = Math.max(cw * 0.3, b[3] - b[1] + 40);
+    const x0 = Math.max(0, Math.min(sz[0] - cw, (b[0] + b[2]) / 2 - cw / 2));
+    const y0 = Math.max(0, Math.min(sz[1] - ch, (b[1] + b[3]) / 2 - ch / 2));
+    const bad = !!mark[2];
+    return {
+      says: mark[1],
+      label: this.data.docNames[doc],
+      url: '/_blob/' + c.u[doc],
+      alt: this.data.docNames[doc] + ' for ' + c.inv + ', zoomed in: ' + mark[1],
+      aria: mark[1] + ' on the ' + this.data.docNames[doc].toLowerCase() + '. Open the full page.',
+      note: mark[4] || '',
+      hasNote: !!mark[4],
+      ar: (cw / ch).toFixed(3),
+      imgW: (sz[0] / cw * 100).toFixed(2),
+      imgL: (-x0 / cw * 100).toFixed(2),
+      imgT: (-y0 / ch * 100).toFixed(2),
+      boxL: ((b[0] - 3 - x0) / cw * 100).toFixed(2),
+      boxT: ((b[1] - 3 - y0) / ch * 100).toFixed(2),
+      boxW: ((b[2] - b[0] + 6) / cw * 100).toFixed(2),
+      boxH: ((b[3] - b[1] + 6) / ch * 100).toFixed(2),
+      border: bad ? '2px solid #E8590C' : '1px solid #CBD3D9',
+      headBg: bad ? '#FFE9DC' : '#F4F6F7',
+      headMuted: bad ? '#7A2E00' : '#55636F',
+      boxColor: bad ? '#E8590C' : '#55636F',
+      boxFill: bad ? 'rgba(255, 122, 51, 0.16)' : 'transparent',
+      open: () => this.setState({ doc })
+    };
+  }
+
+  activeRows() {
+    const s = this.state;
+    return this.data.cases
+      .filter((c) => c.co === s.company && !s.removed[c.id] && (!c.held || s.added[c.id]))
+      .sort((a, b) => b.loss - a.loss);
+  }
+
+  setP(p) {
+    const c = this.state.company;
+    this.setState({ pos: Object.assign({}, this.state.pos, { [c]: Math.min(1, Math.max(0, p)) }) });
+  }
+
+  knobP(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height * 145 / 270;
+    const deg = Math.atan2(e.clientX - cx, cy - e.clientY) * 180 / Math.PI;
+    return (Math.max(-135, Math.min(135, deg)) + 135) / 270;
+  }
+
+  remove(id, kind, rows) {
+    const i = rows.findIndex((r) => r.id === id);
+    const next = rows[i + 1] || rows[i - 1];
+    this.setState({
+      removed: Object.assign({}, this.state.removed, { [id]: kind }),
+      history: this.state.history.concat([id]),
+      sel: Object.assign({}, this.state.sel, { [this.state.company]: next ? next.id : null }),
+      doc: null
+    });
+  }
+
+  guessType(name) {
+    const n = name.toLowerCase();
+    if (/(^|[^a-z])(po|purchase)/.test(n)) return 'PO';
+    if (/inv/.test(n)) return 'Invoice';
+    if (/(^|[^a-z])gr([^a-z]|$)|receipt|received/.test(n)) return 'Goods receipt';
+    if (/asn|ship|notice|packing/.test(n)) return 'Shipping notice';
+    return 'Type unknown';
+  }
+
+  takeFiles(list) {
+    const files = Array.from(list || []).map((f) => ({ name: f.name, type: this.guessType(f.name) }));
+    if (files.length) this.setState({ files, phase: 'ready', resultId: null, dragging: false });
+    else this.setState({ dragging: false });
+  }
+
+  run() {
+    this.setState({ phase: 'reading' });
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => {
+      const co = this.state.company;
+      const held = this.data.cases.find((c) => c.co === co && c.held);
+      const count = this.state.files.length;
+      this.setState({
+        added: Object.assign({}, this.state.added, { [held.id]: true }),
+        removed: (() => { const r = Object.assign({}, this.state.removed); delete r[held.id]; return r; })(),
+        sel: Object.assign({}, this.state.sel, { [co]: held.id }),
+        doc: null,
+        phase: 'idle',
+        files: [],
+        resultCount: count,
+        resultId: held.id
+      });
+    }, 1400);
+  }
+
+  renderVals() {
+    const s = this.state, co = this.data.companies[s.company];
+    const p = s.pos[s.company], T = this.tAt(p);
+    const ps = this.pAt(co.suggested);
+    const moved = Math.abs(p - ps) > 0.002;
+    const rows = this.activeRows();
+    const above = rows.filter((r) => r.loss > T);
+    const below = rows.filter((r) => r.loss <= T);
+    const tLabel = this.fmt(T);
+    const suggestedLabel = this.fmt(co.suggested);
+    const ang = -135 + 270 * p;
+    const knob = {
+      track: this.arc(106, -135, 135),
+      value: this.arc(106, -135, Math.max(ang, -134.9)),
+      suggested: this.radial(94, 118, -135 + 270 * ps),
+      pointer: this.radial(62, 76, ang)
+    };
+
+    const ratio = T > co.suggested ? T / co.suggested : co.suggested / T;
+    const ratioText = ratio >= 10 ? Math.round(ratio).toLocaleString('en-US') : ratio.toFixed(1).replace(/\.0$/, '');
+    const offsetLabel = !moved ? 'Suggested ' + suggestedLabel : T < co.suggested ? ratioText + '× more cautious' : ratioText + '× looser';
+    const belowDollars = below.reduce((a, r) => a + r.atRisk, 0);
+
+    const selId = s.sel[s.company];
+    const current = rows.find((r) => r.id === selId) || rows[0] || null;
+
+    const rowVals = rows.map((r, i) => {
+      const isAbove = r.loss > T;
+      const selected = current && current.id === r.id;
+      return {
+        rank: i + 1,
+        short: this.short(r),
+        sup: r.sup,
+        amount: this.whole(r.atRisk),
+        tag: s.resultId === r.id ? 'New' : isAbove ? '' : 'Auto-pay',
+        selected: selected ? 'true' : undefined,
+        bg: selected ? '#DDE5EB' : isAbove ? '#FFFFFF' : '#F4F6F7',
+        showLine: i === above.length,
+        pick: () => this.setState({ sel: Object.assign({}, s.sel, { [s.company]: r.id }), doc: null })
+      };
+    });
+
+    let caseVals = {}, page = {};
+    if (current) {
+      const rank = rows.indexOf(current) + 1;
+      const firstBad = current.m.find((x) => x[2]) || current.m[0];
+      const docKey = s.doc && current.u[s.doc] ? s.doc : firstBad[0];
+      const flagged = {};
+      current.m.forEach((x) => { if (x[2]) flagged[x[0]] = true; });
+      const pageMark = current.m.find((x) => x[0] === docKey);
+      const sz = this.size(current, docKey);
+      const weight = current.loss / (current.atRisk * current.risk);
+      caseVals = {
+        rank,
+        sup: current.sup,
+        inv: current.inv,
+        po: current.po,
+        verdict: this.verdict(current),
+        action: this.action(current),
+        isBelow: current.loss <= T,
+        crops: current.m.map((x) => this.crop(current, x)),
+        hasPaid: !!current.paid,
+        paidLabel: current.paid ? this.date(current.paid) : '',
+        tabs: this.data.docOrder.filter((d) => current.u[d]).map((d) => ({
+          label: this.data.docNames[d],
+          flagged: !!flagged[d],
+          selected: d === docKey,
+          bg: d === docKey ? '#12202B' : '#FFFFFF',
+          fg: d === docKey ? '#FFFFFF' : '#12202B',
+          line: d === docKey ? '#12202B' : '#B9C3CB',
+          pick: () => this.setState({ doc: d })
+        })),
+        formula: this.whole(current.atRisk) + ' at risk × ' + Math.round(current.risk * 100) + '% risk × ' + weight.toFixed(1) + ' item and supplier weight = ' + this.whole(current.loss),
+        done: () => this.remove(current.id, 'done', rows),
+        fine: () => this.remove(current.id, 'fine', rows)
+      };
+      page = {
+        url: '/_blob/' + current.u[docKey],
+        alt: 'Full scan of the ' + this.data.docNames[docKey].toLowerCase() + ' for invoice ' + current.inv,
+        maxW: sz[0],
+        hasBox: !!pageMark,
+        boxL: pageMark ? ((pageMark[3][0] - 4) / sz[0] * 100).toFixed(2) : 0,
+        boxT: pageMark ? ((pageMark[3][1] - 4) / sz[1] * 100).toFixed(2) : 0,
+        boxW: pageMark ? ((pageMark[3][2] - pageMark[3][0] + 8) / sz[0] * 100).toFixed(2) : 0,
+        boxH: pageMark ? ((pageMark[3][3] - pageMark[3][1] + 8) / sz[1] * 100).toFixed(2) : 0
+      };
+    }
+
+    const reviewedIds = Object.keys(s.removed).filter((id) => {
+      const c = this.data.cases.find((x) => x.id === id);
+      return c && c.co === s.company;
+    });
+    const resultRow = rows.find((r) => r.id === s.resultId);
+
+    return {
+      tLabel,
+      suggestedLabel,
+      pInt: Math.round(p * 1000),
+      ariaValue: 'Send to a person above ' + tLabel + ' expected loss. ' + above.length + ' invoices go to a person.',
+      knob,
+      moved,
+      offsetLabel,
+      aboveCount: above.length,
+      belowCount: below.length,
+      hasWarn: below.length > 0,
+      warnLabel: this.whole(belowDollars) + (co.gate ? ' in real problems would auto-pay' : ' written off'),
+      posture: co.posture,
+      why: co.why,
+      showWhy: s.showWhy,
+      whyBg: s.showWhy ? '#2E4252' : 'transparent',
+      toggleWhy: () => this.setState({ showWhy: !s.showWhy }),
+      rows: rowVals,
+      lineAtEnd: above.length === rows.length,
+      restLabel: co.passed + ' passed every check · ' + co.waiting + ' in transit',
+      hasCase: !!current,
+      noCase: !current,
+      case: caseVals,
+      page,
+      hasReviewed: reviewedIds.length > 0,
+      reviewedLabel: 'Reviewed ' + reviewedIds.length,
+      undo: () => {
+        const h = s.history.slice();
+        const last = h.pop();
+        const removed = Object.assign({}, s.removed);
+        delete removed[last];
+        this.setState({ removed, history: h, sel: Object.assign({}, s.sel, { [s.company]: last }), doc: null });
+      },
+      companies: ['northside', 'caseworks'].map((id) => ({
+        name: this.data.companies[id].name,
+        selected: s.company === id,
+        bg: s.company === id ? '#12202B' : 'transparent',
+        fg: s.company === id ? '#FFFFFF' : '#12202B',
+        pick: () => this.setState({ company: id, doc: null, resultId: null, files: [], phase: 'idle' })
+      })),
+      knobDown: (e) => {
+        this.drag = true;
+        if (e.currentTarget.setPointerCapture) e.currentTarget.setPointerCapture(e.pointerId);
+        this.setP(this.knobP(e));
+      },
+      knobMove: (e) => {
+        if (!this.drag) return;
+        const next = this.knobP(e);
+        if (Math.abs(next - this.state.pos[this.state.company]) > 0.4) return;
+        this.setP(next);
+      },
+      knobUp: () => { this.drag = false; },
+      onRange: (e) => this.setP(Number(e.target.value) / 1000),
+      stepUp: () => this.setP(p + 0.025),
+      stepDown: () => this.setP(p - 0.025),
+      reset: () => this.setP(ps),
+      showUpload: s.showUpload,
+      toggleUpload: () => this.setState({ showUpload: !s.showUpload }),
+      dropBg: s.dragging ? '#FFE9DC' : '#FFFFFF',
+      dropBorder: s.dragging ? '#E8590C' : '#9AA8B3',
+      dragOver: (e) => { e.preventDefault(); if (!s.dragging) this.setState({ dragging: true }); },
+      dragLeave: () => this.setState({ dragging: false }),
+      drop: (e) => { e.preventDefault(); this.takeFiles(e.dataTransfer.files); },
+      onFiles: (e) => { this.takeFiles(e.target.files); e.target.value = ''; },
+      useSample: () => this.setState({
+        files: [
+          { name: 'po.png', type: 'PO' },
+          { name: 'invoice.png', type: 'Invoice' },
+          { name: 'gr.png', type: 'Goods receipt' },
+          { name: 'shipping_notice.png', type: 'Shipping notice' }
+        ],
+        phase: 'ready',
+        resultId: null
+      }),
+      files: s.files,
+      showFiles: s.files.length > 0,
+      canRun: s.phase === 'ready',
+      isReading: s.phase === 'reading',
+      runChecks: () => this.run(),
+      hasUploadResult: !!resultRow,
+      uploadResult: resultRow ? resultRow.inv + ' landed at rank ' + (rows.indexOf(resultRow) + 1) + '.' : '',
+      onKnowledge: (e) => {
+        const names = Array.from(e.target.files || []).map((f) => f.name);
+        e.target.value = '';
+        if (names.length) this.setState({ knowledge: s.knowledge.concat(names) });
+      },
+      hasKnowledge: s.knowledge.length > 0,
+      knowledgeLabel: s.knowledge.length === 1 ? s.knowledge[0] + ' is' : s.knowledge.length + ' files are'
+    };
+  }
+}
+</script>
+</body>
+</html>
