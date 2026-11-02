@@ -12,6 +12,9 @@ PRICES = {
 
 # Models that cannot turn reasoning off (verified): never send reasoning_effort to them.
 THINKING_ONLY = {"accounts/fireworks/models/glm-5p3-flash"}
+# GLM 5.3 Flash cannot turn reasoning off, but accepts "low" (verified: ~4x fewer output tokens, ~4x faster per call).
+# Default stays the model's own setting; set GLM_REASONING=low for the faster arm.
+GLM_REASONING = os.environ.get("GLM_REASONING", "")
 
 API_URL = "https://api.fireworks.ai/inference/v1/chat/completions"
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
