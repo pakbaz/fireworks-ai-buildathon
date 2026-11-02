@@ -79,7 +79,15 @@ An earlier example in this file, `DEVCTX-0019` (a changed payment address), came
 
 ## Results so far
 
-**Document problems** (`test.jsonl`, 1,000 cases): Kimi K3 alone caught 374 of 375 real problems and sent 1 of 500 fine invoices to a person, for $9.20. GLM rows are running.
+**Document problems** (`test.jsonl`, first 300 of the 1,000 cases, same mix; both systems on the same invoices):
+
+| System | Real problems caught | Fine invoices sent to a person | In-transit waited | Model cost per 100 | Median time |
+|---|---:|---:|---:|---:|---:|
+| Kimi K3 alone | 117 / 117 | 0 / 148 | 35 / 35 | $0.93 | 3.5 s |
+| GLM 5.3 Flash + our checks | 117 / 117 | 20 / 148 | 34 / 35 | $0.29 | 22 s |
+
+Here the frontier model is better: our harness raised 20 false alarms, 15 from GLM misreading a quantity on messy invoices and 4 from the new history checks firing on noisy text. Its advantage on these cases is cost, not accuracy. Kimi K3 on all 1,000: 374 of 375 caught, $9.20.
+
 
 **Dev, 50 document cases (latest run):** our harness 15/15 caught, 2/28 fine invoices escalated (two GLM misreads), $0.22 per 100; Kimi 15/15, 0/28, $0.78 per 100.
 
