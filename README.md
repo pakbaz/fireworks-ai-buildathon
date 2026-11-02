@@ -4,21 +4,21 @@
 
 **Final results for the video and presentation: [results.md](results.md).**
 
-**Headline result (test set, 210 invoices where all four documents agree but the supplier's history says something is wrong).** Every system got the same documents, the same supplier history and the same instructions to check it:
+**Presentation-ready demo:** [offline slide deck](docs/results/demo/index.html) · [figures, sources and presenter notes](docs/results/demo/README.md) · [final metrics](results.md).
 
-| System | Problems caught | False alarms on 70 look-alikes | Model cost |
+**Main finding — 210 synthetic history-context cases:** The four business documents agree, but historical context contains 140 designed anomalies and 70 benign look-alikes. The Kimi K3 frontier baseline was explicitly told to check supplier history.
+
+| System | Historical anomalies found | False escalations | Model cost / 100 |
 |---|---:|---:|---:|
-| Kimi K3 alone (frontier) | 121 / 140 | 6 | $2.27 |
-| Kimi K3 + our checks | 140 / 140 | 0 | $2.92 |
-| **GLM 5.3 Flash + our checks (ours)** | **139 / 140** | **0** | **$0.25** |
+| Kimi K3 alone, explicitly prompted | 121/140 | 6/70 | $1.08 |
+| Kimi K3 with our executable checks | 140/140 | 0/70 | $1.39 |
+| **GLM 5.3 Flash (low reasoning) + checks + wiki** | **139/140** | **0/70** | **$0.06** |
 
-The checks are what matter: with them, a model about 20x cheaper matches the frontier model; without them, even a frontier model told what to look for misses 19 problems and raises 6 false alarms. The test covers the seven anomaly types the checks were written for (new examples, unseen seed), not new kinds of fraud. Details: [docs/comparison.md](docs/comparison.md).
+**Full 1,000-invoice document test:** Kimi catches **374/375** discrepancies, raises **1/500** false reviews, and costs **$9.20** in model inference. Our low-reasoning GLM harness catches **373/375**, raises **27/500** false reviews, and costs **$0.76**. The small model saves inference spend but creates more human-review work. All figures are from synthetic data; neither system autonomously pays invoices.
 
 An evidence-first open-model evaluation for **Fireworks: Deploy with Microsoft and NVIDIA**, November 2, 2026.
 
 > Can a rules-first system use an open model only for genuine ambiguity, reduce unnecessary human review, and still catch cases that require a person?
-
-This repository currently contains the project idea and research, not a working application or completed benchmark.
 
 - Problem statement and system flow: [docs/problem-statement.md](docs/problem-statement.md)
 - Build plan: [docs/plan.md](docs/plan.md)
@@ -27,19 +27,20 @@ This repository currently contains the project idea and research, not a working 
 - Build plan: [docs/plan.md](docs/plan.md), with reviews in [docs/plan-review.md](docs/plan-review.md) and [docs/plan-review-2.md](docs/plan-review-2.md)
 - Review of brainstorm sessions 2 and 3, with our take and a plan for today: [docs/ideas-review.md](docs/ideas-review.md)
 
-## Status (15:20 PT, November 2)
+## Status — November 2, 2026
 
-| Item | Status |
+| Component | Current state |
 |---|---|
-| Synthetic data and generator | Built. Train 3,000, dev 300, test 1,000 (document problems); dev 42, test 210 (history problems). `python3 -I generator/check.py` passes |
-| Harness on GLM 5.3 Flash | Built: reader, code checks, supplier history, re-reads, business dial, single-case API (`harness/`) |
-| History-problem test (210) | Run for Kimi K3 alone (two prompt versions), Kimi K3 + our checks, GLM + our checks |
-| Document-problem test (1,000) | Kimi K3 alone on all 1,000; our harness on the first 300 (same mix) |
-| Diagnostic rows (GLM alone, harness without wiki) | Dev only; test runs pending |
-| Calibration | Not done. Risk values are heuristic, not calibrated probabilities |
-| Production readiness | Not claimed. No payments are made; PAY is a recommendation. The review dashboard design uses simulated parts (see `dashboard/README.md`) |
+| Generator + synthetic datasets | Implemented: 3,000 train; 300 dev; 1,000 document test; 42 context dev; 210 context test |
+| GLM harness | Implemented: document extraction, deterministic checks, supplier history/wiki, re-reads, business dial, API |
+| Context test | Complete for explicitly prompted Kimi-alone, Kimi+checks, GLM low+wiki and GLM low without wiki |
+| Document test | Complete for Kimi-alone and GLM low+wiki across all 1,000 invoices; other arms have partial runs |
+| Scanned-image subset | Complete for 100 synthetic rendered scans; GLM has substantially more false reviews than Kimi |
+| Calibration + production integration | Not complete: risk scores heuristic; no verified payee bank registry or live ERP/payment workflow |
+| Analyst dashboard | Design/prototype; some interactions and image highlights are simulated (see \`dashboard/README.md\`) |
+| Submission artifacts | [Final results](results.md), [demo figures](docs/results/demo/README.md), [HTML slide deck](docs/results/demo/index.html); repository visibility is an owner-controlled action |
 
-API errors are recorded as errors (`action: ERROR`), never as decisions. Every number here is recomputed from `runs/` by `python3 eval/dashboard_data.py`, with no API calls.
+The summary and deck describe **saved test predictions**, not claims of production fraud detection or financial losses prevented. For the currently selected low-reasoning model use \`GLM_REASONING=low\`. For reproducibility, distinguish prompt/reasoning versions and never overwrite frozen outputs.
 
 ## The root problem
 
@@ -159,29 +160,24 @@ Zero observed errors is not zero risk. Use exact binomial intervals and counts s
 
 ## Results
 
-All results are on synthetic cases, generated with a seed and frozen before any run. Full tables, the inputs and outputs of each system, and a worked case: [docs/comparison.md](docs/comparison.md).
+**The source of truth is [results.md](results.md)**, with links to every saved prediction file. All cases are synthetic; the company history was generated from the training split.
 
-**History problems** (test, 210 invoices: 140 anomalies where all documents agree, 70 benign look-alikes). Every row gets the same documents, supplier history and wiki pages:
+| Held-out experiment | Kimi K3 standalone | GLM Flash low + harness/wiki |
+|---|---:|---:|
+| History anomalies caught (140 anomalous of 210) | 121/140 | **139/140** |
+| False alerts (70 benign context cases) | 6/70 | **0/70** |
+| History inference cost per 100 | $1.08 | **$0.06** |
+| Document discrepancies caught (1,000 cases, 375 real) | **374/375** | 373/375 |
+| False alerts (500 correct document cases) | **1/500** | 27/500 |
+| Document inference cost per 1,000 | $9.20 | **$0.76** |
+| Synthetic scanned images, real discrepancies caught (25) | **25/25** | 24/25 |
+| Synthetic scanned images, false alerts (50 fine cases) | **2/50** | 18/50 |
 
-| System | Anomalies caught | False alarms | Right reason | Model cost (210) |
-|---|---:|---:|---:|---:|
-| Kimi K3 alone, not told to check history (original run) | 19 / 140 | 0 / 70 | 0 | $2.08 |
-| Kimi K3 alone, told to check history | 121 / 140 | 6 / 70 | 100 | $2.27 |
-| Kimi K3 + our checks | 140 / 140 | 0 / 70 | 140 | $2.92 |
-| **GLM 5.3 Flash + our checks** | **139 / 140** | **0 / 70** | **139** | **$0.25** |
+**What the engineering demonstrates:** Kimi K3 with our checks catches 140/140 history anomalies; GLM low+checks+wiki catches 139/140; GLM low+checks **without** company wiki catches 40/140. The deterministic and historical checks add critical task-specific capabilities outside the language model.
 
-**Document problems** (test, first 300 of the 1,000 cases, same mix; both systems on the same invoices):
+**Limitations:** The 7 context anomalies were known categories designed into the synthetic test. There are uncalibrated risk heuristics, no independently verified payment-account identities, and no proof of performance on real supplier data. On general text invoices and scanned documents, GLM incurs materially more false manual reviews than Kimi. Lower inference cost does not imply lower overall AP cost.
 
-| System | Real problems caught | Fine invoices sent to a person | In-transit waited | Model cost per 100 | Median time |
-|---|---:|---:|---:|---:|---:|
-| Kimi K3 alone | 117 / 117 | 0 / 148 | 35 / 35 | $0.93 | 3.5 s |
-| GLM 5.3 Flash + our checks | 117 / 117 | 20 / 148 | 34 / 35 | $0.29 | 22 s |
-
-Here the frontier model is better: our harness raised 20 false alarms, 15 from GLM misreading a quantity on messy invoices and 4 from the new history checks firing on noisy text. Its advantage on these cases is cost, not accuracy. Kimi K3 on all 1,000: 374 of 375 caught, $9.20.
-
-**Speed:** our harness is slower. On the history set, median 7.0 s against 3.2 s for Kimi K3, and p95 30 s against 5 s. Invoices are processed in parallel, so throughput is set by the API rate limit, not per-invoice latency.
-
-**Limits:** the history test uses new examples of the same seven anomaly types the checks were written for, not new kinds of fraud. Supplier history comes from the synthetic train split, not a real supplier master. Payment-destination checks compare locations, not verified bank identities.
+For visualized, presentation-sized results and a 100-second demo outline, see [demo figures](docs/results/demo/README.md) and the [offline slide deck](docs/results/demo/index.html). The older [comparison document](docs/comparison.md) includes earlier/default-reasoning experiments and should not replace the newer low-reasoning results.
 
 ## Fireworks plan
 
