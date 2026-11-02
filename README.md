@@ -2,6 +2,8 @@
 
 **Demo video (1 min 53 s):** [watch on Google Drive](https://drive.google.com/file/d/1cEZZ00eSJBZlKE0aDoeYgAf1HcPLOe6y/view?usp=sharing) · narration script: [media/narration.md](media/narration.md)
 
+**Final results for the video and presentation: [results.md](results.md).**
+
 **Headline result (test set, 210 invoices where all four documents agree but the supplier's history says something is wrong).** Every system got the same documents, the same supplier history and the same instructions to check it:
 
 | System | Problems caught | False alarms on 70 look-alikes | Model cost |
