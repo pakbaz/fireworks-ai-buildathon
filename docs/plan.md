@@ -278,7 +278,7 @@ Supplier profile notes are reading hints only. They never widen a tolerance or a
 |---|---|---|
 | 1 | Generator: canonical records, three templates per doc type, noise injector, mutations, case mix, train/test split, wiki pages | Case schema agreed at 0:15; 50 sample cases at 0:30; full 150 at 0:50 |
 | 2 | Runner interface, scorer, rules-only arm, results table built only from saved outputs | Scorer on the 50 samples at 0:45 |
-| 3 | Frontier baseline: confirm key, pin model, write the shared prompt, run and save raw outputs | Baseline on 50 samples at 1:00; full run at 1:20 |
+| 3 | Frontier baseline: confirm key, pin model, write the shared prompt, run and save raw outputs | Model named at 0:15; baseline on 50 samples at 0:40; full run at 1:10 |
 | 4 | Fireworks harness with wiki lookup, arms 3 and 4 | Live-test two Fireworks models by 0:15; harness on 50 samples at 1:15; full run at 1:45 |
 | 5 | Stretch (section 9), then README results, limitations, and the demo video | Video script at 1:30; video recorded at 2:00 |
 
@@ -286,7 +286,8 @@ Supplier profile notes are reading hints only. They never widen a tolerance or a
 |---|---|
 | 0:15 | Schema frozen. Two Fireworks models verified live. Frontier key confirmed. |
 | 0:30 | 50 sample cases in the repo. Everyone tests against them. |
-| 1:00 | Full test set frozen. Baseline run started. |
+| 0:40 | First baseline run on the 50 samples. The organizers say to run the baseline early, so this comes before the harness. |
+| 1:00 | Full test set frozen. Full baseline run started. |
 | 1:45 | All four arms run. Results table generated. |
 | 2:00 | README updated. Video recorded. Repo made public. Submit. |
 
@@ -333,7 +334,7 @@ Fireworks is required for every prize. Arms 3 and 4 run on Fireworks. Fine-tunin
 
 ## 10. Open decisions for the team, now
 
-1. **Which frontier model is the baseline?** Must be one somebody has a working key for in the next 15 minutes.
+1. **Which frontier model is the baseline?** Must be one somebody has a working key for in the next 15 minutes. Nobody writes a prompt until the model and version are named and recorded in the README. The rules require the baseline to be a frontier model and the site says to run it early.
 2. **Who is person 1 through 5?**
 3. **When does the repo go public?** The rules say an inaccessible repo is unscored. The owner must flip it before submitting and test the URL signed out.
 
