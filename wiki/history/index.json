@@ -1,0 +1,38 @@
+{
+ "source": "data/train.jsonl",
+ "overall_problem_rate": 0.375,
+ "suppliers": {
+  "SUP-CARDIOLINE": {
+   "invoices": 300,
+   "problem_rate": 0.3333
+  },
+  "SUP-KESTREL": {
+   "invoices": 613,
+   "problem_rate": 0.3768
+  },
+  "SUP-ATLAS": {
+   "invoices": 605,
+   "problem_rate": 0.3537
+  },
+  "SUP-PACIFICRIM": {
+   "invoices": 286,
+   "problem_rate": 0.4091
+  },
+  "SUP-BAYVIEW": {
+   "invoices": 289,
+   "problem_rate": 0.3841
+  },
+  "SUP-VOLTEDGE": {
+   "invoices": 315,
+   "problem_rate": 0.381
+  },
+  "SUP-MERIDIAN": {
+   "invoices": 299,
+   "problem_rate": 0.4114
+  },
+  "SUP-SHENGDA": {
+   "invoices": 293,
+   "problem_rate": 0.372
+  }
+ }
+}

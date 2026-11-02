@@ -1,6 +1,6 @@
 """The four rows. Each returns one prediction dict (see docs/work-split.md)."""
 import json, math
-from . import client, prompts, packet, domain, dial
+from . import client, prompts, packet, domain, dial, supplier_history
 
 def _acc(stats, model, r):
     ti, to, c = client.usage_cost(model, r)
@@ -24,10 +24,15 @@ def _action_prob(r):
         text += tok.get("token", "")
     return None
 
+def _history_summary(h):
+    if not h:
+        return None
+    return {k: h.get(k) for k in ("invoices", "problem_rate", "problems_by_type", "unit_price_by_sku", "lead_days")}
+
 def alone(case, model, use_images, frontier):
     stats = dict(calls=0, tokens_in=0, tokens_out=0, cost_usd=0.0, latency_ms=0)
     wiki, policy = packet.load_wiki(case)
-    pages = {"supplier": wiki["supplier"], "items": wiki["items"]}
+    pages = {"supplier": wiki["supplier"], "items": wiki["items"], "supplier_history": _history_summary(wiki.get("history"))}
     content = [{"type": "text", "text": prompts.ALONE + "\n\n" + packet.context_text(case, pages, policy)}] + packet.document_parts(case, use_images)
     r = client.chat(model, [{"role": "user", "content": content}], max_tokens=4000 if not frontier else 600, logprobs=frontier)
     _acc(stats, model, r)
@@ -95,4 +100,5 @@ def harness(case, model, use_images, with_wiki):
     return dict(model=model, action=action, model_action=None, risk=risk, at_risk_usd=at_risk, reason_code=code,
                 next_step=step, evidence=ev, features=feats, read=read2 if (issues or feats["n_unreadable"]) and read2 else read,
                 issues=[{"code": c, "next_step": n, "detail": d} for c, n, d in issues],
+                anomalies=(supplier_history.anomalies(case, read2 or read, wiki_full.get("history"), wiki["items"]) if with_wiki else None),
                 dial=dial.explain(risk, at_risk, wiki_full, policy), **stats)

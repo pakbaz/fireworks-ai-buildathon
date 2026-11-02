@@ -30,8 +30,11 @@ def ref(x):
     d = re.sub(r"\D", "", str(x).translate(OCR))
     return d.lstrip("0") or None
 
+SKU_OCR = str.maketrans({"O": "0", "I": "1", "L": "1", "S": "5", "B": "8", "Z": "2"})
+
 def norm_sku(x):
-    return re.sub(r"[^A-Z0-9]", "", str(x or "").upper().translate(str.maketrans({"O": "0"}))) or None
+    """Same OCR folding on both sides, so 'CW-CSE-IP15R' and 'CW-CSE-IPI5R' compare equal."""
+    return re.sub(r"[^A-Z0-9]", "", str(x or "").upper()).translate(SKU_OCR) or None
 
 def pack_size(uom, qty_text, sku, wiki_items):
     """EA per unit of `uom`. Explicit text like '(12 EA)' first, then wiki conversions, else None."""
@@ -174,6 +177,9 @@ def analyze(read, case, wiki, policy):
             arith_off += 1
     features = {"n_issues": len(issues), "unreadable": sorted(set(unreadable)), "n_unreadable": len(set(unreadable)),
                 "arith_off": arith_off, "wait": wait, "codes": [i[0] for i in issues]}
+    if (issues or unreadable) and not risk_usd:
+        # Unknown dollar amount on a flagged invoice: fall back to the invoice total from the text; the dial fails closed if still unknown.
+        risk_usd = inv_total or invoice_total_from_text((case.get("documents") or {}).get("invoice")) or 0.0
     if not issues and unreadable:
         risk_usd = max(risk_usd, inv_total or 0)
     return issues, features, round(risk_usd, 2), wait

@@ -18,7 +18,8 @@ def load_wiki(case):
     as_of = case.get("as_of_date")
     if supplier and supplier.get("expires") and as_of and str(supplier["expires"]) < str(as_of):
         supplier = None  # expired page: ignore
-    return {"supplier": supplier, "items": items}, policy
+    from .supplier_history import load as load_history
+    return {"supplier": supplier, "items": items, "history": load_history(case.get("supplier_id"))}, policy
 
 def _img_part(path):
     fp = path if os.path.isabs(path) else os.path.join(config.REPO, path)

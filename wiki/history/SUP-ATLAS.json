@@ -1,0 +1,307 @@
+{
+ "supplier_id": "SUP-ATLAS",
+ "built_from": "data/train.jsonl",
+ "invoices": 605,
+ "companies": {
+  "caseworks": 322,
+  "northside": 283
+ },
+ "problem_rate": 0.3537,
+ "problems_by_type": {
+  "short_shipped": 29,
+  "lost_in_transit": 29,
+  "qty_mismatch": 31,
+  "wrong_po": 37,
+  "duplicate_invoice": 39,
+  "price_mismatch": 49
+ },
+ "relative_to_all_suppliers": 0.943,
+ "unit_price_by_sku": {
+  "CW-CHG-CAR30": {
+   "n": 80,
+   "mean": 7.4478,
+   "sd": 0.1737,
+   "min": 7.16,
+   "max": 7.74
+  },
+  "NS-DRS-0510": {
+   "n": 89,
+   "mean": 5.4171,
+   "sd": 0.1181,
+   "min": 5.19,
+   "max": 5.6
+  },
+  "NS-ECG-0200": {
+   "n": 107,
+   "mean": 6.8069,
+   "sd": 0.1565,
+   "min": 6.54,
+   "max": 7.07
+  },
+  "CW-CBL-CL2M": {
+   "n": 91,
+   "mean": 4.6042,
+   "sd": 0.099,
+   "min": 4.43,
+   "max": 4.77
+  },
+  "CW-CHG-45GN": {
+   "n": 82,
+   "mean": 14.194,
+   "sd": 0.3321,
+   "min": 13.63,
+   "max": 14.75
+  },
+  "NS-GLV-0710": {
+   "n": 100,
+   "mean": 11.2892,
+   "sd": 0.2752,
+   "min": 10.8,
+   "max": 11.7
+  },
+  "CW-CHG-20WC": {
+   "n": 92,
+   "mean": 6.3135,
+   "sd": 0.1463,
+   "min": 6.05,
+   "max": 6.55
+  },
+  "CW-CBL-CC1M": {
+   "n": 87,
+   "mean": 3.1369,
+   "sd": 0.0705,
+   "min": 3.03,
+   "max": 3.27
+  },
+  "CW-CBL-BR3M": {
+   "n": 68,
+   "mean": 5.9143,
+   "sd": 0.1345,
+   "min": 5.67,
+   "max": 6.13
+  },
+  "NS-DEF-3300": {
+   "n": 102,
+   "mean": 3264.4722,
+   "sd": 72.6453,
+   "min": 3144.32,
+   "max": 3399.52
+  },
+  "NS-GWN-1410": {
+   "n": 94,
+   "mean": 5.1133,
+   "sd": 0.1182,
+   "min": 4.9,
+   "max": 5.3
+  },
+  "CW-CHG-MAG15": {
+   "n": 78,
+   "mean": 12.8069,
+   "sd": 0.2887,
+   "min": 12.3,
+   "max": 13.29
+  }
+ },
+ "qty_by_sku": {
+  "CW-CHG-CAR30": {
+   "n": 80,
+   "mean": 2631.25,
+   "sd": 1505.2237,
+   "min": 250,
+   "max": 7510
+  },
+  "NS-DRS-0510": {
+   "n": 89,
+   "mean": 261.573,
+   "sd": 149.1178,
+   "min": 10,
+   "max": 590
+  },
+  "NS-ECG-0200": {
+   "n": 107,
+   "mean": 303.5514,
+   "sd": 182.8924,
+   "min": 50,
+   "max": 950
+  },
+  "CW-CBL-CL2M": {
+   "n": 91,
+   "mean": 2861.4286,
+   "sd": 1801.9877,
+   "min": 100,
+   "max": 8700
+  },
+  "CW-CHG-45GN": {
+   "n": 82,
+   "mean": 2501.9512,
+   "sd": 1480.0744,
+   "min": 120,
+   "max": 6384
+  },
+  "NS-GLV-0710": {
+   "n": 100,
+   "mean": 308.3,
+   "sd": 171.149,
+   "min": 23,
+   "max": 754
+  },
+  "CW-CHG-20WC": {
+   "n": 92,
+   "mean": 2656.6304,
+   "sd": 1610.8351,
+   "min": 100,
+   "max": 7750
+  },
+  "CW-CBL-CC1M": {
+   "n": 87,
+   "mean": 2783.7931,
+   "sd": 1547.0612,
+   "min": 100,
+   "max": 6800
+  },
+  "CW-CBL-BR3M": {
+   "n": 68,
+   "mean": 2983.0882,
+   "sd": 1828.8732,
+   "min": 130,
+   "max": 9260
+  },
+  "NS-DEF-3300": {
+   "n": 102,
+   "mean": 3.902,
+   "sd": 1.8969,
+   "min": 1,
+   "max": 11
+  },
+  "NS-GWN-1410": {
+   "n": 94,
+   "mean": 293.6383,
+   "sd": 158.0105,
+   "min": 50,
+   "max": 850
+  },
+  "CW-CHG-MAG15": {
+   "n": 78,
+   "mean": 3127.6667,
+   "sd": 1692.5211,
+   "min": 168,
+   "max": 7740
+  }
+ },
+ "invoice_total": {
+  "n": 605,
+  "mean": 21796.3337,
+  "sd": 23940.5668,
+  "min": 166.8,
+  "max": 143136.96
+ },
+ "lead_days": {
+  "n": 393,
+  "mean": 3.5522,
+  "sd": 1.1225,
+  "min": 2,
+  "max": 5
+ },
+ "timeline_last_20": [
+  {
+   "date": "2026-09-24",
+   "invoice": "ATL-26-88784",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-09-27",
+   "invoice": "ATL-26-49936",
+   "outcome": "lost_in_transit"
+  },
+  {
+   "date": "2026-09-27",
+   "invoice": "ATL-26-47890",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-28",
+   "invoice": "ATL-26-02180",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-30",
+   "invoice": "ATL-26-71488",
+   "outcome": "price_mismatch"
+  },
+  {
+   "date": "2026-10-01",
+   "invoice": "ATL-26-21563",
+   "outcome": "short_shipped"
+  },
+  {
+   "date": "2026-10-03",
+   "invoice": "ATL-26-04210",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-03",
+   "invoice": "ATL-26-52074",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-04",
+   "invoice": "ATL-26-57433",
+   "outcome": "qty_mismatch"
+  },
+  {
+   "date": "2026-10-09",
+   "invoice": "ATL-26-65547",
+   "outcome": "qty_mismatch"
+  },
+  {
+   "date": "2026-10-09",
+   "invoice": "ATL-26-73567",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-11",
+   "invoice": "ATL-26-08446",
+   "outcome": "duplicate_invoice"
+  },
+  {
+   "date": "2026-10-11",
+   "invoice": "ATL-26-23753",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-10-12",
+   "invoice": "ATL-26-86098",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-12",
+   "invoice": "ATL-26-58442",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-17",
+   "invoice": "ATL-26-45128",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-17",
+   "invoice": "ATL-26-39112",
+   "outcome": "price_mismatch"
+  },
+  {
+   "date": "2026-10-22",
+   "invoice": "ATL-26-86848",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-23",
+   "invoice": "ATL-26-25590",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-30",
+   "invoice": "ATL-26-52579",
+   "outcome": "wait"
+  }
+ ]
+}

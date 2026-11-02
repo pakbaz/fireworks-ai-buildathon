@@ -1,0 +1,250 @@
+{
+ "supplier_id": "SUP-PACIFICRIM",
+ "built_from": "data/train.jsonl",
+ "invoices": 286,
+ "companies": {
+  "caseworks": 286
+ },
+ "problem_rate": 0.4091,
+ "problems_by_type": {
+  "short_shipped": 25,
+  "qty_mismatch": 20,
+  "wrong_po": 21,
+  "duplicate_invoice": 18,
+  "price_mismatch": 18,
+  "lost_in_transit": 15
+ },
+ "relative_to_all_suppliers": 1.091,
+ "unit_price_by_sku": {
+  "CW-SCR-LENS": {
+   "n": 60,
+   "mean": 3.4108,
+   "sd": 0.0777,
+   "min": 3.27,
+   "max": 3.54
+  },
+  "CW-CSE-PX8W": {
+   "n": 69,
+   "mean": 9.5942,
+   "sd": 0.2098,
+   "min": 9.22,
+   "max": 9.98
+  },
+  "CW-SCR-IP15T": {
+   "n": 61,
+   "mean": 3.0684,
+   "sd": 0.0731,
+   "min": 2.93,
+   "max": 3.17
+  },
+  "CW-CSE-IP15M": {
+   "n": 64,
+   "mean": 11.3486,
+   "sd": 0.2619,
+   "min": 10.96,
+   "max": 11.84
+  },
+  "CW-CSE-IP15R": {
+   "n": 67,
+   "mean": 8.7631,
+   "sd": 0.1984,
+   "min": 8.4,
+   "max": 9.09
+  },
+  "CW-SCR-GS24P": {
+   "n": 48,
+   "mean": 5.2617,
+   "sd": 0.1265,
+   "min": 5.04,
+   "max": 5.46
+  },
+  "CW-CSE-GS24S": {
+   "n": 66,
+   "mean": 3.9161,
+   "sd": 0.0895,
+   "min": 3.75,
+   "max": 4.06
+  },
+  "CW-CSE-IP15C": {
+   "n": 60,
+   "mean": 4.1733,
+   "sd": 0.0947,
+   "min": 4.04,
+   "max": 4.37
+  }
+ },
+ "qty_by_sku": {
+  "CW-SCR-LENS": {
+   "n": 60,
+   "mean": 2745.3333,
+   "sd": 1651.417,
+   "min": 100,
+   "max": 6800
+  },
+  "CW-CSE-PX8W": {
+   "n": 69,
+   "mean": 2390.9855,
+   "sd": 1560.3445,
+   "min": 192,
+   "max": 8300
+  },
+  "CW-SCR-IP15T": {
+   "n": 61,
+   "mean": 2868.6885,
+   "sd": 1485.5705,
+   "min": 260,
+   "max": 7750
+  },
+  "CW-CSE-IP15M": {
+   "n": 64,
+   "mean": 2758.0312,
+   "sd": 1573.0189,
+   "min": 168,
+   "max": 6984
+  },
+  "CW-CSE-IP15R": {
+   "n": 67,
+   "mean": 3138.6866,
+   "sd": 1727.0759,
+   "min": 120,
+   "max": 6980
+  },
+  "CW-SCR-GS24P": {
+   "n": 48,
+   "mean": 2881.4583,
+   "sd": 1624.2254,
+   "min": 260,
+   "max": 8570
+  },
+  "CW-CSE-GS24S": {
+   "n": 66,
+   "mean": 3017.4242,
+   "sd": 1681.5129,
+   "min": 400,
+   "max": 7890
+  },
+  "CW-CSE-IP15C": {
+   "n": 60,
+   "mean": 2770.8333,
+   "sd": 1617.4664,
+   "min": 100,
+   "max": 7950
+  }
+ },
+ "invoice_total": {
+  "n": 286,
+  "mean": 27701.0853,
+  "sd": 20320.3813,
+  "min": 1388.0,
+  "max": 90526.4
+ },
+ "lead_days": {
+  "n": 183,
+  "mean": 8.3497,
+  "sd": 1.1153,
+  "min": 7,
+  "max": 10
+ },
+ "timeline_last_20": [
+  {
+   "date": "2026-09-03",
+   "invoice": "PRA-99067",
+   "outcome": "qty_mismatch"
+  },
+  {
+   "date": "2026-09-04",
+   "invoice": "PRA-85938",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-05",
+   "invoice": "PRA-27404",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-10",
+   "invoice": "PRA-09026",
+   "outcome": "short_shipped"
+  },
+  {
+   "date": "2026-09-14",
+   "invoice": "PRA-82354",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-16",
+   "invoice": "PRA-26076",
+   "outcome": "lost_in_transit"
+  },
+  {
+   "date": "2026-09-18",
+   "invoice": "PRA-58507",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-19",
+   "invoice": "PRA-30648",
+   "outcome": "duplicate_invoice"
+  },
+  {
+   "date": "2026-09-20",
+   "invoice": "PRA-97411",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-22",
+   "invoice": "PRA-14611",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-23",
+   "invoice": "PRA-07115",
+   "outcome": "wrong_po"
+  },
+  {
+   "date": "2026-09-26",
+   "invoice": "PRA-94337",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-29",
+   "invoice": "PRA-01601",
+   "outcome": "wrong_po"
+  },
+  {
+   "date": "2026-09-29",
+   "invoice": "PRA-72911",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-30",
+   "invoice": "PRA-72637",
+   "outcome": "qty_mismatch"
+  },
+  {
+   "date": "2026-10-02",
+   "invoice": "PRA-81074",
+   "outcome": "wrong_po"
+  },
+  {
+   "date": "2026-10-06",
+   "invoice": "PRA-82096",
+   "outcome": "price_mismatch"
+  },
+  {
+   "date": "2026-10-09",
+   "invoice": "PRA-30269",
+   "outcome": "lost_in_transit"
+  },
+  {
+   "date": "2026-10-11",
+   "invoice": "PRA-31059",
+   "outcome": "wrong_po"
+  },
+  {
+   "date": "2026-10-24",
+   "invoice": "PRA-40283",
+   "outcome": "wait"
+  }
+ ]
+}

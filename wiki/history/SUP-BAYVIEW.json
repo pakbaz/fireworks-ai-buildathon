@@ -1,0 +1,264 @@
+{
+ "supplier_id": "SUP-BAYVIEW",
+ "built_from": "data/train.jsonl",
+ "invoices": 289,
+ "companies": {
+  "northside": 289
+ },
+ "problem_rate": 0.3841,
+ "problems_by_type": {
+  "qty_mismatch": 21,
+  "duplicate_invoice": 20,
+  "lost_in_transit": 17,
+  "wrong_po": 20,
+  "short_shipped": 19,
+  "price_mismatch": 14
+ },
+ "relative_to_all_suppliers": 1.024,
+ "unit_price_by_sku": {
+  "NS-SUT-0340": {
+   "n": 58,
+   "mean": 9.9543,
+   "sd": 0.2398,
+   "min": 9.56,
+   "max": 10.3
+  },
+  "NS-DRS-0510": {
+   "n": 58,
+   "mean": 5.3972,
+   "sd": 0.1306,
+   "min": 5.19,
+   "max": 5.61
+  },
+  "NS-CTH-0418": {
+   "n": 69,
+   "mean": 18.5281,
+   "sd": 0.4654,
+   "min": 17.86,
+   "max": 19.29
+  },
+  "NS-SKT-0330": {
+   "n": 58,
+   "mean": 141.991,
+   "sd": 3.1726,
+   "min": 136.45,
+   "max": 147.48
+  },
+  "NS-IVT-0120": {
+   "n": 55,
+   "mean": 8.3782,
+   "sd": 0.1847,
+   "min": 8.07,
+   "max": 8.72
+  },
+  "NS-ECG-0200": {
+   "n": 53,
+   "mean": 6.8098,
+   "sd": 0.1618,
+   "min": 6.54,
+   "max": 7.05
+  },
+  "NS-GLV-0710": {
+   "n": 52,
+   "mean": 11.2865,
+   "sd": 0.2679,
+   "min": 10.84,
+   "max": 11.69
+  },
+  "NS-GWN-1410": {
+   "n": 68,
+   "mean": 5.0822,
+   "sd": 0.1199,
+   "min": 4.9,
+   "max": 5.3
+  },
+  "NS-CVK-0090": {
+   "n": 55,
+   "mean": 96.3475,
+   "sd": 2.3119,
+   "min": 92.19,
+   "max": 99.79
+  }
+ },
+ "qty_by_sku": {
+  "NS-SUT-0340": {
+   "n": 58,
+   "mean": 261.6034,
+   "sd": 146.0587,
+   "min": 13,
+   "max": 740
+  },
+  "NS-DRS-0510": {
+   "n": 58,
+   "mean": 271.1897,
+   "sd": 149.8359,
+   "min": 10,
+   "max": 518
+  },
+  "NS-CTH-0418": {
+   "n": 69,
+   "mean": 306.058,
+   "sd": 175.4211,
+   "min": 20,
+   "max": 840
+  },
+  "NS-SKT-0330": {
+   "n": 58,
+   "mean": 292.2931,
+   "sd": 181.1251,
+   "min": 12,
+   "max": 822
+  },
+  "NS-IVT-0120": {
+   "n": 55,
+   "mean": 302.9818,
+   "sd": 182.6109,
+   "min": 50,
+   "max": 850
+  },
+  "NS-ECG-0200": {
+   "n": 53,
+   "mean": 296.0755,
+   "sd": 143.3476,
+   "min": 31,
+   "max": 600
+  },
+  "NS-GLV-0710": {
+   "n": 52,
+   "mean": 248.6154,
+   "sd": 190.5366,
+   "min": 12,
+   "max": 792
+  },
+  "NS-GWN-1410": {
+   "n": 68,
+   "mean": 284.2647,
+   "sd": 145.8911,
+   "min": 50,
+   "max": 633
+  },
+  "NS-CVK-0090": {
+   "n": 55,
+   "mean": 292.4,
+   "sd": 149.3156,
+   "min": 12,
+   "max": 564
+  }
+ },
+ "invoice_total": {
+  "n": 289,
+  "mean": 15782.9518,
+  "sd": 19541.1121,
+  "min": 204.61,
+  "max": 81414.73
+ },
+ "lead_days": {
+  "n": 200,
+  "mean": 3.51,
+  "sd": 1.0908,
+  "min": 2,
+  "max": 5
+ },
+ "timeline_last_20": [
+  {
+   "date": "2026-09-05",
+   "invoice": "1473486",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-06",
+   "invoice": "1143298",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-09-11",
+   "invoice": "1690868",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-12",
+   "invoice": "1878590",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-13",
+   "invoice": "1798692",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-09-14",
+   "invoice": "5408777",
+   "outcome": "short_shipped"
+  },
+  {
+   "date": "2026-09-16",
+   "invoice": "4783641",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-18",
+   "invoice": "6891469",
+   "outcome": "duplicate_invoice"
+  },
+  {
+   "date": "2026-09-22",
+   "invoice": "9104731",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-09-25",
+   "invoice": "4823022",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-27",
+   "invoice": "8272749",
+   "outcome": "duplicate_invoice"
+  },
+  {
+   "date": "2026-09-30",
+   "invoice": "7400848",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-09",
+   "invoice": "5833703",
+   "outcome": "price_mismatch"
+  },
+  {
+   "date": "2026-10-11",
+   "invoice": "3163689",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-15",
+   "invoice": "8942217",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-18",
+   "invoice": "6600077",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-10-19",
+   "invoice": "7672272",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-10-20",
+   "invoice": "2417881",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-20",
+   "invoice": "1800160",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-10-24",
+   "invoice": "9026084",
+   "outcome": "price_mismatch"
+  }
+ ]
+}

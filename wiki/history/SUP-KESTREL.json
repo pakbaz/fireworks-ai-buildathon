@@ -1,0 +1,321 @@
+{
+ "supplier_id": "SUP-KESTREL",
+ "built_from": "data/train.jsonl",
+ "invoices": 613,
+ "companies": {
+  "northside": 329,
+  "caseworks": 284
+ },
+ "problem_rate": 0.3768,
+ "problems_by_type": {
+  "price_mismatch": 42,
+  "duplicate_invoice": 39,
+  "wrong_po": 38,
+  "short_shipped": 40,
+  "lost_in_transit": 38,
+  "qty_mismatch": 34
+ },
+ "relative_to_all_suppliers": 1.005,
+ "unit_price_by_sku": {
+  "NS-CTH-0418": {
+   "n": 119,
+   "mean": 18.5607,
+   "sd": 0.4289,
+   "min": 17.86,
+   "max": 19.3
+  },
+  "NS-SUT-0340": {
+   "n": 108,
+   "mean": 9.9831,
+   "sd": 0.2419,
+   "min": 9.56,
+   "max": 10.34
+  },
+  "NS-CVK-0090": {
+   "n": 115,
+   "mean": 95.9398,
+   "sd": 2.4057,
+   "min": 92.17,
+   "max": 99.72
+  },
+  "NS-USP-0912": {
+   "n": 114,
+   "mean": 6735.7057,
+   "sd": 159.5669,
+   "min": 6480.04,
+   "max": 7010.95
+  },
+  "NS-DEF-3300": {
+   "n": 114,
+   "mean": 3257.3267,
+   "sd": 73.8446,
+   "min": 3145.32,
+   "max": 3405.0
+  },
+  "CW-SCR-IP15T": {
+   "n": 55,
+   "mean": 3.0536,
+   "sd": 0.0667,
+   "min": 2.94,
+   "max": 3.17
+  },
+  "CW-CSE-IP15M": {
+   "n": 43,
+   "mean": 11.424,
+   "sd": 0.2577,
+   "min": 11.01,
+   "max": 11.83
+  },
+  "CW-CSE-GS24S": {
+   "n": 71,
+   "mean": 3.899,
+   "sd": 0.093,
+   "min": 3.74,
+   "max": 4.05
+  },
+  "CW-CSE-IP15C": {
+   "n": 59,
+   "mean": 4.1998,
+   "sd": 0.0953,
+   "min": 4.04,
+   "max": 4.36
+  },
+  "CW-SCR-GS24P": {
+   "n": 71,
+   "mean": 5.2565,
+   "sd": 0.1351,
+   "min": 5.04,
+   "max": 5.46
+  },
+  "CW-SCR-LENS": {
+   "n": 67,
+   "mean": 3.3842,
+   "sd": 0.0659,
+   "min": 3.27,
+   "max": 3.53
+  },
+  "CW-CSE-IP15R": {
+   "n": 74,
+   "mean": 8.7549,
+   "sd": 0.2162,
+   "min": 8.43,
+   "max": 9.08
+  },
+  "CW-CSE-PX8W": {
+   "n": 58,
+   "mean": 9.6122,
+   "sd": 0.1998,
+   "min": 9.25,
+   "max": 9.96
+  }
+ },
+ "qty_by_sku": {
+  "NS-CTH-0418": {
+   "n": 119,
+   "mean": 277.9832,
+   "sd": 173.4738,
+   "min": 10,
+   "max": 840
+  },
+  "NS-SUT-0340": {
+   "n": 108,
+   "mean": 281.1019,
+   "sd": 149.5474,
+   "min": 10,
+   "max": 860
+  },
+  "NS-CVK-0090": {
+   "n": 115,
+   "mean": 282.6957,
+   "sd": 162.8391,
+   "min": 14,
+   "max": 864
+  },
+  "NS-USP-0912": {
+   "n": 114,
+   "mean": 3.9386,
+   "sd": 2.108,
+   "min": 1,
+   "max": 11
+  },
+  "NS-DEF-3300": {
+   "n": 114,
+   "mean": 3.7895,
+   "sd": 1.9889,
+   "min": 1,
+   "max": 10
+  },
+  "CW-SCR-IP15T": {
+   "n": 55,
+   "mean": 3188,
+   "sd": 1727.8483,
+   "min": 160,
+   "max": 7390
+  },
+  "CW-CSE-IP15M": {
+   "n": 43,
+   "mean": 3291.5814,
+   "sd": 1540.6403,
+   "min": 288,
+   "max": 8760
+  },
+  "CW-CSE-GS24S": {
+   "n": 71,
+   "mean": 3133.5211,
+   "sd": 1783.2303,
+   "min": 100,
+   "max": 8900
+  },
+  "CW-CSE-IP15C": {
+   "n": 59,
+   "mean": 2890.5085,
+   "sd": 2068.0839,
+   "min": 150,
+   "max": 9350
+  },
+  "CW-SCR-GS24P": {
+   "n": 71,
+   "mean": 2982.8169,
+   "sd": 1566.9044,
+   "min": 520,
+   "max": 7810
+  },
+  "CW-SCR-LENS": {
+   "n": 67,
+   "mean": 2757.0149,
+   "sd": 1546.8659,
+   "min": 100,
+   "max": 8570
+  },
+  "CW-CSE-IP15R": {
+   "n": 74,
+   "mean": 3056.8919,
+   "sd": 1856.3547,
+   "min": 192,
+   "max": 8616
+  },
+  "CW-CSE-PX8W": {
+   "n": 58,
+   "mean": 3247.7241,
+   "sd": 1669.3313,
+   "min": 120,
+   "max": 7080
+  }
+ },
+ "invoice_total": {
+  "n": 613,
+  "mean": 26217.4387,
+  "sd": 19225.7148,
+  "min": 188.2,
+  "max": 88836.8
+ },
+ "lead_days": {
+  "n": 378,
+  "mean": 7.4497,
+  "sd": 1.0978,
+  "min": 6,
+  "max": 9
+ },
+ "timeline_last_20": [
+  {
+   "date": "2026-09-23",
+   "invoice": "KGT/26/2886",
+   "outcome": "duplicate_invoice"
+  },
+  {
+   "date": "2026-09-23",
+   "invoice": "KGT/26/4606",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-23",
+   "invoice": "KGT/26/9653",
+   "outcome": "short_shipped"
+  },
+  {
+   "date": "2026-09-24",
+   "invoice": "KGT/26/3107",
+   "outcome": "duplicate_invoice"
+  },
+  {
+   "date": "2026-09-25",
+   "invoice": "KGT/26/5374",
+   "outcome": "duplicate_invoice"
+  },
+  {
+   "date": "2026-09-26",
+   "invoice": "KGT/26/2124",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-27",
+   "invoice": "KGT/26/5979",
+   "outcome": "duplicate_invoice"
+  },
+  {
+   "date": "2026-09-27",
+   "invoice": "KGT/26/4104",
+   "outcome": "lost_in_transit"
+  },
+  {
+   "date": "2026-09-28",
+   "invoice": "KGT/26/5735",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-02",
+   "invoice": "KGT/26/7337",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-03",
+   "invoice": "KGT/26/2495",
+   "outcome": "wrong_po"
+  },
+  {
+   "date": "2026-10-05",
+   "invoice": "KGT/26/3046",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-10-06",
+   "invoice": "KGT/26/4136",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-08",
+   "invoice": "KGT/26/0081",
+   "outcome": "qty_mismatch"
+  },
+  {
+   "date": "2026-10-09",
+   "invoice": "KGT/26/4539",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-10-11",
+   "invoice": "KGT/26/7303",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-19",
+   "invoice": "KGT/26/9323",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-19",
+   "invoice": "KGT/26/4598",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-21",
+   "invoice": "KGT/26/7871",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-10-25",
+   "invoice": "KGT/26/9810",
+   "outcome": "wait"
+  }
+ ]
+}

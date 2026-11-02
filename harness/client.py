@@ -20,7 +20,7 @@ def chat(model, messages, max_tokens=1500, json_mode=True, logprobs=False, tempe
         r = json.load(open(path)); r["_cached"] = True
         return r
     delay = 2.0
-    for attempt in range(6):
+    for attempt in range(10):
         t0 = time.time()
         try:
             req = urllib.request.Request(config.API_URL, data=json.dumps(body).encode(),
@@ -32,12 +32,14 @@ def chat(model, messages, max_tokens=1500, json_mode=True, logprobs=False, tempe
             return r
         except urllib.error.HTTPError as e:
             msg = e.read().decode()[:300]
-            if e.code in (429, 500, 502, 503, 504) and attempt < 5:
-                time.sleep(delay + random.random()); delay *= 2; continue
+            if e.code in (429, 500, 502, 503, 504) and attempt < 9:
+                ra = e.headers.get("Retry-After") if e.headers else None  # Fireworks docs: honor Retry-After, else backoff with jitter
+                wait = float(ra) if ra and ra.replace(".", "", 1).isdigit() else delay + random.random()
+                time.sleep(min(wait, 60)); delay = min(delay * 2, 60); continue
             raise RuntimeError(f"HTTP {e.code}: {msg}")
         except (urllib.error.URLError, TimeoutError) as e:
-            if attempt < 5:
-                time.sleep(delay + random.random()); delay *= 2; continue
+            if attempt < 9:
+                time.sleep(delay + random.random()); delay = min(delay * 2, 60); continue
             raise
 
 def usage_cost(model, r):

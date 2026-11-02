@@ -1,0 +1,292 @@
+{
+ "supplier_id": "SUP-MERIDIAN",
+ "built_from": "data/train.jsonl",
+ "invoices": 299,
+ "companies": {
+  "northside": 299
+ },
+ "problem_rate": 0.4114,
+ "problems_by_type": {
+  "short_shipped": 17,
+  "qty_mismatch": 25,
+  "duplicate_invoice": 19,
+  "wrong_po": 18,
+  "price_mismatch": 17,
+  "lost_in_transit": 27
+ },
+ "relative_to_all_suppliers": 1.097,
+ "unit_price_by_sku": {
+  "NS-GWN-1410": {
+   "n": 47,
+   "mean": 5.1117,
+   "sd": 0.1162,
+   "min": 4.93,
+   "max": 5.29
+  },
+  "NS-SKT-0330": {
+   "n": 50,
+   "mean": 141.7846,
+   "sd": 2.9529,
+   "min": 136.54,
+   "max": 147.57
+  },
+  "NS-SYP-1100": {
+   "n": 46,
+   "mean": 2401.9352,
+   "sd": 51.8726,
+   "min": 2299.16,
+   "max": 2482.96
+  },
+  "NS-INF-2200": {
+   "n": 52,
+   "mean": 4857.0062,
+   "sd": 110.6994,
+   "min": 4664.74,
+   "max": 5042.09
+  },
+  "NS-CVK-0090": {
+   "n": 42,
+   "mean": 95.5329,
+   "sd": 2.1124,
+   "min": 92.38,
+   "max": 99.42
+  },
+  "NS-SUT-0340": {
+   "n": 40,
+   "mean": 9.906,
+   "sd": 0.2026,
+   "min": 9.58,
+   "max": 10.29
+  },
+  "NS-ECG-0200": {
+   "n": 48,
+   "mean": 6.815,
+   "sd": 0.1512,
+   "min": 6.56,
+   "max": 7.07
+  },
+  "NS-CTH-0418": {
+   "n": 47,
+   "mean": 18.5983,
+   "sd": 0.3913,
+   "min": 17.86,
+   "max": 19.21
+  },
+  "NS-GLV-0710": {
+   "n": 49,
+   "mean": 11.2322,
+   "sd": 0.2558,
+   "min": 10.8,
+   "max": 11.7
+  },
+  "NS-IVT-0120": {
+   "n": 46,
+   "mean": 8.3861,
+   "sd": 0.2126,
+   "min": 8.06,
+   "max": 8.73
+  },
+  "NS-DRS-0510": {
+   "n": 43,
+   "mean": 5.3928,
+   "sd": 0.1177,
+   "min": 5.21,
+   "max": 5.59
+  }
+ },
+ "qty_by_sku": {
+  "NS-GWN-1410": {
+   "n": 47,
+   "mean": 334.2128,
+   "sd": 181.9968,
+   "min": 50,
+   "max": 800
+  },
+  "NS-SKT-0330": {
+   "n": 50,
+   "mean": 236.72,
+   "sd": 157.3034,
+   "min": 18,
+   "max": 692
+  },
+  "NS-SYP-1100": {
+   "n": 46,
+   "mean": 4.087,
+   "sd": 2.0518,
+   "min": 1,
+   "max": 11
+  },
+  "NS-INF-2200": {
+   "n": 52,
+   "mean": 3.9038,
+   "sd": 1.9241,
+   "min": 1,
+   "max": 10
+  },
+  "NS-CVK-0090": {
+   "n": 42,
+   "mean": 309.119,
+   "sd": 168.8144,
+   "min": 18,
+   "max": 876
+  },
+  "NS-SUT-0340": {
+   "n": 40,
+   "mean": 293.85,
+   "sd": 157.2213,
+   "min": 10,
+   "max": 750
+  },
+  "NS-ECG-0200": {
+   "n": 48,
+   "mean": 276.4375,
+   "sd": 163.8817,
+   "min": 50,
+   "max": 710
+  },
+  "NS-CTH-0418": {
+   "n": 47,
+   "mean": 278.5106,
+   "sd": 166.7341,
+   "min": 10,
+   "max": 640
+  },
+  "NS-GLV-0710": {
+   "n": 49,
+   "mean": 264.0408,
+   "sd": 167.4989,
+   "min": 12,
+   "max": 768
+  },
+  "NS-IVT-0120": {
+   "n": 46,
+   "mean": 309.4783,
+   "sd": 155.9573,
+   "min": 24,
+   "max": 550
+  },
+  "NS-DRS-0510": {
+   "n": 43,
+   "mean": 271.2093,
+   "sd": 154.5879,
+   "min": 10,
+   "max": 530
+  }
+ },
+ "invoice_total": {
+  "n": 299,
+  "mean": 15722.1853,
+  "sd": 17895.6183,
+  "min": 54.1,
+  "max": 117780.75
+ },
+ "lead_days": {
+  "n": 189,
+  "mean": 4.4497,
+  "sd": 1.105,
+  "min": 3,
+  "max": 6
+ },
+ "timeline_last_20": [
+  {
+   "date": "2026-09-06",
+   "invoice": "MMD-81270",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-07",
+   "invoice": "MMD-57041",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-12",
+   "invoice": "MMD-44636",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-13",
+   "invoice": "MMD-92262",
+   "outcome": "price_mismatch"
+  },
+  {
+   "date": "2026-09-13",
+   "invoice": "MMD-68841",
+   "outcome": "duplicate_invoice"
+  },
+  {
+   "date": "2026-09-14",
+   "invoice": "MMD-34818",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-15",
+   "invoice": "MMD-77762",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-09-18",
+   "invoice": "MMD-77333",
+   "outcome": "lost_in_transit"
+  },
+  {
+   "date": "2026-09-18",
+   "invoice": "MMD-42372",
+   "outcome": "qty_mismatch"
+  },
+  {
+   "date": "2026-09-19",
+   "invoice": "MMD-54913",
+   "outcome": "short_shipped"
+  },
+  {
+   "date": "2026-09-26",
+   "invoice": "MMD-58378",
+   "outcome": "wrong_po"
+  },
+  {
+   "date": "2026-09-27",
+   "invoice": "MMD-17500",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-10-02",
+   "invoice": "MMD-23517",
+   "outcome": "lost_in_transit"
+  },
+  {
+   "date": "2026-10-02",
+   "invoice": "MMD-61068",
+   "outcome": "duplicate_invoice"
+  },
+  {
+   "date": "2026-10-02",
+   "invoice": "MMD-99985",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-08",
+   "invoice": "MMD-04102",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-10",
+   "invoice": "MMD-52405",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-10-11",
+   "invoice": "MMD-91402",
+   "outcome": "lost_in_transit"
+  },
+  {
+   "date": "2026-10-12",
+   "invoice": "MMD-87382",
+   "outcome": "short_shipped"
+  },
+  {
+   "date": "2026-10-15",
+   "invoice": "MMD-20795",
+   "outcome": "wait"
+  }
+ ]
+}

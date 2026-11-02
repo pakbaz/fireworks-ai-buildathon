@@ -1,0 +1,222 @@
+{
+ "supplier_id": "SUP-CARDIOLINE",
+ "built_from": "data/train.jsonl",
+ "invoices": 300,
+ "companies": {
+  "northside": 300
+ },
+ "problem_rate": 0.3333,
+ "problems_by_type": {
+  "short_shipped": 22,
+  "wrong_po": 15,
+  "qty_mismatch": 19,
+  "price_mismatch": 13,
+  "lost_in_transit": 18,
+  "duplicate_invoice": 13
+ },
+ "relative_to_all_suppliers": 0.889,
+ "unit_price_by_sku": {
+  "NS-DEF-3300": {
+   "n": 102,
+   "mean": 3264.7789,
+   "sd": 71.9173,
+   "min": 3147.35,
+   "max": 3405.49
+  },
+  "NS-ANS-5000": {
+   "n": 95,
+   "mean": 58431.7549,
+   "sd": 1283.2603,
+   "min": 56164.8,
+   "max": 60758.36
+  },
+  "NS-MON-7100": {
+   "n": 81,
+   "mean": 12361.0798,
+   "sd": 277.4602,
+   "min": 11910.37,
+   "max": 12884.75
+  },
+  "NS-VEN-0450": {
+   "n": 90,
+   "mean": 28863.1518,
+   "sd": 663.2238,
+   "min": 27761.27,
+   "max": 30038.69
+  },
+  "NS-INF-2200": {
+   "n": 83,
+   "mean": 4842.1717,
+   "sd": 110.2059,
+   "min": 4666.85,
+   "max": 5040.46
+  },
+  "NS-USP-0912": {
+   "n": 80,
+   "mean": 6736.2189,
+   "sd": 154.8213,
+   "min": 6484.54,
+   "max": 7015.51
+  }
+ },
+ "qty_by_sku": {
+  "NS-DEF-3300": {
+   "n": 102,
+   "mean": 3.9804,
+   "sd": 2.0194,
+   "min": 1,
+   "max": 11
+  },
+  "NS-ANS-5000": {
+   "n": 95,
+   "mean": 3.9895,
+   "sd": 2.2313,
+   "min": 1,
+   "max": 11
+  },
+  "NS-MON-7100": {
+   "n": 81,
+   "mean": 4.2963,
+   "sd": 2.2795,
+   "min": 1,
+   "max": 11
+  },
+  "NS-VEN-0450": {
+   "n": 90,
+   "mean": 3.9556,
+   "sd": 2.309,
+   "min": 1,
+   "max": 11
+  },
+  "NS-INF-2200": {
+   "n": 83,
+   "mean": 3.8675,
+   "sd": 2.0463,
+   "min": 1,
+   "max": 11
+  },
+  "NS-USP-0912": {
+   "n": 80,
+   "mean": 3.75,
+   "sd": 1.9203,
+   "min": 1,
+   "max": 9
+  }
+ },
+ "invoice_total": {
+  "n": 300,
+  "mean": 122959.8599,
+  "sd": 113705.1878,
+  "min": 3152.1,
+  "max": 523319.34
+ },
+ "lead_days": {
+  "n": 201,
+  "mean": 9.4975,
+  "sd": 1.0656,
+  "min": 8,
+  "max": 11
+ },
+ "timeline_last_20": [
+  {
+   "date": "2026-09-12",
+   "invoice": "RE-2607140",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-09-12",
+   "invoice": "RE-2679147",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-14",
+   "invoice": "RE-2621996",
+   "outcome": "short_shipped"
+  },
+  {
+   "date": "2026-09-14",
+   "invoice": "RE-2697160",
+   "outcome": "lost_in_transit"
+  },
+  {
+   "date": "2026-09-16",
+   "invoice": "RE-2637112",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-18",
+   "invoice": "RE-2634623",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-22",
+   "invoice": "RE-2650342",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-25",
+   "invoice": "RE-2679170",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-28",
+   "invoice": "RE-2609106",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-28",
+   "invoice": "RE-2634490",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-09-28",
+   "invoice": "RE-2643331",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-09-30",
+   "invoice": "RE-2666034",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-01",
+   "invoice": "RE-2613390",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-10-02",
+   "invoice": "RE-2600790",
+   "outcome": "price_mismatch"
+  },
+  {
+   "date": "2026-10-03",
+   "invoice": "RE-2660899",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-10-05",
+   "invoice": "RE-2620300",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-06",
+   "invoice": "RE-2683474",
+   "outcome": "paid"
+  },
+  {
+   "date": "2026-10-08",
+   "invoice": "RE-2652977",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-10-10",
+   "invoice": "RE-2690308",
+   "outcome": "wait"
+  },
+  {
+   "date": "2026-10-21",
+   "invoice": "RE-2632605",
+   "outcome": "short_shipped"
+  }
+ ]
+}

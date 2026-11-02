@@ -19,9 +19,13 @@ def cost_of_miss(at_risk_usd, wiki, policy, case_items=None):
     w = (policy or {}).get("category_weights") or CAT_DEFAULT
     cats = [it.get("category") for it in (wiki or {}).get("items") or []] if wiki else []
     cat_w = max([w.get(c, 1) for c in cats] or [1])
+    # Supplier weight from the measured history of past invoices (wiki/history), else from the wiki page.
+    from .supplier_history import supplier_weight
     sup = (wiki or {}).get("supplier") if wiki else None
     sup_w = 1.0
-    if sup and num(sup.get("past_problem_rate")) is not None:
+    if wiki and "history" in wiki:
+        sup_w = supplier_weight(wiki.get("history"), policy)
+    elif sup and num(sup.get("past_problem_rate")) is not None:
         lo, hi = (policy or {}).get("supplier_weight_range", [0.5, 2])
         sup_w = min(hi, max(lo, 0.5 + 15 * num(sup.get("past_problem_rate"))))
     return at_risk_usd * cat_w * sup_w
@@ -38,6 +42,8 @@ def decide(risk, at_risk_usd, wait, wiki, policy):
     """Escalate when expected loss from paying beats the cost of a review."""
     if wait and risk < 0.5:
         return "WAIT"
+    if risk >= 0.5 and not at_risk_usd:
+        return "ESCALATE"  # a likely problem with an unknown amount: fail closed
     d = explain(risk, at_risk_usd, wiki, policy)
     return "ESCALATE" if d["expected_loss_if_paid_usd"] > d["expected_cost_of_review_usd"] else "PAY"
 
