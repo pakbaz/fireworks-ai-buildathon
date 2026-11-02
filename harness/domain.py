@@ -78,8 +78,12 @@ def analyze(read, case, wiki, policy):
     items = wiki["items"] if wiki else None
     po, asn, gr, inv = (read or {}).get("po") or {}, (read or {}).get("shipping_notice"), (read or {}).get("gr"), (read or {}).get("invoice") or {}
     # Only decision-critical values count as unreadable: quantities, prices, amounts, references, invoice number, dates.
-    CRIT = ("qty", "price", "amount", "total", "po_ref", "po_number", "invoice_number", "ship_date")
+    # The invoice total is derived from the line amounts, so an unreadable total only matters if the lines are unreadable too.
+    CRIT = ("qty", "price", "amount", "po_ref", "po_number", "invoice_number", "ship_date")
     unreadable = [u for u in ((read or {}).get("unreadable") or []) if any(k in str(u).lower() for k in CRIT)]
+    _inv = (read or {}).get("invoice") or {}
+    if _inv.get("total") is None and not all(num(l.get("amount")) is not None for l in _inv.get("lines") or [{}]):
+        unreadable.append("invoice.total")
     issues, risk_usd = [], 0.0
     inv_total = num(inv.get("total")) or sum(num(l.get("amount")) or 0 for l in inv.get("lines") or [])
 

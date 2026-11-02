@@ -1,0 +1,21 @@
+{
+ "supplier_id": "SUP-LUMEN",
+ "aliases": [
+  "Lumen Accessories Ltd.",
+  "Lumen Accessories"
+ ],
+ "sites": [
+  "Shenzhen"
+ ],
+ "po_ref_style": "PO-008812",
+ "number_format": "US",
+ "handwritten_qty_authoritative": false,
+ "lead_days": 5,
+ "layout_notes": "Clean printed documents.",
+ "past_problem_rate": 0.02,
+ "synthetic": true,
+ "author": "reviewer-1",
+ "approved_by": "ap-lead",
+ "version": 1,
+ "expires": "2027-06-30"
+}

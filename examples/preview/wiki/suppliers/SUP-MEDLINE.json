@@ -1,0 +1,23 @@
+{
+ "supplier_id": "SUP-MEDLINE",
+ "aliases": [
+  "MedLine Devices Inc.",
+  "Medline Devices, Inc.",
+  "Medline Devices"
+ ],
+ "sites": [
+  "Reno",
+  "Dallas"
+ ],
+ "po_ref_style": "P.O. 4471",
+ "number_format": "EU",
+ "handwritten_qty_authoritative": true,
+ "lead_days": 6,
+ "layout_notes": "Received count is often handwritten next to the QTY column.",
+ "past_problem_rate": 0.06,
+ "synthetic": true,
+ "author": "reviewer-2",
+ "approved_by": "ap-lead",
+ "version": 1,
+ "expires": "2027-06-30"
+}

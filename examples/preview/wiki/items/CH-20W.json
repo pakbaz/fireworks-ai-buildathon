@@ -1,0 +1,12 @@
+{
+ "sku": "CH-20W",
+ "description_variants": [
+  "20W USB-C charger"
+ ],
+ "uom": "EA",
+ "pack_conversions": {
+  "CS": 50
+ },
+ "unit_value": 6.85,
+ "category": "consumer"
+}

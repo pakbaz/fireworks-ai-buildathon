@@ -26,10 +26,17 @@ def cost_of_miss(at_risk_usd, wiki, policy, case_items=None):
         sup_w = min(hi, max(lo, 0.5 + 15 * num(sup.get("past_problem_rate"))))
     return at_risk_usd * cat_w * sup_w
 
+def explain(risk, at_risk_usd, wiki, policy):
+    """The dial's numbers, for display: review cost, cost of a miss, and the risk threshold above which we escalate."""
+    review = float((policy or {}).get("review_cost_usd", 10))
+    miss = cost_of_miss(max(at_risk_usd or 0.0, 0.0), wiki, policy)
+    threshold = review / (review + miss) if miss > 0 else 1.0
+    return {"review_cost_usd": review, "cost_of_miss_usd": round(miss, 2), "escalate_above_risk": round(threshold, 6),
+            "expected_loss_if_paid_usd": round((risk or 0) * miss, 2), "expected_cost_of_review_usd": round((1 - (risk or 0)) * review, 2)}
+
 def decide(risk, at_risk_usd, wait, wiki, policy):
     """Escalate when expected loss from paying beats the cost of a review."""
     if wait and risk < 0.5:
         return "WAIT"
-    review = float((policy or {}).get("review_cost_usd", 10))
-    miss = cost_of_miss(max(at_risk_usd, 0.0), wiki, policy)
-    return "ESCALATE" if risk * miss > (1 - risk) * review else "PAY"
+    d = explain(risk, at_risk_usd, wiki, policy)
+    return "ESCALATE" if d["expected_loss_if_paid_usd"] > d["expected_cost_of_review_usd"] else "PAY"

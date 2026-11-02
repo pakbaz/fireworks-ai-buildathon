@@ -1,0 +1,13 @@
+{
+ "sku": "PC-IP15",
+ "description_variants": [
+  "Clear phone case, iPhone 15",
+  "Clear phone case iPhone 15"
+ ],
+ "uom": "EA",
+ "pack_conversions": {
+  "CS": 100
+ },
+ "unit_value": 3.1,
+ "category": "consumer"
+}

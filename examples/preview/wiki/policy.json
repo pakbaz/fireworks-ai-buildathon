@@ -1,0 +1,15 @@
+{
+ "price_tolerance": 0.01,
+ "in_transit_window_days": 10,
+ "review_cost_usd": 10,
+ "category_weights": {
+  "medical_device": 25,
+  "medical_consumable": 3,
+  "consumer": 1
+ },
+ "supplier_weight_range": [
+  0.5,
+  2
+ ],
+ "overrides": {}
+}

@@ -43,7 +43,7 @@ def alone(case, model, use_images, frontier):
     action = dial.decide(risk, at_risk, wait, wiki, policy)
     return dict(model=model, action=action, model_action=model_action, risk=round(float(risk), 4), at_risk_usd=at_risk,
                 reason_code=j.get("reason_code"), next_step=j.get("next_step"), evidence=j.get("evidence"),
-                features=None, **stats)
+                features=None, read=None, issues=None, dial=dial.explain(risk, at_risk, wiki, policy), **stats)
 
 def harness(case, model, use_images, with_wiki):
     stats = dict(calls=0, tokens_in=0, tokens_out=0, cost_usd=0.0, latency_ms=0)
@@ -56,6 +56,7 @@ def harness(case, model, use_images, with_wiki):
     read = client.parse_json(client.content(r)) or {}
     issues, feats, at_risk, wait = domain.analyze(read, case, wiki, policy)
     agree = True
+    read2 = None
     # 2. Re-read only when a check failed or a value was unreadable.
     if issues or feats["n_unreadable"]:
         focus = ", ".join(feats["unreadable"] + [i[2] for i in issues]) or "all quantities, prices and references"
@@ -83,4 +84,6 @@ def harness(case, model, use_images, with_wiki):
     else:
         code, step, ev = "none", "pay", "all checks passed on readable fields"
     return dict(model=model, action=action, model_action=None, risk=risk, at_risk_usd=at_risk, reason_code=code,
-                next_step=step, evidence=ev, features=feats, **stats)
+                next_step=step, evidence=ev, features=feats, read=read2 if (issues or feats["n_unreadable"]) and read2 else read,
+                issues=[{"code": c, "next_step": n, "detail": d} for c, n, d in issues],
+                dial=dial.explain(risk, at_risk, wiki_full, policy), **stats)

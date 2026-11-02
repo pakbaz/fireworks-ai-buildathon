@@ -1,0 +1,13 @@
+{
+ "sku": "TUB-05",
+ "description_variants": [
+  "IV tubing set",
+  "IV Tubing"
+ ],
+ "uom": "EA",
+ "pack_conversions": {
+  "CS": 50
+ },
+ "unit_value": 12.4,
+ "category": "medical_consumable"
+}

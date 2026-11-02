@@ -1,0 +1,12 @@
+{
+ "sku": "SP-GL15",
+ "description_variants": [
+  "Tempered glass protector"
+ ],
+ "uom": "EA",
+ "pack_conversions": {
+  "BX": 100
+ },
+ "unit_value": 1.95,
+ "category": "consumer"
+}

@@ -1,0 +1,12 @@
+{
+ "sku": "INF-220",
+ "description_variants": [
+  "Infusion pump, dual channel",
+  "Infusion Pump DC",
+  "Infusion pump DC"
+ ],
+ "uom": "EA",
+ "pack_conversions": {},
+ "unit_value": 40000.0,
+ "category": "medical_device"
+}
