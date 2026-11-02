@@ -1,17 +1,17 @@
 # Fireworks demo — presentation figures (updated)
 
-**Latest benchmark source reviewed:** [root results.md](../../../results.md), commit \`e9489c8a51666a845e69eddf10d7d54a04ec8270\` (November 2, 2026).
+**Latest benchmark source reviewed:** [root results.md](../../../results.md), commits `e9489c8a51666a845e69eddf10d7d54a04ec8270` (full text/context results) and `307342006a7673ca2c3fb2c2766f327ee2c3a03b` (new image subset) (November 2, 2026).
 **What is new:** the complete **1,000-case document** result and the full **210-case low-reasoning history** result replace the earlier 300-case/default-reasoning figures.
-**Provenance:** Every number comes from saved synthetic predictions and the repository's final \`results.md\`. No additional model inference was run for this presentation. The original full 1,000 GLM low-mode JSONL is too large for our review tool to ingest completely, so the full-document totals are taken from the team's committed \`results.md\`; we verified the 210-case low-mode prediction file directly.
+**Provenance:** Every number comes from saved synthetic predictions and the repository's final `results.md`. No additional model inference was run for this presentation. The original full 1,000 GLM low-mode JSONL is too large for our review tool to ingest completely, so the full-document totals are taken from the team's committed `results.md`; we verified the 210-case low-mode prediction file directly.
 
 ## Open the presentation
 
-**[Presentation deck (HTML)](index.html)** — self-contained, keyboard-controlled deck referencing the SVGs in this folder. **After cloning or downloading this folder, open \`index.html\` in a browser.** In GitHub's code view it displays as source; it is not a deployed website.
+**[Presentation deck (HTML)](index.html)** — self-contained, keyboard-controlled deck referencing the SVGs in this folder. **After cloning or downloading this folder, open `index.html` in a browser.** In GitHub's code view it displays as source; it is not a deployed website.
 
 - Arrow keys / space: next or previous slide; **N**: show presenter notes; **F**: fullscreen.
 - All illustrations are 1600 × 900 SVGs with legible text, reusable in a conventional slide deck. No external fonts or remote image dependencies.
 - Slides 1–7 are the main story. Slides 8–9 are optional *business economics and scanned-image* backups; do not use the economics assumptions as realized ROI.
-- Charts were authored from the benchmark evidence, not produced by the model, and are independent of the separately mocked analyst dashboard in \`dashboard/\`.
+- Charts were authored from the benchmark evidence, not produced by the model, and are independent of the separately mocked analyst dashboard in `dashboard/`.
 
 ## Figures (presentation sequence)
 
@@ -39,8 +39,8 @@ All four documents agree. **140** cases contain one of seven synthetic history a
 | Kimi K3 + harness + wiki | 140 (100%) | 0 | $1.391 |
 | **GLM 5.3 Flash low-reasoning + harness + wiki** | **139 (99.3%)** | **0** | **$0.056** |
 
-- Directly inspected \`runs/glm_harness_wiki_low/test_context.jsonl\`: **210 cases**, 139 \`ESCALATE\` and 71 \`PAY\`, total model cost **$0.11824990** (dividing by 210 and multiplying by 100 yields **$0.0563 per 100**).
-- For the same small GLM reader, removing company history/wiki (\`runs/glm_harness_low/test_context.jsonl\`) produced **40 escalations out of 140** synthetic anomalies and **170 PAY** total; the result is reported as **40/140** in \`results.md\`.
+- Directly inspected `runs/glm_harness_wiki_low/test_context.jsonl`: **210 cases**, 139 `ESCALATE` and 71 `PAY`, total model cost **$0.11824990** (dividing by 210 and multiplying by 100 yields **$0.0563 per 100**).
+- For the same small GLM reader, removing company history/wiki (`runs/glm_harness_low/test_context.jsonl`) produced **40 escalations out of 140** synthetic anomalies and **170 PAY** total; the result is reported as **40/140** in `results.md`.
 - In the **same Kimi reader** comparison, Kimi alone detects 121/140 while Kimi + deterministic checks detects 140/140. This is a strong demonstration of a *system design* gain, not that frontier models are intrinsically unable to compare history.
 - About **19.2× lower model-inference cost** for GLM low-reasoning harness vs Kimi-alone; cost comparison **excludes human reviewers, application hosting, and financial losses**.
 - Original Kimi baseline without explicit history instructions caught 19/140. That is **not** the fair headline and should only be shown as an example of prompt sensitivity.
@@ -52,11 +52,11 @@ All four documents agree. **140** cases contain one of seven synthetic history a
 | Kimi K3 standalone | **374** (99.73%) | **1** (0.2%) | $9.20 |
 | **GLM low-reasoning harness + wiki** | 373 (99.47%) | 27 (5.4%) | **$0.76** |
 
-**Tradeoff:** roughly **12× lower model-inference cost**, but **one additional miss and 26 additional false human-review alerts**. Median per-invoice latency is approximately **3.4 s for Kimi**, **4.6 s for our system** (committed \`results.md\`). *Do not* claim equal detection performance or proven labor savings. Some cases are in transit and require \`WAIT\`; fine-invoice denominators exclude these.
+**Tradeoff:** roughly **12× lower model-inference cost**, but **one additional miss and 26 additional false human-review alerts**. Median per-invoice latency is approximately **3.4 s for Kimi**, **4.6 s for our system** (committed `results.md`). *Do not* claim equal detection performance or proven labor savings. Some cases are in transit and require `WAIT`; fine-invoice denominators exclude these.
 
 ### C. Reasoning-effort engineering experiment
 
-**Same first 300 document cases**, default versus low-reasoning GLM harness, as reported in \`results.md\`:
+**Same first 300 document cases**, default versus low-reasoning GLM harness, as reported in `results.md`:
 
 | Metric | Default | Low | Interpretation |
 |---|---:|---:|---|
@@ -65,16 +65,16 @@ All four documents agree. **140** cases contain one of seven synthetic history a
 | Model cost / 100 | $0.29 | $0.08 | ~73% cheaper |
 | Median latency | 22.2 s | 5.1 s | ~4.4× faster |
 
-On the **separate 210-case history** comparison, default-reasoning GLM harness (versioned \`runs/glm_harness_wiki_v2/test_context.jsonl\`) caught **140/140**; low mode caught **139/140**. Thus low reasoning was not universally equally accurate. The current low-mode full results are the primary headline.
+On the **separate 210-case history** comparison, default-reasoning GLM harness (versioned `runs/glm_harness_wiki_v2/test_context.jsonl`) caught **140/140**; low mode caught **139/140**. Thus low reasoning was not universally equally accurate. The current low-mode full results are the primary headline.
 
 ### D. Evidence-grounded single case
 
-From \`examples/demo/TESTCTX-0149.json\`:
+From `examples/demo/TESTCTX-0149.json`:
 - Synthetic hospital invoice: **82** infusion pumps × **$4,835.44** = **$396,506.08**.
 - Supplier history: largest prior buyer–supplier–item quantity **11**; executable condition: **quantity > 3 × 11 = 33**.
 - Standalone Kimi, explicitly instructed to check the history, **recommended PAY** and said quantity was below the threshold.
-- Harness result **ESCALATE**, reason \`quantity_spike\`. The human reviewer verifies the unusual order. No payment is executed.
-- Invoice total is **not** an amount proven lost or saved; it is a synthetic invoice value. \`at_risk_usd\` is a synthetic policy-based exposure estimate.
+- Harness result **ESCALATE**, reason `quantity_spike`. The human reviewer verifies the unusual order. No payment is executed.
+- Invoice total is **not** an amount proven lost or saved; it is a synthetic invoice value. `at_risk_usd` is a synthetic policy-based exposure estimate.
 
 ### E. Scanned-image subset — backup result
 
@@ -99,18 +99,18 @@ This is a serious input-quality limitation: the smaller model's image extraction
 ## Evaluator, design, and stakeholder guidance
 
 - **ML evaluator:** compare **matched test cases**; show exact numerator/denominator; keep original and new prompts separate; disclose that the seven anomaly types were predefined and improved prompts followed prior feedback. "Zero observed false alarms" is not a population guarantee.
-- **AP analyst:** prefer a specific issue code, source field and verified comparison over a vague model score. \`PAY\` means *recommendation*, not an automated payment.
+- **AP analyst:** prefer a specific issue code, source field and verified comparison over a vague model score. `PAY` means *recommendation*, not an automated payment.
 - **Finance/controller:** token savings do not imply savings in human-review workload. At the project's illustrative $10/review, 26 extra false alerts would add **$260** in labor assumptions, dwarfing the **$8.44** model savings over the 1,000 document cases. Slide 8 is an **assumption-driven backup**, not measured ROI; it also excludes costs of missed problems.
 - **UX/judge:** start with one striking case, then evidence of generality, component ablation, meaningful tradeoffs, and transparent limitations. Avoid tiny legends and unsupported fraud-prevention claims.
-- **Security:** no verified supplier bank-account identity registry, no autonomous payments, no validated production financial data. The separate mocked \`dashboard/\` design has answer-key-derived highlights and should not be represented as live detection.
+- **Security:** no verified supplier bank-account identity registry, no autonomous payments, no validated production financial data. The separate mocked `dashboard/` design has answer-key-derived highlights and should not be represented as live detection.
 
 ## Source-of-truth files
 
 - Primary published summary: [../../../results.md](../../../results.md)
-- 210 context cases: \`runs/glm_harness_wiki_low/test_context.jsonl\`, \`runs/glm_harness_low/test_context.jsonl\`, \`runs/kimi_alone/test_context.jsonl\`, \`runs/kimi_harness_wiki/test_context.jsonl\`.
-- General documents: \`runs/glm_harness_wiki_low/test.jsonl\`, \`runs/kimi_alone/test.jsonl\`.
-- Reasoning comparison: \`runs/glm_harness_wiki/test.jsonl\` (300 default), \`runs/glm_harness_wiki_v2/test_context.jsonl\` (210 default), corresponding low files.
-- Example: \`examples/demo/TESTCTX-0149.json\`.
-- Source code: \`harness/\`, \`generator/\`. Historical first-round charts in \`docs/results/dashboard/\` **have not** been rebuilt for all the new low-reasoning runs; this demo folder deliberately uses the updated sources.
+- 210 context cases: `runs/glm_harness_wiki_low/test_context.jsonl`, `runs/glm_harness_low/test_context.jsonl`, `runs/kimi_alone/test_context.jsonl`, `runs/kimi_harness_wiki/test_context.jsonl`.
+- General documents: `runs/glm_harness_wiki_low/test.jsonl`, `runs/kimi_alone/test.jsonl`.
+- Reasoning comparison: `runs/glm_harness_wiki/test.jsonl` (300 default), `runs/glm_harness_wiki_v2/test_context.jsonl` (210 default), corresponding low files.
+- Example: `examples/demo/TESTCTX-0149.json`.
+- Source code: `harness/`, `generator/`. Historical first-round charts in `docs/results/dashboard/` **have not** been rebuilt for all the new low-reasoning runs; this demo folder deliberately uses the updated sources.
 
 **Rule for any future rerun:** update the source commit here and all affected numerator/denominator/cost values before presenting. Never silently overwrite a published result with a different prompt or reasoning setting.
