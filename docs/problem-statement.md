@@ -1,4 +1,4 @@
-# Why we are building this
+# Why we are building this, and what it is worth
 
 The build plan is in [plan.md](plan.md). Sources for every number are in [notes/](notes/).
 
@@ -20,6 +20,8 @@ What nobody publishes is how many of those 6,000 were fine. Our bet is: most of 
 
 The matching isn't the problem. The reading is.
 
+Put numbers on it, with the caveat that the split is our hypothesis. Take that 30,000-invoice company. If half of its 6,000 monthly flags are false, that is 3,000 reviews a month that should never have happened, roughly $30,000 a month in handling cost at the industry average, before counting the early-payment discounts lost while invoices sit in a queue for eight days. The buyer is the controller or CFO who owns that line. The user is Maria.
+
 ## Why hasn't anyone fixed this
 
 Everyone has tried. Every AP product on the market does some version of "rules first, then flag what we can't handle." The rules are good. The flagging is where the money goes.
@@ -32,9 +34,9 @@ The result is that every improvement in reading quality gets captured as a sligh
 
 Two things, recently.
 
-First, open models got good enough at reading messy text and images that a small one, running for a twentieth of a cent per invoice, can tell you what a handwritten "12" says. That didn't used to be true, and it's the reason this is a Fireworks project: the economics only work if the reader is cheap enough to run on every invoice and every retry.
+First, open models got good enough at reading messy text and images that a small one, running for a fraction of a cent per invoice, can tell you what a handwritten "12" says. That didn't used to be true, and it's the reason this is a Fireworks project: the economics only work if the reader is cheap enough to run on every invoice and every retry.
 
-Second, the way to use these models safely got clearer. You don't ask the model to decide. You ask it to read, you let it say "I can't read this field," and you let code do the arithmetic and the comparison. The model's job shrinks to the one thing rules can't do. Everything auditable stays deterministic.
+Second, we learned how to use these models without handing them the checkbook. You don't ask the model to decide. You ask it to read, you let it say "I can't read this field," and you let code do the arithmetic and the comparison. The model's job shrinks to the one thing rules can't do. Everything an auditor would ask about stays deterministic.
 
 That's what we're building. A reconciliation harness where code is the authority and the model is a very good pair of eyes.
 
@@ -150,7 +152,7 @@ Then we ask two questions, in this order:
 1. **Did it catch every real problem?** If not, nothing else matters.
 2. **Of the invoices that were fine, how many did it send to Maria anyway?**
 
-We report both with confidence intervals and a paired test against the frontier model, and we publish the generator, the scorer, the raw outputs, and the cost per invoice. If the frontier model turns out to clear messy invoices just as well as our harness does, we will say so, and the story becomes "same result at one percent of the price." Under the rules of this event, that counts. Under the rules of running a business, that's the whole point.
+We report both with confidence intervals and a paired test against the frontier model, and we publish the generator, the scorer, the raw outputs, and the cost per invoice. The frontier model gets the same documents, the same company pages, and the same output format we use, so the comparison is about what the systems do with the information, not who had more of it. If the frontier model turns out to clear messy invoices just as well as our harness does, we will say so, and the story becomes "same result at one percent of the price." Under the rules of this event, that counts. Under the rules of running a business, that's the whole point.
 
 | Arm | Real problems caught | Fine invoices sent to a human | Cost per 100 invoices |
 |---|---:|---:|---:|
