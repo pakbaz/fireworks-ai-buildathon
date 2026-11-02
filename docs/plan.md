@@ -2,7 +2,7 @@
 
 Fireworks: Deploy with Microsoft and NVIDIA. November 2, 2026. Five people. Build from 12:15 PM. **Re-planned 1:25 PM** (section 6a: cut line, re-based clock). Start submitting 3:30 PM, video due 4:00 PM, submissions close 4:30 PM Pacific.
 
-This page is the single source of truth for what we build today. **Rule since 1:45 PM: the plan describes only what has been run and seen to work.** Untested options are not listed. **1:15 PM update from mentor feedback:** one open model, Kimi K3, compared against itself: bare (before), inside the harness without the wiki (ablation), and inside the harness with the wiki (after). No closed models, no multi-model leaderboard, no fine-tuning. It replaces earlier plans where they conflict. Review items 1 to 5 and 7 from [plan-review.md](plan-review.md) are folded in (12:30 PM). Second review: [plan-review-2.md](plan-review-2.md) (1:25 PM), folded in at 1:30 PM. Background and sources: [IDEA.md](../IDEA.md), [ideas-review.md](ideas-review.md), [research.md](research.md).
+This page is the single source of truth for what we build today. **2:00 PM decision:** the harness runs on GLM 5.3 Flash; Kimi K3 alone is the frontier baseline. The model is one config value and may be swapped later for a stronger one. **Rule since 1:45 PM: the plan describes only what has been run and seen to work.** Untested options are not listed. **1:15 PM update from mentor feedback:** one open model, Kimi K3, compared against itself: bare (before), inside the harness without the wiki (ablation), and inside the harness with the wiki (after). No closed models, no multi-model leaderboard, no fine-tuning. It replaces earlier plans where they conflict. Review items 1 to 5 and 7 from [plan-review.md](plan-review.md) are folded in (12:30 PM). Second review: [plan-review-2.md](plan-review-2.md) (1:25 PM), folded in at 1:30 PM. Background and sources: [IDEA.md](../IDEA.md), [ideas-review.md](ideas-review.md), [research.md](research.md).
 
 ## Overview
 
@@ -344,15 +344,16 @@ The 200 test cases split 100 and 100, each half keeping the stratum mix from sec
 
 ## 5. Systems compared
 
-All three rows use the same model, `accounts/fireworks/models/kimi-k3`, on the same cases, with the same output schema, dial and scorer. Kimi K3 is an open frontier model with image input, served on Fireworks.
+Four rows, same cases, same packet (documents, billing history, wiki pages), same output schema, same dial, same scorer.
 
-| Row | What it is | What it shows |
-|---|---|---|
-| Before | Kimi K3 alone. One call with the whole packet and the wiki pages pasted in. JSON output with the action first; risk from the token probability of that action. | The best the model does on its own. |
-| Ablation | Kimi K3 inside the harness, without the wiki: reading expert, code checks, classifier, dial. | What the harness buys. |
-| After | The full system: reading expert, domain expert with the company wiki, classifier, dial. | What the company knowledge buys on top. |
+| Row | Model | What it is | What it shows |
+|---|---|---|---|
+| Frontier baseline | Kimi K3 | One call with the whole packet and wiki pages. JSON with the action first; risk from the token probability of that action. | What a top open model does on its own. The bar we have to beat. |
+| Before | GLM 5.3 Flash | The same single call. Risk from its self-reported confidence, calibrated on dev, because its token probabilities are always about 100% after its forced reasoning. | The cheap model on its own. |
+| Middle | GLM 5.3 Flash | Harness without the wiki: reading expert, code checks, classifier, dial. | What the harness buys. |
+| After | GLM 5.3 Flash | Full harness with the company wiki. | What company knowledge buys on top. |
 
-The mentors asked for exactly this: pick one model and make it better, before and after, reproducible. Fine-tuning would be another way to make it better; it is out of scope today.
+The claim: a model at a twentieth of the price, inside our harness with company knowledge, matches or beats the frontier model at the same or lower business cost. The middle row isolates the harness; the before row keeps the mentor's same-model before and after. The model is one setting (`HARNESS_MODEL`), so a stronger model can be swapped in later without code changes.
 
 ### Keeping the harness honest
 
@@ -382,7 +383,9 @@ Wiki pages are reading hints only. They never widen a tolerance or approve anyth
 
 ### Model: what was tested and works (1:25 to 1:45 PM, team key)
 
-**Model:** `accounts/fireworks/models/kimi-k3` in every row and every role. Kimi K2.5 is not served on this account.
+**Models:** `accounts/fireworks/models/kimi-k3` for the frontier baseline; `accounts/fireworks/models/glm-5p3-flash` for the before, middle and after rows. Kimi K2.5 is not served on this account.
+
+GLM 5.3 Flash suite results (2:00 PM): passed matching documents, lost in transit with the carrier-claim next step, short shipped with the supplier-dispute next step, the easy slip, and the hard receipt (read the handwritten 40 over a struck-out 50 under a stamp). Always reasons first (reasoning cannot be turned off), 2 to 11 s per call. JSON mode works with images. Price $0.15 input and $0.50 output per million tokens. DeepSeek V4.1 Flash (misread the hard receipt as 10) and MiniMax M3 (broken JSON mode) were tested and rejected.
 
 | Tested | Result |
 |---|---|
@@ -420,19 +423,13 @@ Each item below uses only what the tests showed works.
 
 ### 5a. Baseline wording for judges
 
-No closed-model key has been tested, so there is no closed-model row. The README says: "Our baseline is Kimi K3, an open frontier-class model, given the same documents, wiki pages and output schema and prompted directly." Ask a mentor to confirm this reading before 3:00.
+No closed-model key has been tested, so there is no closed-model row. The README says: "Our frontier baseline is Kimi K3, the top open model on Fireworks, given the same documents, wiki pages and output schema and prompted directly. Our system runs on GLM 5.3 Flash." Ask a mentor to confirm this reading before 3:00.
 
 ---
 
 ## 6. Owners and timeline
 
-| Person | Owns | First deliverable |
-|---|---|---|
-| 1 | Generator: canonical records, three templates per doc type, noise injector, mutations including short_shipped and lost_in_transit, two companies with item values and categories, synthetic supplier history, case mix, splits, wiki pages | Schema at 12:15; 50 dev cases at 12:30; 200 test cases frozen and hashed at 1:15 |
-| 2 | Runner interface, scorer with the dial, per-company costs, threshold sweep and curve, calibration, results tables for text and images built only from saved outputs | Scorer with intervals and McNemar on dev at 12:50 |
-| 3 | The before row (bare Kimi K3), then the 40-case image renderer with scan noise | Kimi K3 live at 12:15; before row on dev at 12:45; on test at 1:20; images ready at 1:45 |
-| 4 | The harness on Kimi K3: reading expert, domain expert, classifier, dial; ablation and after rows. Writes the normalizer blind to the generator. | Live-test the models by 12:15; harness on dev at 1:45; test run at 2:20 |
-| 5 | Stretch goals (section 9), then repo public, README results, tradeoffs, limitations, and the demo video | Repo public and README at 2:45; video at 3:15 |
+Owners and tasks are in [work-split.md](work-split.md) (2:00 PM). Deeksha owns data and the model work.
 
 | Clock (PT) | Checkpoint |
 |---|---|
