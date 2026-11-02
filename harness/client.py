@@ -11,6 +11,8 @@ def chat(model, messages, max_tokens=1500, json_mode=True, logprobs=False, tempe
         body["response_format"] = {"type": "json_object"}
     if model not in config.THINKING_ONLY:
         body["reasoning_effort"] = "none"
+    elif config.GLM_REASONING:
+        body["reasoning_effort"] = config.GLM_REASONING
     if logprobs:
         body["logprobs"] = True
         body["top_logprobs"] = 5

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fireworks Buildathon | Invoice Reconciliation | Demo Deck</title>
+<style>
+:root{color-scheme:dark;--bg:#040b14;--panel:#0d1d2d;--text:#eff6fd;--muted:#a9c0d4;--accent:#52e4ba;--edge:#294154}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:var(--text)}
+#app{min-height:100vh;display:flex;flex-direction:column}.top{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:12px 24px;border-bottom:1px solid var(--edge)}.brand{font-weight:800;letter-spacing:.1em;font-size:13px;color:var(--accent)}.topright{display:flex;align-items:center;gap:15px;color:var(--muted);font-size:13px}
+main{width:100%;display:flex;justify-content:center;align-items:center;flex:1;min-height:0;padding:10px 16px}
+.slide{width:min(100%,calc((100vh - 135px)*16/9));aspect-ratio:16/9;position:relative;box-shadow:0 18px 70px #0008;border:1px solid #284057;border-radius:7px;overflow:hidden}
+.slide img{width:100%;height:100%;display:block}.bottom{display:flex;align-items:center;gap:15px;justify-content:space-between;padding:10px 24px;background:#081522;border-top:1px solid var(--edge)}
+button{background:#152a40;color:var(--text);border:1px solid #3b5c72;padding:9px 16px;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px}
+button:hover,button:focus-visible{background:#23506b;outline:2px solid var(--accent);outline-offset:2px}button:disabled{opacity:.35;cursor:default}
+#title{font-size:15px;font-weight:700}#subtitle{font-size:12px;color:var(--muted)}.controls{display:flex;gap:9px;align-items:center}#count{font-variant-numeric:tabular-nums;color:var(--muted);min-width:55px;text-align:center}
+#notes{font-size:15px;max-width:1050px;margin:0 auto;padding:10px 20px 15px;color:#d1e2f1;border-left:3px solid var(--accent);display:none}
+#notes.visible{display:block}.progress{height:3px;background:#193247}.progress>div{background:var(--accent);height:100%;transition:width .2s ease}
+kbd{padding:2px 5px;border:1px solid #425d74;border-radius:4px;font-size:11px}
+@media(max-width:760px){.top{padding:8px 10px}.bottom{padding:8px 10px;gap:6px}main{padding:4px}button{padding:7px 10px}#subtitle,.topright span:first-child{display:none}.slide{width:100%}#title{font-size:13px}}
+@media print{body{background:white}.top,.bottom,.progress,#notes{display:none!important}main{padding:0}.slide{width:100vw;box-shadow:none;border:none;border-radius:0;page-break-after:always}}
+</style>
+</head>
+<body>
+<div id="app">
+ <header class="top"><div class="brand">FIREWORKS / INVOICE RECONCILIATION</div><div class="topright"><span>Saved-model results · Synthetic benchmark</span><span><kbd>←</kbd><kbd>→</kbd> Navigate</span></div></header>
+ <div class="progress"><div id="progress"></div></div>
+ <main><div class="slide"><img id="visual" alt="Presentation slide"></div></main>
+ <div id="notes" aria-live="polite"></div>
+ <footer class="bottom"><div><div id="title"></div><div id="subtitle">For live presentation: left/right arrows; N = notes; F = fullscreen</div></div><div class="controls"><button id="notesBtn" type="button">Notes</button><button id="prev" type="button">Previous</button><span id="count"></span><button id="next" type="button">Next</button><button id="full" type="button">Fullscreen</button></div></footer>
+</div>
+<script>
+const slides=[
+ {file:"07-harness-architecture.svg",title:"Why the harness exists",note:"An LLM reads documents; deterministic code checks them against a versioned company history and business policy. The system recommends review, not money transfer."},
+ {file:"05-case-82-pumps.svg",title:"A concrete case",note:"In TESTCTX-0149, all documents agree. Eighty-two infusion pumps is above the synthetic 3× historical threshold of 33. Kimi explicitly told to check still recommended PAY; the harness flags quantity_spike."},
+ {file:"01-context-headline.svg",title:"The head-to-head result",note:"History benchmark, 210 synthetic cases: Kimi alone found 121/140 anomalies with 6/70 false alerts; low-reasoning GLM plus checks found 139/140 with 0/70. Inference model cost was about 19× lower."},
+ {file:"06-causal-ablation.svg",title:"What creates the improvement?",note:"With the same small reader but no wiki, the check pipeline catches 40/140 history anomalies. With wiki it catches 139. Using the same harness with Kimi catches 140. The value is explicit checks and company context."},
+ {file:"02-anomaly-types.svg",title:"Where the model slips",note:"A controlled Kimi-only versus Kimi-with-checks comparison. The biggest missed category is quantity spikes: 10/20 for the model alone and 20/20 with executable checks."},
+ {file:"04-low-reasoning-dev.svg",title:"Engineering optimization",note:"On 300 matched document cases, low reasoning reduced median latency from 22.2 to 5.1 seconds and cost per 100 from $0.29 to $0.08, while both caught 117/117. On the 210 context set, low mode caught one fewer case than the default comparator."},
+ {file:"03-document-tradeoff.svg",title:"The general-document tradeoff",note:"On all 1,000 document cases, Kimi catches 374/375 and GLM harness catches 373/375. GLM costs twelve times less to run, but has 27 false alerts compared with one. We will not claim this already saves AP staff time."},
+ {file:"08-review-economics-backup.svg",title:"Backup: finance lens",note:"This is not a measured business ROI. The system saves $8.44 in inference across 1,000 documents, but 26 additional false reviews at a hypothetical $10 each can overwhelm that saving. Specialized routing and better extraction are the next steps."},
+ {file:"09-scanned-images-limit.svg",title:"Backup: scanned-image limitations",note:"On 100 synthetic rendered scans, Kimi detects 25/25 true problems and falsely flags 2/50 good cases; GLM harness catches 24/25 and flags 18/50. Low model cost does not equal reliability. Improved scan extraction is a top follow-up."}
+];
+let index=0;
+const $=id=>document.getElementById(id);
+function show(i){index=Math.max(0,Math.min(slides.length-1,i));const s=slides[index];
+ $("visual").src=s.file;$("visual").alt=s.title;$("title").textContent=s.title;$("count").textContent=(index+1)+" / "+slides.length;$("notes").textContent=s.note;
+ $("progress").style.width=((index+1)/slides.length*100)+"%";$("prev").disabled=index===0;$("next").disabled=index===slides.length-1;
+ document.title=s.title+" · Fireworks demo";
+}
+function toggleNotes(){const yes=$("notes").classList.toggle("visible");$("notesBtn").setAttribute("aria-pressed",String(yes))}
+$("prev").addEventListener("click",()=>show(index-1));$("next").addEventListener("click",()=>show(index+1));$("notesBtn").addEventListener("click",toggleNotes);
+$("full").addEventListener("click",()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()});
+window.addEventListener("keydown",e=>{if(["ArrowRight","PageDown"," "].includes(e.key)){e.preventDefault();show(index+1)}else if(["ArrowLeft","PageUp"].includes(e.key)){e.preventDefault();show(index-1)}else if(e.key==="Home")show(0);else if(e.key==="End")show(slides.length-1);else if(e.key.toLowerCase()==="n")toggleNotes();else if(e.key.toLowerCase()==="f")$("full").click()});
+let x0=null;document.querySelector("main").addEventListener("touchstart",e=>x0=e.touches[0].clientX,{passive:true});document.querySelector("main").addEventListener("touchend",e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>60)show(index+(dx<0?1:-1));x0=null},{passive:true});
+show(0);
+</script>
+</body>
+</html>

@@ -26,6 +26,7 @@ def main():
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--images", action="store_true", help="only cases with images, read from the images")
     ap.add_argument("--workers", type=int, default=32)
+    ap.add_argument("--tag", default="", help="write to runs/<row>_<tag>/ so a new version never overwrites an earlier run")
     a = ap.parse_args()
     path = a.data or os.path.join(config.DATA_DIR, f"{a.split}.jsonl")
     cases = [json.loads(l) for l in open(path) if l.strip()]
@@ -33,8 +34,9 @@ def main():
         cases = [c for c in cases if c.get("images")]
     if a.limit:
         cases = cases[: a.limit]
-    os.makedirs(os.path.join(config.RUNS_DIR, a.row), exist_ok=True)
-    out_path = os.path.join(config.RUNS_DIR, a.row, f"{a.split}{'_images' if a.images else ''}.jsonl")
+    out_dir = os.path.join(config.RUNS_DIR, a.row + (f"_{a.tag}" if a.tag else ""))
+    os.makedirs(out_dir, exist_ok=True)
+    out_path = os.path.join(out_dir, f"{a.split}{'_images' if a.images else ''}.jsonl")
     t0 = time.time(); results = []
     with cf.ThreadPoolExecutor(a.workers) as ex:
         futs = {ex.submit(run_case, a.row, c, a.images): c for c in cases}
