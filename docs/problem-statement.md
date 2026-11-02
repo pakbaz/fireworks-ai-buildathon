@@ -102,6 +102,40 @@ What a win looks like:
 
 The claim we make is only as strong as that table, and we say so in the limitations: synthetic data shows controlled task performance, not enterprise generalization or payment safety.
 
-## 7. One sentence
+## 7. What else this unlocks
+
+Nothing in the harness is specific to invoices. The pattern is: several documents that should agree, produced by different parties in different formats, where a mismatch on a clearly read field means money or risk, and where today a person reviews everything the reader could not parse. Swap the documents and the checks, keep the architecture.
+
+### Inside accounts payable
+
+| Use case | Documents that must agree | What escalates today for no reason |
+|---|---|---|
+| Non-PO invoices | Invoice against contract or rate card | Rate card is a PDF, invoice line descriptions do not match contract wording |
+| Credit memos and returns | Credit memo against return authorization and original invoice | Return paperwork is handwritten at the dock |
+| Duplicate and fraud screening | New invoice against payment history and vendor master | Same invoice resubmitted with a different number format |
+| Vendor onboarding | W-9, bank letter, insurance certificate against the vendor record | Scanned certificates in varied layouts |
+
+### The same pattern in other functions
+
+| Domain | Documents that must agree | Why the reading is hard |
+|---|---|---|
+| **Freight audit** | Carrier invoice, bill of lading, contracted rate table | Accessorial charges written in carrier jargon, weights hand-corrected |
+| **Expense management** | Receipt, card transaction, expense claim, policy | Thermal receipts, foreign currency, merchant name variants |
+| **Insurance claims** | Claim form, policy, repair estimate, photos | Estimates from thousands of body shops in their own formats |
+| **Medical billing** | Claim, explanation of benefits, remittance advice | Payer-specific codes, partial payments across multiple remittances |
+| **Customs and trade** | Commercial invoice, packing list, bill of lading, declaration | Mixed units, HS code variants, multi-language documents |
+| **Bank reconciliation** | Bank statement lines, ledger entries, remittance notes | One payment covering many invoices with a free-text reference |
+| **Payroll** | Timesheets, schedules, contracts | Handwritten or photographed timesheets, shift differentials |
+| **Lease and utility audit** | Utility bill, meter reading, tariff schedule | Tariff tables as PDFs, estimated versus actual reads |
+| **Rebates and chargebacks** | Claim, promotion agreement, sell-through data | Retailer deduction codes, partial claims |
+| **Grant and audit compliance** | Expenditure report, receipts, award terms | Allowability rules in prose, receipts in any format |
+
+In every row the structure is identical: deterministic checks are the authority, a model reads fields it is pointed at and is allowed to say "unreadable," a typed knowledge base holds the local conventions, and a human sees only the cases where clearly read fields disagree.
+
+### Why the benchmark design transfers too
+
+The metric transfers with the architecture. Each of these domains has one costly error, paying or approving something that is wrong, and one cheap error, asking a person to look at something that was fine. "Minimize cheap errors subject to zero costly errors, with intervals" is the right headline number for all of them, and in none of them does a vendor publish it today.
+
+## 8. One sentence
 
 We teach open models to tell the difference between an invoice that is wrong and an invoice that is merely hard to read, so people only look at the ones that are actually wrong.
