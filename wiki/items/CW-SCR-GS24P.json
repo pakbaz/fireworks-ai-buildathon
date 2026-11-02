@@ -1,0 +1,18 @@
+{
+  "sku": "CW-SCR-GS24P",
+  "company": "caseworks",
+  "description_variants": [
+    "Privacy Screen Protector Galaxy S24",
+    "GS24 privacy glass",
+    "Screen protector privacy S24"
+  ],
+  "uom": "EA",
+  "pack_conversions": {
+    "BX": 10
+  },
+  "unit_value": 5.25,
+  "category": "consumer",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

@@ -1,0 +1,16 @@
+{
+  "sku": "NS-DEF-3300",
+  "company": "northside",
+  "description_variants": [
+    "Defibrillator AED Pro 3300",
+    "AED, professional, model 3300",
+    "Automated ext. defibrillator 3300"
+  ],
+  "uom": "EA",
+  "pack_conversions": {},
+  "unit_value": 3275.0,
+  "category": "medical_device",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

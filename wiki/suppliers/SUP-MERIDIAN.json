@@ -1,0 +1,37 @@
+{
+  "supplier_id": "SUP-MERIDIAN",
+  "legal_name": "Meridian Medical Distributors Inc.",
+  "aliases": [
+    "Meridian Med. Dist.",
+    "MERIDIAN MEDICAL DISTRIBUTORS",
+    "Meridian Medical - Reno DC"
+  ],
+  "sites": [
+    "Reno, NV Distribution Center",
+    "Memphis, TN Distribution Center"
+  ],
+  "po_ref_style": "dash",
+  "po_ref_example": "PO-004471 (prefix PO-, zero padded to 6 digits)",
+  "number_format": "US",
+  "bills_in_packs": true,
+  "handwritten_qty_authoritative": true,
+  "writes_qty_by_hand": true,
+  "lead_days": 4,
+  "invoice_number_pattern": "MMD-{n5}",
+  "layout_notes": [
+    "Invoices often state quantities and prices in packs (CS/BX); convert with the item page.",
+    "Driver/receiving clerk often writes the received count by hand next to the printed qty; a printed qty may be struck out and replaced by the handwritten count.",
+    "Our PO number is quoted in the form PO-004471 (prefix PO-, zero padded to 6 digits) on their paperwork.",
+    "Amounts use US separators (1,234.56)."
+  ],
+  "past_problem_rate": {
+    "value": 0.04,
+    "synthetic": true,
+    "note": "Synthetic history for the benchmark, not a real track record."
+  },
+  "author": "j.morales (AP analyst)",
+  "approved_by": "AP lead",
+  "version": 3,
+  "updated": "2026-01-15",
+  "expires": "2027-12-31"
+}

@@ -1,0 +1,17 @@
+{
+  "sku": "NS-SUT-0340",
+  "company": "northside",
+  "description_variants": [
+    "Suture, Absorbable, 3-0",
+    "Absorbable suture 3-0 w/ needle"
+  ],
+  "uom": "EA",
+  "pack_conversions": {
+    "BX": 10
+  },
+  "unit_value": 9.95,
+  "category": "medical_consumable",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

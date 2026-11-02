@@ -1,0 +1,16 @@
+{
+  "sku": "NS-MON-7100",
+  "company": "northside",
+  "description_variants": [
+    "Patient Monitor, 15in, 7100 series",
+    "Bedside Patient Monitor 7100",
+    "Multi-parameter monitor 7100"
+  ],
+  "uom": "EA",
+  "pack_conversions": {},
+  "unit_value": 12400.0,
+  "category": "medical_device",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

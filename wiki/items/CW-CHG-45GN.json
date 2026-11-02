@@ -1,0 +1,18 @@
+{
+  "sku": "CW-CHG-45GN",
+  "company": "caseworks",
+  "description_variants": [
+    "45W GaN Charger, 2-port",
+    "GaN wall charger 45W dual",
+    "Charger GaN 45W"
+  ],
+  "uom": "EA",
+  "pack_conversions": {
+    "CS": 24
+  },
+  "unit_value": 14.2,
+  "category": "consumer",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

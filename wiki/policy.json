@@ -1,0 +1,24 @@
+{
+  "version": "2026.1",
+  "price_tolerance": 0.01,
+  "in_transit_window_days": 10,
+  "review_cost_usd": 10,
+  "category_weights": {
+    "medical_device": 25,
+    "medical_consumable": 3,
+    "consumer": 1
+  },
+  "supplier_weight_range": [
+    0.5,
+    2
+  ],
+  "overrides": {},
+  "notes": [
+    "Quantities are compared in EA after applying the pack conversions on the item page.",
+    "Unit prices are compared per EA against the PO the receipt was booked against.",
+    "A handwritten received quantity on a goods receipt is the authoritative received quantity.",
+    "An invoice whose number already appears as paid in billing history is a duplicate.",
+    "Prior paid invoices on the same PO reduce the PO's remaining billable quantity (see PO revision).",
+    "Synthetic benchmark policy; tolerances live only on this page."
+  ]
+}

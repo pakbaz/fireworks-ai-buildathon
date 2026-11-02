@@ -1,0 +1,18 @@
+{
+  "sku": "CW-CSE-IP15R",
+  "company": "caseworks",
+  "description_variants": [
+    "Rugged Case iPhone 15, Black",
+    "iPhone 15 rugged armor case blk",
+    "Case rugged IP15"
+  ],
+  "uom": "EA",
+  "pack_conversions": {
+    "CS": 24
+  },
+  "unit_value": 8.75,
+  "category": "consumer",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

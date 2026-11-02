@@ -1,0 +1,16 @@
+{
+  "sku": "NS-USP-0912",
+  "company": "northside",
+  "description_variants": [
+    "Ultrasound Probe, Linear L12-5",
+    "Linear transducer probe L12-5",
+    "US probe linear 12-5 MHz"
+  ],
+  "uom": "EA",
+  "pack_conversions": {},
+  "unit_value": 6750.0,
+  "category": "medical_device",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

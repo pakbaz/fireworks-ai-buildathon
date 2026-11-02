@@ -1,0 +1,18 @@
+{
+  "sku": "CW-CHG-MAG15",
+  "company": "caseworks",
+  "description_variants": [
+    "15W Magnetic Wireless Charging Pad",
+    "Wireless charger pad 15W mag",
+    "Mag wireless pad 15W"
+  ],
+  "uom": "EA",
+  "pack_conversions": {
+    "CS": 12
+  },
+  "unit_value": 12.8,
+  "category": "consumer",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

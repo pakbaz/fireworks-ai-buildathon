@@ -1,0 +1,18 @@
+{
+  "sku": "NS-DRS-0510",
+  "company": "northside",
+  "description_variants": [
+    "Foam Wound Dressing 10x10cm",
+    "Dressing, foam, 10 x 10 cm",
+    "Wound dressing foam 4x4in"
+  ],
+  "uom": "EA",
+  "pack_conversions": {
+    "BX": 10
+  },
+  "unit_value": 5.4,
+  "category": "medical_consumable",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

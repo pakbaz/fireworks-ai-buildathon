@@ -1,0 +1,15 @@
+{
+  "sku": "NS-ANS-5000",
+  "company": "northside",
+  "description_variants": [
+    "Anesthesia Workstation A5000",
+    "Anaesthesia delivery system A-5000"
+  ],
+  "uom": "EA",
+  "pack_conversions": {},
+  "unit_value": 58500.0,
+  "category": "medical_device",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

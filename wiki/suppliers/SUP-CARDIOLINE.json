@@ -1,0 +1,36 @@
+{
+  "supplier_id": "SUP-CARDIOLINE",
+  "legal_name": "CardioLine Systems GmbH",
+  "aliases": [
+    "Cardioline Systems",
+    "CARDIOLINE SYS. GMBH",
+    "CardioLine GmbH (Hamburg)"
+  ],
+  "sites": [
+    "Hamburg, DE",
+    "Newark, NJ Service Depot"
+  ],
+  "po_ref_style": "dash",
+  "po_ref_example": "PO-004471 (prefix PO-, zero padded to 6 digits)",
+  "number_format": "US",
+  "bills_in_packs": false,
+  "handwritten_qty_authoritative": true,
+  "writes_qty_by_hand": false,
+  "lead_days": 9,
+  "invoice_number_pattern": "RE-{yy}{n5}",
+  "layout_notes": [
+    "Invoices state quantities in EA.",
+    "Our PO number is quoted as PO-004471 on their paperwork.",
+    "Amounts use US separators (1,234.56)."
+  ],
+  "past_problem_rate": {
+    "value": 0.07,
+    "synthetic": true,
+    "note": "Synthetic history for the benchmark, not a real track record."
+  },
+  "author": "j.morales (AP analyst)",
+  "approved_by": "AP lead",
+  "version": 1,
+  "updated": "2023-06-01",
+  "expires": "2024-12-31"
+}

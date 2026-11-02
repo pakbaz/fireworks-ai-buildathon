@@ -1,0 +1,17 @@
+{
+  "sku": "NS-CTH-0418",
+  "company": "northside",
+  "description_variants": [
+    "Foley Catheter Tray 16Fr",
+    "Catheter tray, Foley, 16 Fr"
+  ],
+  "uom": "EA",
+  "pack_conversions": {
+    "BX": 10
+  },
+  "unit_value": 18.6,
+  "category": "medical_consumable",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

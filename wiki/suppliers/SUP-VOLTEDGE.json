@@ -1,0 +1,36 @@
+{
+  "supplier_id": "SUP-VOLTEDGE",
+  "legal_name": "VoltEdge Electronics Inc.",
+  "aliases": [
+    "VoltEdge",
+    "VOLT EDGE ELECTRONICS",
+    "VoltEdge Elec. - San Jose"
+  ],
+  "sites": [
+    "San Jose, CA",
+    "Reno, NV"
+  ],
+  "po_ref_style": "hash",
+  "po_ref_example": "#4471",
+  "number_format": "US",
+  "bills_in_packs": true,
+  "handwritten_qty_authoritative": true,
+  "writes_qty_by_hand": false,
+  "lead_days": 5,
+  "invoice_number_pattern": "VE{n6}",
+  "layout_notes": [
+    "Invoices often state quantities and prices in packs (CS/BX); convert with the item page.",
+    "Our PO number is quoted in the form #4471 on their paperwork.",
+    "Amounts use US separators (1,234.56)."
+  ],
+  "past_problem_rate": {
+    "value": 0.03,
+    "synthetic": true,
+    "note": "Synthetic history for the benchmark, not a real track record."
+  },
+  "author": "j.morales (AP analyst)",
+  "approved_by": "AP lead",
+  "version": 3,
+  "updated": "2026-01-15",
+  "expires": "2027-12-31"
+}

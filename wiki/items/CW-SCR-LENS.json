@@ -1,0 +1,17 @@
+{
+  "sku": "CW-SCR-LENS",
+  "company": "caseworks",
+  "description_variants": [
+    "Camera Lens Protector, universal",
+    "Lens protector camera (univ.)"
+  ],
+  "uom": "EA",
+  "pack_conversions": {
+    "BX": 100
+  },
+  "unit_value": 3.4,
+  "category": "consumer",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

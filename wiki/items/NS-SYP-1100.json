@@ -1,0 +1,16 @@
+{
+  "sku": "NS-SYP-1100",
+  "company": "northside",
+  "description_variants": [
+    "Syringe Pump SP-1100",
+    "Syringe infusion pump 1100",
+    "SP1100 syringe driver"
+  ],
+  "uom": "EA",
+  "pack_conversions": {},
+  "unit_value": 2390.0,
+  "category": "medical_device",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

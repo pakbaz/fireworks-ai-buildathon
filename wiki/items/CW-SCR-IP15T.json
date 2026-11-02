@@ -1,0 +1,18 @@
+{
+  "sku": "CW-SCR-IP15T",
+  "company": "caseworks",
+  "description_variants": [
+    "Tempered Glass Protector iPhone 15",
+    "Screen protector glass IP15",
+    "IP15 tempered glass"
+  ],
+  "uom": "EA",
+  "pack_conversions": {
+    "BX": 10
+  },
+  "unit_value": 3.05,
+  "category": "consumer",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

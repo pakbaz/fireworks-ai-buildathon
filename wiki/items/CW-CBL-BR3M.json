@@ -1,0 +1,18 @@
+{
+  "sku": "CW-CBL-BR3M",
+  "company": "caseworks",
+  "description_variants": [
+    "Braided USB-C Cable 3m",
+    "Cable braided C-C 3 m",
+    "Type-C braided cable 3m"
+  ],
+  "uom": "EA",
+  "pack_conversions": {
+    "BX": 10
+  },
+  "unit_value": 5.9,
+  "category": "consumer",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

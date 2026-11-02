@@ -1,0 +1,36 @@
+{
+  "supplier_id": "SUP-SHENGDA",
+  "legal_name": "Shengda Mobile Supply (Shenzhen) Co., Ltd.",
+  "aliases": [
+    "Shengda Mobile",
+    "SHENGDA MOBILE SUPPLY",
+    "Shengda (Shenzhen)"
+  ],
+  "sites": [
+    "Shenzhen, CN",
+    "Los Angeles, CA Consolidation"
+  ],
+  "po_ref_style": "bare",
+  "po_ref_example": "4471 (bare number, no prefix)",
+  "number_format": "EU",
+  "bills_in_packs": true,
+  "handwritten_qty_authoritative": true,
+  "writes_qty_by_hand": false,
+  "lead_days": 9,
+  "invoice_number_pattern": "SD{yy}{n5}",
+  "layout_notes": [
+    "Invoices often state quantities and prices in packs (CS/BX); convert with the item page.",
+    "Our PO number is quoted in the form 4471 (bare number, no prefix) on their paperwork.",
+    "Amounts use EU separators (1.234,56)."
+  ],
+  "past_problem_rate": {
+    "value": 0.1,
+    "synthetic": true,
+    "note": "Synthetic history for the benchmark, not a real track record."
+  },
+  "author": "j.morales (AP analyst)",
+  "approved_by": "AP lead",
+  "version": 3,
+  "updated": "2026-01-15",
+  "expires": "2027-12-31"
+}

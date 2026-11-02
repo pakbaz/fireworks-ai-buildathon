@@ -1,0 +1,18 @@
+{
+  "sku": "NS-IVT-0120",
+  "company": "northside",
+  "description_variants": [
+    "IV Tubing Set, Primary, 20 drop",
+    "Primary IV administration set",
+    "IV tubing primary 20gtt"
+  ],
+  "uom": "EA",
+  "pack_conversions": {
+    "CS": 50
+  },
+  "unit_value": 8.4,
+  "category": "medical_consumable",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

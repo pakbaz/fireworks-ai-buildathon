@@ -1,0 +1,18 @@
+{
+  "sku": "CW-CBL-CC1M",
+  "company": "caseworks",
+  "description_variants": [
+    "USB-C to USB-C Cable 1m",
+    "Cable C-C 1 m",
+    "Type-C cable 1m"
+  ],
+  "uom": "EA",
+  "pack_conversions": {
+    "BX": 100
+  },
+  "unit_value": 3.15,
+  "category": "consumer",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

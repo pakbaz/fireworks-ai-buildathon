@@ -1,0 +1,16 @@
+{
+  "sku": "NS-INF-2200",
+  "company": "northside",
+  "description_variants": [
+    "Infusion Pump, Large Volume, Model 2200",
+    "LVP Infusion Pump 2200",
+    "Infusion pump - large-volume (2200)"
+  ],
+  "uom": "EA",
+  "pack_conversions": {},
+  "unit_value": 4850.0,
+  "category": "medical_device",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

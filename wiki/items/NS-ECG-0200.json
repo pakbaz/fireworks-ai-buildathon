@@ -1,0 +1,18 @@
+{
+  "sku": "NS-ECG-0200",
+  "company": "northside",
+  "description_variants": [
+    "ECG Electrode Pack (30)",
+    "Electrodes, ECG, foam, pk/30",
+    "ECG electrode pk 30"
+  ],
+  "uom": "EA",
+  "pack_conversions": {
+    "CS": 50
+  },
+  "unit_value": 6.8,
+  "category": "medical_consumable",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

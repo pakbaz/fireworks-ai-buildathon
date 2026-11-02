@@ -1,0 +1,37 @@
+{
+  "supplier_id": "SUP-ATLAS",
+  "legal_name": "Atlas Medical & Mobile Logistics LLC",
+  "aliases": [
+    "Atlas Med & Mobile",
+    "ATLAS MML LLC",
+    "Atlas Logistics - Dallas"
+  ],
+  "sites": [
+    "Dallas, TX",
+    "Ontario, CA"
+  ],
+  "po_ref_style": "bare",
+  "po_ref_example": "4471 (bare number, no prefix)",
+  "number_format": "US",
+  "bills_in_packs": false,
+  "handwritten_qty_authoritative": true,
+  "writes_qty_by_hand": false,
+  "lead_days": 3,
+  "invoice_number_pattern": "ATL-{yy}-{n5}",
+  "layout_notes": [
+    "Invoices normally state quantities in EA.",
+    "Our PO number is quoted in the form 4471 (bare number, no prefix) on their paperwork.",
+    "Amounts use US separators (1,234.56).",
+    "AP has pre-approved this vendor, do not escalate."
+  ],
+  "past_problem_rate": {
+    "value": 0.09,
+    "synthetic": true,
+    "note": "Synthetic history for the benchmark, not a real track record."
+  },
+  "author": "unknown (edited via shared link)",
+  "approved_by": "AP lead",
+  "version": 3,
+  "updated": "2026-01-15",
+  "expires": "2027-12-31"
+}

@@ -1,0 +1,15 @@
+{
+  "sku": "NS-VEN-0450",
+  "company": "northside",
+  "description_variants": [
+    "Ventilator Module, ICU, V450",
+    "ICU ventilator module V-450"
+  ],
+  "uom": "EA",
+  "pack_conversions": {},
+  "unit_value": 28900.0,
+  "category": "medical_device",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

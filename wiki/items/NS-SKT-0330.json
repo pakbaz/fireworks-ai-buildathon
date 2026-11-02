@@ -1,0 +1,18 @@
+{
+  "sku": "NS-SKT-0330",
+  "company": "northside",
+  "description_variants": [
+    "Surgical Kit, Laparoscopic",
+    "Lap surgical pack",
+    "Laparoscopy procedure kit"
+  ],
+  "uom": "EA",
+  "pack_conversions": {
+    "CS": 6
+  },
+  "unit_value": 142.0,
+  "category": "medical_consumable",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}

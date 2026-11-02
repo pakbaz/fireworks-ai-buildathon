@@ -1,0 +1,18 @@
+{
+  "sku": "NS-GWN-1410",
+  "company": "northside",
+  "description_variants": [
+    "Isolation Gown, Level 2",
+    "Gown isolation AAMI L2",
+    "Isolation gown, universal"
+  ],
+  "uom": "EA",
+  "pack_conversions": {
+    "CS": 50
+  },
+  "unit_value": 5.1,
+  "category": "medical_consumable",
+  "author": "catalog team",
+  "version": 2,
+  "expires": "2027-12-31"
+}
