@@ -1,6 +1,6 @@
 # Problem statement
 
-**Claim.** On invoices that are messy but correct, a frontier model escalates to a human far more often than it needs to. A harness of open models on Fireworks, with code as the authority and the model limited to reading, can cut those false escalations while still catching every real problem, at a fraction of the cost. We measure this on a published benchmark with a hard safety constraint.
+Companies check every supplier invoice against the purchase order and the delivery record before paying it. About one invoice in five fails that check and goes to a person. We think many of those are not real problems, just documents the software could not read. We have not measured that yet. This project builds the benchmark to measure it, runs a frontier model and an open-model harness on Fireworks against the same cases, and reports what happens, including if the frontier model wins.
 
 The build plan is in [plan.md](plan.md) and the source notes in [notes/](notes/).
 
@@ -62,16 +62,16 @@ The two errors are not symmetric:
 
 That asymmetry fixes the metric. We report the **false escalation rate on agreeing cases, subject to 100% recall on real discrepancies**, both with confidence intervals. Accuracy and F1 are the wrong headline numbers for this problem: they trade the two error types against each other at whatever class mix the test set happens to have, and they hide a missed discrepancy behind a hundred correct clears.
 
-## 4. Why a frontier model alone does not win here
+## 4. Why we think a harness beats a bare frontier model
 
-A judge's natural question: why not just give GPT-class model the three documents and ask? We run exactly that as the baseline. We expect it to lose on this task, for four reasons that are structural rather than about model size.
+The obvious approach is to give a frontier model the three documents and ask. That is our baseline, and it may well do fine. Our bet is that a harness does better, for four reasons that are about the shape of the task rather than model size. The benchmark is how we find out whether the bet pays.
 
 1. **It answers when it should abstain.** Asked for a quantity it cannot read, a generative model produces a number. On this task a confident wrong number on a critical field is the worst possible output. The system needs per-field abstention, and that has to be enforced outside the model.
 2. **It does arithmetic and cross-referencing in tokens.** Twelve times eight, lines summing to a subtotal, an invoice number appearing in a paid list, a date inside a ten-day window. These are deterministic checks that code gets right every time and a model gets right most of the time. "Most of the time" is not acceptable when a miss is a leaked payment.
 3. **Its output is sensitive to things that should not matter.** Prompt formatting alone moves accuracy by double digits ([Sclar et al.](https://arxiv.org/abs/2310.11324)). Document order, layout, and field position are exactly the noise in our data.
 4. **It does not know this company.** Whether a handwritten count on this supplier's receipt is authoritative, whether "1 CS" is 12 units for this SKU, whether this supplier ships from Reno although the PO says Dallas: that is tribal knowledge held by analysts and absent from any model's training data. It has to be supplied, in a form code can use.
 
-None of these are fixed by a bigger model. All of them are fixed by a harness. And once the model's job is reduced to reading fields it is pointed at, a small open model is enough, which is where the cost advantage comes from.
+A bigger model does not obviously fix any of these. A harness addresses each one directly. And if the model's job shrinks to reading the fields it is pointed at, a small open model may be enough, which is where a cost advantage would come from. Whether that holds is what section 6 measures.
 
 ## 5. What we built
 
