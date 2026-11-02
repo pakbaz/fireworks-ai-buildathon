@@ -1,5 +1,7 @@
 # Results
 
+**Presentation graphics and presenter deck:** [docs/results/demo/README.md](docs/results/demo/README.md) · [docs/results/demo/index.html](docs/results/demo/index.html) (open the HTML locally after cloning).
+
 The numbers for the video and the presentation. Every figure comes from a saved prediction file listed at the bottom, scored against the frozen test answer keys. All data is synthetic.
 
 **Our system:** GLM 5.3 Flash on Fireworks reads the documents; code checks them against the company's knowledge (purchase history, item pages, supplier pages); a business dial decides. GLM runs with low reasoning.
@@ -25,9 +27,9 @@ The numbers for the video and the presentation. Every figure comes from a saved 
 | GLM 5.3 Flash reading + our checks + company knowledge (ours) | 139 / 140 |
 | GLM 5.3 Flash + our checks, **without** company knowledge | 40 / 140 |
 
-The company knowledge and the checks do the work; the reader model is interchangeable, so the cheap one is the right choice.
+Company knowledge and deterministic checks drive most of the improvement on this synthetic test. The Kimi harness still catches one more context anomaly than the low-reasoning GLM harness; the cheaper reader offers a favorable model-cost tradeoff rather than identical behavior.
 
-## 2. Ordinary document problems: same catch rate, 12x cheaper
+## 2. Ordinary document problems: near-equal recall, 12x cheaper, more false reviews
 
 1,000 invoices with problems visible in the documents themselves (short shipments, goods lost in transit, price above the PO, wrong PO, duplicates), plus correct, messy and in-transit invoices.
 
@@ -36,9 +38,9 @@ The company knowledge and the checks do the work; the reader model is interchang
 | Kimi K3 alone | 374 / 375 | 1 / 500 | $9.20 |
 | **Our system** | **373 / 375** | 27 / 500 | **$0.76** |
 
-Same catch rate at a twelfth of the cost. Kimi is better at not raising false alarms here: our system sends about 5 in 100 fine invoices to a person, mostly messy ones.
+Nearly the same recall (373/375 vs 374/375) at roughly one-twelfth the model-inference cost. Kimi is better at not raising false alarms: our system sends about 5 in 100 fine invoices to a person, mostly messy ones. Model-token savings do not necessarily translate into lower human-review cost.
 
-## 3. Low reasoning: faster and cheaper, nothing lost
+## 3. Low reasoning: faster and cheaper, with a measured tradeoff
 
 GLM 5.3 Flash always reasons before answering. Setting its reasoning to low, on the same invoices:
 
