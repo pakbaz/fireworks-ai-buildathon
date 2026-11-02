@@ -64,7 +64,7 @@ flowchart TB
     subgraph SYS["Reconciliation harness (built today)"]
         direction TB
         PKT["1 · Assemble case packet<br/>+ as-of date"]:::code
-        LOOK["2 · Wiki lookup by ID<br/>supplier · items · warehouse · policy"]:::code
+        LOOK["2 · Wiki lookup by ID<br/>supplier · items · policy"]:::code
         NORM["3 · Normalize in code<br/>dates · numbers · currency<br/>pack sizes · aliases from wiki"]:::code
         EXT["4 · Extract to JSON<br/>small open model on Fireworks<br/>every field: ok / unreadable / absent"]:::model
         CHK{"5 · Deterministic checks<br/>qty × price = line total<br/>lines sum to subtotal<br/>PO ref matches across docs<br/>price within policy tolerance<br/>invoice qty = received qty<br/>invoice no. not already paid<br/>GR present, or notice in window"}:::code
@@ -76,7 +76,6 @@ flowchart TB
         direction LR
         WS[("suppliers")]:::store
         WI[("items")]:::store
-        WW[("warehouses")]:::store
         WP[("policy")]:::store
     end
 
@@ -92,7 +91,7 @@ flowchart TB
 
     INV & PO & GR & SN & PAID --> PKT
     PKT --> LOOK
-    WS & WI & WW & WP -.-> LOOK
+    WS & WI & WP -.-> LOOK
     LOOK --> NORM --> EXT --> CHK
     CHK -- "all pass on readable fields" --> CLEAR
     CHK -- "any failure, or any unreadable critical field" --> RR
@@ -145,14 +144,16 @@ And it knows the company. Maria's team knows that one supplier always writes the
 
 This is where we would rather lose honestly than win on vibes.
 
-We generate 150 invoices where we know the truth: some clean, some messy but correct, some with real problems like short deliveries, price changes, wrong PO, wrong warehouse, duplicate billing, and a few where the goods are still on the truck. We run the same 150 through four systems: a plain rules matcher, a frontier model with one good prompt, an open model on Fireworks with no help, and our harness.
+We generate 200 invoices where we know the truth: some clean, some messy but correct, 75 with real problems like short deliveries, price changes, the wrong PO, or duplicate billing, and 25 where the goods are still on the truck. We run the same 200 through five systems: a plain rules matcher, a frontier model with one good prompt, an open model on Fireworks with no help, our harness on Fireworks, and our harness with the frontier model swapped in.
+
+That last one matters. Without it, anyone can say we compared engineering against no engineering. With it, we can separate what the harness buys from what the model buys. Whoever writes our harness also never sees the code that generates the test data, so we are not grading ourselves with our own answer key.
 
 Then we ask two questions, in this order:
 
 1. **Did it catch every real problem?** If not, nothing else matters.
 2. **Of the invoices that were fine, how many did it send to Maria anyway?**
 
-We report both with confidence intervals and a paired test against the frontier model, and we publish the generator, the scorer, the raw outputs, and the cost per invoice. The frontier model gets the same documents, the same company pages, and the same output format we use, so the comparison is about what the systems do with the information, not who had more of it. If the frontier model turns out to clear messy invoices just as well as our harness does, we will say so, and the story becomes "same result at one percent of the price." Under the rules of this event, that counts. Under the rules of running a business, that's the whole point.
+We report both with confidence intervals and a paired test against the frontier model, and we publish the generator, the scorer, the raw outputs, and the cost per invoice. The frontier model gets the same documents, the same company pages, and the same output format we use, so the comparison is about what the systems do with the information, not who had more of it. Honestly, that may be what happens. Our test documents are text with realistic noise, not real scans, and a frontier model reads "1 CS (12 EA)" just fine. If it clears messy invoices as well as our harness does, we will say so, and the story becomes "same result at a fraction of the price." That is why cost per 100 invoices sits next to the escalation rate as a headline, not in a footnote. Under the rules of this event, a cost win at equal quality counts. Under the rules of running a business, it's the whole point.
 
 | Arm | Real problems caught | Fine invoices sent to a human | Cost per 100 invoices |
 |---|---:|---:|---:|
@@ -160,6 +161,7 @@ We report both with confidence intervals and a paired test against the frontier 
 | Frontier model, one prompt | to be measured | to be measured | to be measured |
 | Open model on Fireworks, no harness | to be measured | to be measured | to be measured |
 | **Our harness on Fireworks** | to be measured | to be measured | to be measured |
+| Our harness with the frontier model | to be measured | to be measured | to be measured |
 
 The exact case mix, metric definitions, and timeline are in [plan.md](plan.md).
 
