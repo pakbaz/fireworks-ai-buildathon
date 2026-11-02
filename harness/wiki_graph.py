@@ -94,6 +94,8 @@ svg.wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z
 </style></head><body><main>
 <h1>What the company knows</h1>
 <p class="lede">Every supplier the two companies buy from, what we know about how it writes its documents, its track record on past invoices, and the items it supplies. This is the knowledge the harness uses to read invoices correctly and decide how careful to be. Pick a supplier.</p>
+<div class="card" style="padding:8px 8px 4px;margin-bottom:16px"><svg id="graph" role="img" aria-label="Graph of companies, suppliers and items" style="width:100%;height:auto;display:block"></svg>
+<div class="key" style="padding:0 8px 6px">Top: the two companies. Middle: suppliers, sized by past invoices and colored by wiki page status. Bottom: items. Hover or click a supplier to see what it supplies; click any supplier or item to open its wiki page.</div></div>
 <div class="tabs" id="tabs" role="toolbar" aria-label="Suppliers"></div>
 <div class="map" id="map">
   <div class="col"><h3>Buys from this supplier</h3><div id="cos"></div></div>
@@ -120,7 +122,8 @@ function select(i){cur=i; [...tabs.children].forEach((b,k)=>b.setAttribute('aria
   s.buyers.forEach(b=>{const c=el('div','card co'); c.dataset.wire='co'; c.append(el('b',null,b.name), el('span',null,b.n+' past invoices')); cos.appendChild(c);});
   const sup=document.getElementById('sup'); sup.innerHTML='';
   const badge=el('span','badge',s.status); badge.style.background=statusColor(s.status);
-  sup.append(el('h2',null,s.name), badge);
+  const h2=el('h2'); const a=el('a',null,s.name); a.href='wiki/suppliers/'+s.id+'.html'; a.style.color='inherit'; h2.appendChild(a);
+  sup.append(h2, badge, el('div','key','Open the full wiki page by clicking the name.'));
   if(s.warn){sup.appendChild(el('div','warn',s.warn));}
   const ul=el('ul'); s.facts.forEach(f=>ul.appendChild(el('li',null,f))); if(s.facts.length) sup.appendChild(ul);
   const h=el('div','hist'); h.append(el('b',null,'Track record'), el('div',null,s.history.text));
@@ -128,7 +131,7 @@ function select(i){cur=i; [...tabs.children].forEach((b,k)=>b.setAttribute('aria
     const k=el('div','key'); [['paid','Paid'],['problem','Real problem'],['wait','Waited for delivery']].forEach(([o,t])=>{const s2=el('span'); const i2=el('i'); i2.style.background=outColor(o==='problem'?'x':o); s2.append(i2,document.createTextNode(t)); k.appendChild(s2);}); h.appendChild(el('div','lede','Last 20 invoices, oldest first')); h.appendChild(k);}
   sup.appendChild(h);
   const its=document.getElementById('items'); its.innerHTML='';
-  s.items.forEach(sku=>{const it=D.items[sku]; const c=el('div','card it'); const b=el('b',null,it.name); const cat=el('span','cat',it.category+' ×'+it.weight); b.appendChild(cat);
+  s.items.forEach(sku=>{const it=D.items[sku]; const c=el('a','card it'); c.href='wiki/items/'+sku+'.html'; c.style.color='inherit'; c.style.textDecoration='none'; c.style.display='block'; const b=el('b',null,it.name); const cat=el('span','cat',it.category+' ×'+it.weight); b.appendChild(cat);
     c.append(b, el('span',null,it.price+' each · '+it.pack+' · '+sku)); its.appendChild(c);});
   if(!s.items.length) its.appendChild(el('p','lede','No items on record yet.'));
   requestAnimationFrame(wires);}
@@ -140,11 +143,80 @@ function wires(){const svg=document.getElementById('wires'), map=document.getEle
   const box=document.getElementById('items').getBoundingClientRect();
   document.querySelectorAll('#items .it').forEach(c=>{const r=c.getBoundingClientRect(); if(r.bottom<box.top||r.top>box.bottom)return; curve(sup.right-R.left, sy, r.left-R.left, r.top-R.top+r.height/2, 1.5);});}
 document.getElementById('items').addEventListener('scroll',wires); addEventListener('resize',wires);
+function graph(){const svg=document.getElementById('graph'), NS='http://www.w3.org/2000/svg'; const W=1240,H=430; svg.setAttribute('viewBox','0 0 '+W+' '+H); svg.innerHTML='';
+  const mk=(t,a)=>{const e=document.createElementNS(NS,t); for(const k in a)e.setAttribute(k,a[k]); svg.appendChild(e); return e;};
+  const cos=[{id:'northside',name:'Northside Hospital Supply'},{id:'caseworks',name:'Caseworks'}];
+  const P={}; cos.forEach((c,i)=>P[c.id]={x:W*(i?0.68:0.32),y:46});
+  D.suppliers.forEach((s,i)=>P[s.id]={x:60+i*(W-120)/(D.suppliers.length-1),y:200});
+  const skus=Object.keys(D.items).sort((a,b)=>(D.items[a].company||'').localeCompare(D.items[b].company||'')||a.localeCompare(b));
+  skus.forEach((k,i)=>P[k]={x:30+i*(W-60)/(skus.length-1),y:330});
+  const links=[]; D.suppliers.forEach(s=>{s.buyers.forEach(b=>links.push({a:b.id,b:s.id,kind:'co',w:Math.max(1,b.n/90)})); s.items.forEach(k=>links.push({a:s.id,b:k,kind:'it',sup:s.id}));});
+  const L=links.map(l=>{const p=mk('path',{d:`M${P[l.a].x},${P[l.a].y} C${P[l.a].x},${(P[l.a].y+P[l.b].y)/2} ${P[l.b].x},${(P[l.a].y+P[l.b].y)/2} ${P[l.b].x},${P[l.b].y}`,fill:'none',stroke:cv('--line'),'stroke-width':l.kind==='co'?l.w:1}); p.dataset.sup=l.kind==='it'?l.sup:l.b; p.dataset.kind=l.kind; return p;});
+  cos.forEach(c=>{mk('circle',{cx:P[c.id].x,cy:P[c.id].y,r:16,fill:cv('--ink')}); const t=mk('text',{x:P[c.id].x+22,y:P[c.id].y+5,'font-size':15,'font-weight':700,fill:cv('--ink')}); t.textContent=c.name;});
+  D.suppliers.forEach((s,i)=>{const n=s.buyers.reduce((a,b)=>a+b.n,0); const g=mk('g',{}); g.style.cursor='pointer';
+    const c=document.createElementNS(NS,'circle'); c.setAttribute('cx',P[s.id].x); c.setAttribute('cy',P[s.id].y); c.setAttribute('r',8+Math.sqrt(n)/2.2); c.setAttribute('fill',statusColor(s.status)); c.setAttribute('stroke',cv('--panel')); c.setAttribute('stroke-width',2); g.appendChild(c);
+    const t=document.createElementNS(NS,'text'); t.setAttribute('x',P[s.id].x); t.setAttribute('y',P[s.id].y+34); t.setAttribute('text-anchor','middle'); t.setAttribute('font-size',13); t.setAttribute('fill',cv('--ink')); t.textContent=s.short; g.appendChild(t);
+    const tt=document.createElementNS(NS,'title'); tt.textContent=s.name+' · '+s.status+' · click to open its wiki page'; g.appendChild(tt);
+    g.addEventListener('mouseenter',()=>hl(s.id)); g.addEventListener('mouseleave',()=>hl(D.suppliers[cur].id));
+    g.addEventListener('click',()=>{select(i); location.href='wiki/suppliers/'+s.id+'.html';}); svg.appendChild(g);});
+  skus.forEach(k=>{const it=D.items[k]; const a=document.createElementNS(NS,'a'); a.setAttribute('href','wiki/items/'+k+'.html');
+    const c=document.createElementNS(NS,'circle'); c.setAttribute('cx',P[k].x); c.setAttribute('cy',P[k].y); c.setAttribute('r',6); c.setAttribute('fill',it.weight>=25?cv('--warn'):it.weight>=3?cv('--accent'):cv('--main')); a.appendChild(c);
+    const t=document.createElementNS(NS,'text'); t.setAttribute('transform',`translate(${P[k].x+3},${P[k].y+14}) rotate(40)`); t.setAttribute('font-size',11); t.setAttribute('fill',cv('--muted')); t.textContent=it.name.length>22?it.name.slice(0,21)+'…':it.name; a.appendChild(t);
+    const tt=document.createElementNS(NS,'title'); tt.textContent=it.name+' · '+it.price+' · '+it.category+' · click to open'; a.appendChild(tt); svg.appendChild(a);});
+  window.hl=id=>L.forEach(p=>{const on=p.dataset.sup===id; p.setAttribute('stroke',on?cv('--ink'):cv('--line')); p.setAttribute('opacity',p.dataset.kind==='it'&&!on?0:on?0.9:0.6);});}
+graph();
+const _sel=select; select=function(i){_sel(i); if(window.hl)hl(D.suppliers[i].id);};
 select(Math.max(0,D.suppliers.findIndex(s=>s.status==='Poisoned page')));
 </script></body></html>"""
 
+PAGE = r"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>__TITLE__</title>
+<style>:root{--bg:#F2F4EF;--panel:#fff;--ink:#16211D;--muted:#5b6661;--line:#d5dad5;--main:#1F6F5C;--warn:#B33A3A;--soft:#e8ece6}
+@media (prefers-color-scheme: dark){:root{--bg:#121816;--panel:#1b2320;--ink:#e6ece9;--muted:#9aa5a0;--line:#33403b;--main:#4fb39a;--warn:#e07070;--soft:#232d29}}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,sans-serif}main{max-width:820px;margin:0 auto;padding:24px 16px 48px}
+a{color:var(--main)}.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:14px 0}h1{margin:6px 0 2px}.muted{color:var(--muted)}
+.warn{border-left:4px solid var(--warn);background:var(--soft);padding:8px 12px;border-radius:6px}table{border-collapse:collapse;width:100%}td,th{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+pre{white-space:pre-wrap;font-size:12px;background:var(--soft);padding:10px;border-radius:6px;overflow:auto}</style></head><body><main>
+<a href="__BACK__">← Back to the knowledge map</a>__BODY__</main></body></html>"""
+
+def _esc(x):
+    import html
+    return html.escape(str(x))
+
+def pages(data):
+    W = os.path.join(config.REPO, "wiki")
+    base = os.path.join(config.REPO, "docs", "wiki")
+    os.makedirs(os.path.join(base, "suppliers"), exist_ok=True); os.makedirs(os.path.join(base, "items"), exist_ok=True)
+    for s in data["suppliers"]:
+        raw_p = os.path.join(W, "suppliers", s["id"] + ".json"); raw_h = os.path.join(W, "history", s["id"] + ".json")
+        body = f"<h1>{_esc(s['name'])}</h1><div class='muted'>{_esc(s['id'])} · {_esc(s['status'])}</div>"
+        if s["warn"]: body += f"<div class='card warn'>{_esc(s['warn'])}</div>"
+        body += "<div class='card'><b>What we know</b><ul>" + "".join(f"<li>{_esc(f)}</li>" for f in s["facts"]) + "</ul></div>" if s["facts"] else ""
+        body += f"<div class='card'><b>Track record</b><p>{_esc(s['history']['text'])}</p>"
+        if s["buyers"]: body += "<p>Buyers: " + ", ".join(f"{_esc(b['name'])} ({b['n']} invoices)" for b in s["buyers"]) + "</p>"
+        body += "</div><div class='card'><b>Items it supplies</b><table><tr><th>Item</th><th>Price</th><th>Pack</th><th>Category</th></tr>"
+        for k in s["items"]:
+            it = data["items"][k]
+            body += f"<tr><td><a href='../items/{_esc(k)}.html'>{_esc(it['name'])}</a><div class='muted'>{_esc(k)}</div></td><td>{_esc(it['price'])}</td><td>{_esc(it['pack'])}</td><td>{_esc(it['category'])} ×{_esc(it['weight'])}</td></tr>"
+        body += "</table></div>"
+        if os.path.exists(raw_p): body += f"<details class='card'><summary>Raw wiki page (wiki/suppliers/{_esc(s['id'])}.json)</summary><pre>{_esc(open(raw_p).read())}</pre></details>"
+        if os.path.exists(raw_h): body += f"<details class='card'><summary>Raw history (wiki/history/{_esc(s['id'])}.json)</summary><pre>{_esc(open(raw_h).read())}</pre></details>"
+        open(os.path.join(base, "suppliers", s["id"] + ".html"), "w").write(PAGE.replace("__TITLE__", _esc(s["name"])).replace("__BACK__", "../../wiki-graph.html").replace("__BODY__", body))
+    sup_of = {}
+    for s in data["suppliers"]:
+        for k in s["items"]: sup_of.setdefault(k, []).append(s)
+    for k, it in data["items"].items():
+        raw = os.path.join(W, "items", k + ".json")
+        rj = json.load(open(raw)) if os.path.exists(raw) else {}
+        body = f"<h1>{_esc(it['name'])}</h1><div class='muted'>{_esc(k)} · bought by {_esc({'northside':'Northside Hospital Supply','caseworks':'Caseworks'}.get(it['company'], it['company']))}</div>"
+        body += f"<div class='card'><table><tr><th>Price each</th><td>{_esc(it['price'])}</td></tr><tr><th>Pack sizes</th><td>{_esc(it['pack'])}</td></tr><tr><th>Category</th><td>{_esc(it['category'])}: a mistake on this item weighs ×{_esc(it['weight'])} in the dial</td></tr>"
+        body += f"<tr><th>Also written as</th><td>{_esc(', '.join(rj.get('description_variants') or []))}</td></tr></table></div>"
+        if sup_of.get(k): body += "<div class='card'><b>Supplied by</b><ul>" + "".join(f"<li><a href='../suppliers/{_esc(s['id'])}.html'>{_esc(s['name'])}</a> ({_esc(s['status'])})</li>" for s in sup_of[k]) + "</ul></div>"
+        if os.path.exists(raw): body += f"<details class='card'><summary>Raw wiki page (wiki/items/{_esc(k)}.json)</summary><pre>{_esc(open(raw).read())}</pre></details>"
+        open(os.path.join(base, "items", k + ".html"), "w").write(PAGE.replace("__TITLE__", _esc(it["name"])).replace("__BACK__", "../../wiki-graph.html").replace("__BODY__", body))
+
 if __name__ == "__main__":
     data = build()
+    pages(data)
     out = os.path.join(config.REPO, "docs", "wiki-graph.html")
     open(out, "w").write(HTML.replace("__DATA__", json.dumps(data)))
     print(f"{len(data['suppliers'])} suppliers, {len(data['items'])} items -> {os.path.relpath(out, config.REPO)}")

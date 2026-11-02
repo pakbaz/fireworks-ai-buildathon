@@ -13,12 +13,13 @@ Rules:
 - Quantities: give qty exactly as billed or received with its unit (uom as printed, e.g. EA, CS, BX) and copy the original quantity text in qty_text (e.g. "1 CS (12 EA)").
 - A handwritten received quantity replaces the printed one; set handwritten true.
 - If you cannot read a value with confidence, set it to null and add its path to "unreadable". Never guess.
+- Always copy the raw printed text of every quantity, price and amount into qty_text, price_text and amount_text, even when you set the value to null.
 - Reference numbers: copy them as printed (po_ref "P.O. 4471" stays "P.O. 4471").
 Reply with JSON only:
-{"po": {"po_number": str, "supplier": str, "lines": [{"sku": str, "desc": str, "qty": num, "uom": str, "qty_text": str, "unit_price": num}]},
+{"po": {"po_number": str, "supplier": str, "lines": [{"sku": str, "desc": str, "qty": num, "uom": str, "qty_text": str, "unit_price": num, "price_text": str}]},
  "shipping_notice": null or {"po_ref": str, "ship_date": str, "lines": [{"sku": str, "qty_shipped": num, "uom": str}]},
- "gr": null or {"po_ref": str, "received_date": str, "lines": [{"sku": str, "qty_received": num, "uom": str, "handwritten": bool}], "note": str},
- "invoice": {"invoice_number": str, "po_ref": str, "date": str, "supplier": str, "lines": [{"sku": str, "desc": str, "qty": num, "uom": str, "qty_text": str, "unit_price": num, "amount": num}], "total": num},
+ "gr": null or {"po_ref": str, "received_date": str, "lines": [{"sku": str, "qty_received": num, "uom": str, "qty_text": str, "handwritten": bool}], "note": str},
+ "invoice": {"invoice_number": str, "po_ref": str, "date": str, "supplier": str, "lines": [{"sku": str, "desc": str, "qty": num, "uom": str, "qty_text": str, "unit_price": num, "price_text": str, "amount": num, "amount_text": str}], "total": num},
  "unreadable": [paths]}
 Use null for a document that is not present."""
 

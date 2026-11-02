@@ -57,7 +57,9 @@ def pack_size(uom, qty_text, sku, wiki_items):
     return None
 
 def explicit_ea(qty_text):
-    m = re.search(r"(\d[\d.,]*)\s*(?:EA|EACH|PCS?)\b", str(qty_text or "").upper())
+    # Fix OCR letters inside number-like tokens first, so "l,896 EA" reads as 1896 and not 896.
+    t = " ".join(tok.translate(OCR) if re.search(r"\d", tok) else tok for tok in str(qty_text or "").split())
+    m = re.search(r"(\d[\d.,]*)\s*(?:EA|EACH|PCS?)\b", t.upper())
     return num(m.group(1)) if m else None
 
 def line_ea(line, qty_key, sku, wiki_items):
@@ -76,8 +78,33 @@ def by_sku(lines):
         out[norm_sku(l.get("sku")) or f"#{i}"] = l
     return out
 
+def _first_number(text):
+    m = re.search(r"[\dOolIS][\dOolIS.,]*", str(text or ""))
+    return num(m.group(0)) if m and re.search(r"\d", m.group(0)) else None
+
+def recover(read):
+    """Where the model returned null but copied the raw text, parse it in code (e.g. 'l,896 EA' -> 1896)."""
+    fixed = []
+    for doc, qk in (("po", "qty"), ("invoice", "qty"), ("gr", "qty_received"), ("shipping_notice", "qty_shipped")):
+        d = (read or {}).get(doc) or {}
+        for i, ln in enumerate(d.get("lines") or []):
+            if ln.get(qk) is None and ln.get("qty_text"):
+                v = explicit_ea(ln["qty_text"]) or _first_number(ln["qty_text"])
+                if v is not None:
+                    ln[qk] = v; fixed.append(f"{doc}.lines[{i}].{qk}")
+            for vk, tk in (("unit_price", "price_text"), ("amount", "amount_text")):
+                if vk in ln or tk in ln:
+                    if ln.get(vk) is None and ln.get(tk):
+                        v = _first_number(ln[tk])
+                        if v is not None:
+                            ln[vk] = v; fixed.append(f"{doc}.lines[{i}].{vk}")
+    if fixed and read.get("unreadable"):
+        read["unreadable"] = [u for u in read["unreadable"] if not any(u.startswith(f.rsplit(".", 1)[0]) and u.endswith(f.rsplit(".", 1)[1]) for f in fixed)]
+    return fixed
+
 def analyze(read, case, wiki, policy):
     """Return (issues, features, at_risk_usd, wait). wiki is None for the no-wiki row."""
+    recovered = recover(read or {})
     tol = float((policy or {}).get("price_tolerance", 0.01))
     window = int((policy or {}).get("in_transit_window_days", 10))
     items = wiki["items"] if wiki else None
@@ -175,7 +202,7 @@ def analyze(read, case, wiki, policy):
         q, p, a = num(il.get("qty")), num(il.get("unit_price")), num(il.get("amount"))
         if q and p and a and abs(q * p - a) > max(0.02, 0.005 * a):
             arith_off += 1
-    features = {"n_issues": len(issues), "unreadable": sorted(set(unreadable)), "n_unreadable": len(set(unreadable)),
+    features = {"recovered_from_text": recovered, "n_issues": len(issues), "unreadable": sorted(set(unreadable)), "n_unreadable": len(set(unreadable)),
                 "arith_off": arith_off, "wait": wait, "codes": [i[0] for i in issues]}
     if (issues or unreadable) and not risk_usd:
         # Unknown dollar amount on a flagged invoice: fall back to the invoice total from the text; the dial fails closed if still unknown.

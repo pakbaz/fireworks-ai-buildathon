@@ -27,6 +27,8 @@ svg.wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z
 </style></head><body><main>
 <h1>What the company knows</h1>
 <p class="lede">Every supplier the two companies buy from, what we know about how it writes its documents, its track record on past invoices, and the items it supplies. This is the knowledge the harness uses to read invoices correctly and decide how careful to be. Pick a supplier.</p>
+<div class="card" style="padding:8px 8px 4px;margin-bottom:16px"><svg id="graph" role="img" aria-label="Graph of companies, suppliers and items" style="width:100%;height:auto;display:block"></svg>
+<div class="key" style="padding:0 8px 6px">Top: the two companies. Middle: suppliers, sized by past invoices and colored by wiki page status. Bottom: items. Hover or click a supplier to see what it supplies; click any supplier or item to open its wiki page.</div></div>
 <div class="tabs" id="tabs" role="toolbar" aria-label="Suppliers"></div>
 <div class="map" id="map">
   <div class="col"><h3>Buys from this supplier</h3><div id="cos"></div></div>
@@ -53,7 +55,8 @@ function select(i){cur=i; [...tabs.children].forEach((b,k)=>b.setAttribute('aria
   s.buyers.forEach(b=>{const c=el('div','card co'); c.dataset.wire='co'; c.append(el('b',null,b.name), el('span',null,b.n+' past invoices')); cos.appendChild(c);});
   const sup=document.getElementById('sup'); sup.innerHTML='';
   const badge=el('span','badge',s.status); badge.style.background=statusColor(s.status);
-  sup.append(el('h2',null,s.name), badge);
+  const h2=el('h2'); const a=el('a',null,s.name); a.href='wiki/suppliers/'+s.id+'.html'; a.style.color='inherit'; h2.appendChild(a);
+  sup.append(h2, badge, el('div','key','Open the full wiki page by clicking the name.'));
   if(s.warn){sup.appendChild(el('div','warn',s.warn));}
   const ul=el('ul'); s.facts.forEach(f=>ul.appendChild(el('li',null,f))); if(s.facts.length) sup.appendChild(ul);
   const h=el('div','hist'); h.append(el('b',null,'Track record'), el('div',null,s.history.text));
@@ -61,7 +64,7 @@ function select(i){cur=i; [...tabs.children].forEach((b,k)=>b.setAttribute('aria
     const k=el('div','key'); [['paid','Paid'],['problem','Real problem'],['wait','Waited for delivery']].forEach(([o,t])=>{const s2=el('span'); const i2=el('i'); i2.style.background=outColor(o==='problem'?'x':o); s2.append(i2,document.createTextNode(t)); k.appendChild(s2);}); h.appendChild(el('div','lede','Last 20 invoices, oldest first')); h.appendChild(k);}
   sup.appendChild(h);
   const its=document.getElementById('items'); its.innerHTML='';
-  s.items.forEach(sku=>{const it=D.items[sku]; const c=el('div','card it'); const b=el('b',null,it.name); const cat=el('span','cat',it.category+' ×'+it.weight); b.appendChild(cat);
+  s.items.forEach(sku=>{const it=D.items[sku]; const c=el('a','card it'); c.href='wiki/items/'+sku+'.html'; c.style.color='inherit'; c.style.textDecoration='none'; c.style.display='block'; const b=el('b',null,it.name); const cat=el('span','cat',it.category+' ×'+it.weight); b.appendChild(cat);
     c.append(b, el('span',null,it.price+' each · '+it.pack+' · '+sku)); its.appendChild(c);});
   if(!s.items.length) its.appendChild(el('p','lede','No items on record yet.'));
   requestAnimationFrame(wires);}
@@ -73,5 +76,28 @@ function wires(){const svg=document.getElementById('wires'), map=document.getEle
   const box=document.getElementById('items').getBoundingClientRect();
   document.querySelectorAll('#items .it').forEach(c=>{const r=c.getBoundingClientRect(); if(r.bottom<box.top||r.top>box.bottom)return; curve(sup.right-R.left, sy, r.left-R.left, r.top-R.top+r.height/2, 1.5);});}
 document.getElementById('items').addEventListener('scroll',wires); addEventListener('resize',wires);
+function graph(){const svg=document.getElementById('graph'), NS='http://www.w3.org/2000/svg'; const W=1240,H=430; svg.setAttribute('viewBox','0 0 '+W+' '+H); svg.innerHTML='';
+  const mk=(t,a)=>{const e=document.createElementNS(NS,t); for(const k in a)e.setAttribute(k,a[k]); svg.appendChild(e); return e;};
+  const cos=[{id:'northside',name:'Northside Hospital Supply'},{id:'caseworks',name:'Caseworks'}];
+  const P={}; cos.forEach((c,i)=>P[c.id]={x:W*(i?0.68:0.32),y:46});
+  D.suppliers.forEach((s,i)=>P[s.id]={x:60+i*(W-120)/(D.suppliers.length-1),y:200});
+  const skus=Object.keys(D.items).sort((a,b)=>(D.items[a].company||'').localeCompare(D.items[b].company||'')||a.localeCompare(b));
+  skus.forEach((k,i)=>P[k]={x:30+i*(W-60)/(skus.length-1),y:330});
+  const links=[]; D.suppliers.forEach(s=>{s.buyers.forEach(b=>links.push({a:b.id,b:s.id,kind:'co',w:Math.max(1,b.n/90)})); s.items.forEach(k=>links.push({a:s.id,b:k,kind:'it',sup:s.id}));});
+  const L=links.map(l=>{const p=mk('path',{d:`M${P[l.a].x},${P[l.a].y} C${P[l.a].x},${(P[l.a].y+P[l.b].y)/2} ${P[l.b].x},${(P[l.a].y+P[l.b].y)/2} ${P[l.b].x},${P[l.b].y}`,fill:'none',stroke:cv('--line'),'stroke-width':l.kind==='co'?l.w:1}); p.dataset.sup=l.kind==='it'?l.sup:l.b; p.dataset.kind=l.kind; return p;});
+  cos.forEach(c=>{mk('circle',{cx:P[c.id].x,cy:P[c.id].y,r:16,fill:cv('--ink')}); const t=mk('text',{x:P[c.id].x+22,y:P[c.id].y+5,'font-size':15,'font-weight':700,fill:cv('--ink')}); t.textContent=c.name;});
+  D.suppliers.forEach((s,i)=>{const n=s.buyers.reduce((a,b)=>a+b.n,0); const g=mk('g',{}); g.style.cursor='pointer';
+    const c=document.createElementNS(NS,'circle'); c.setAttribute('cx',P[s.id].x); c.setAttribute('cy',P[s.id].y); c.setAttribute('r',8+Math.sqrt(n)/2.2); c.setAttribute('fill',statusColor(s.status)); c.setAttribute('stroke',cv('--panel')); c.setAttribute('stroke-width',2); g.appendChild(c);
+    const t=document.createElementNS(NS,'text'); t.setAttribute('x',P[s.id].x); t.setAttribute('y',P[s.id].y+34); t.setAttribute('text-anchor','middle'); t.setAttribute('font-size',13); t.setAttribute('fill',cv('--ink')); t.textContent=s.short; g.appendChild(t);
+    const tt=document.createElementNS(NS,'title'); tt.textContent=s.name+' · '+s.status+' · click to open its wiki page'; g.appendChild(tt);
+    g.addEventListener('mouseenter',()=>hl(s.id)); g.addEventListener('mouseleave',()=>hl(D.suppliers[cur].id));
+    g.addEventListener('click',()=>{select(i); location.href='wiki/suppliers/'+s.id+'.html';}); svg.appendChild(g);});
+  skus.forEach(k=>{const it=D.items[k]; const a=document.createElementNS(NS,'a'); a.setAttribute('href','wiki/items/'+k+'.html');
+    const c=document.createElementNS(NS,'circle'); c.setAttribute('cx',P[k].x); c.setAttribute('cy',P[k].y); c.setAttribute('r',6); c.setAttribute('fill',it.weight>=25?cv('--warn'):it.weight>=3?cv('--accent'):cv('--main')); a.appendChild(c);
+    const t=document.createElementNS(NS,'text'); t.setAttribute('transform',`translate(${P[k].x+3},${P[k].y+14}) rotate(40)`); t.setAttribute('font-size',11); t.setAttribute('fill',cv('--muted')); t.textContent=it.name.length>22?it.name.slice(0,21)+'…':it.name; a.appendChild(t);
+    const tt=document.createElementNS(NS,'title'); tt.textContent=it.name+' · '+it.price+' · '+it.category+' · click to open'; a.appendChild(tt); svg.appendChild(a);});
+  window.hl=id=>L.forEach(p=>{const on=p.dataset.sup===id; p.setAttribute('stroke',on?cv('--ink'):cv('--line')); p.setAttribute('opacity',p.dataset.kind==='it'&&!on?0:on?0.9:0.6);});}
+graph();
+const _sel=select; select=function(i){_sel(i); if(window.hl)hl(D.suppliers[i].id);};
 select(Math.max(0,D.suppliers.findIndex(s=>s.status==='Poisoned page')));
 </script></body></html>
