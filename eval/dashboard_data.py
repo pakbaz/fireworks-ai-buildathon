@@ -5,7 +5,8 @@ Each test set is compared on the cases that every included system has finished, 
 """
 import json, os, statistics as st
 SETS = [("test", "Document problems"), ("test_context", "History problems")]
-SYSTEMS = [("kimi_alone", "Kimi K3 alone"), ("glm_harness_wiki", "Our harness (GLM + wiki)"),
+SYSTEMS = [("kimi_alone", "Kimi K3 alone"), ("kimi_harness_wiki", "Kimi K3 + our checks"), ("glm_harness_wiki", "Our harness (GLM + wiki)"),
+           ("kimi_alone_v1_no_history_instruction", "Kimi K3 alone, not told to check history (original run)"),
            ("glm_alone", "GLM 5.3 Flash alone"), ("glm_harness", "GLM + harness, no wiki")]
 REVIEW = 10.0
 TYPE_NAMES = {"short_shipped": "Shipped short", "lost_in_transit": "Lost in transit", "qty_mismatch": "Quantity mismatch",
@@ -18,8 +19,9 @@ def load(p):
 summary, by_type, per_case = [], [], []
 for split, set_name in SETS:
     cases = {json.loads(l)["case_id"]: json.loads(l) for l in open(f"data/{split}.jsonl")}
-    preds = {k: load(f"runs/{k}/{split}.jsonl") for k, _ in SYSTEMS}
-    preds = {k: {i: p for i, p in v.items() if p.get("reason_code") != "error"} for k, v in preds.items()}
+    raw = {k: load(f"runs/{k}/{split}.jsonl") for k, _ in SYSTEMS}
+    is_err = lambda p: p.get("reason_code") == "error" or p.get("action") == "ERROR"
+    preds = {k: {i: p for i, p in v.items() if not is_err(p)} for k, v in raw.items()}
     core = [k for k in ("kimi_alone", "glm_harness_wiki") if preds[k]]
     if len(core) < 2: continue
     common = set(cases)
@@ -40,7 +42,7 @@ for split, set_name in SETS:
         escal = sum(P[i]["action"] == "ESCALATE" for i in ids)
         missed_usd = sum(cases[i]["label"]["at_risk_usd"] or 0 for i in missed)
         n = len(ids)
-        summary.append({"set": set_name, "system": name, "key": k, "cases": n, "real": len(real), "caught": len(caught), "missed": len(missed),
+        summary.append({"set": set_name, "system": name, "key": k, "attempted": len(raw[k]), "completed": len(P), "errors": len(raw[k]) - len(P), "cases": n, "real": len(real), "caught": len(caught), "missed": len(missed),
                         "fine": len(fine), "false_escalations": len(fp), "true_pays": len(fine) - len(fp), "in_transit": len(transit), "wait_correct": wait_ok,
                         "catch_rate": round(len(caught) / len(real), 4) if real else None,
                         "false_escalation_rate": round(len(fp) / len(fine), 4) if fine else None,
