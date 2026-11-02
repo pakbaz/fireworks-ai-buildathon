@@ -1,0 +1,74 @@
+{
+ "case_id": "TESTCTX-0149",
+ "note": "Evidence-grounded demo case from the frozen test set. Every field a UI shows comes from the saved predictions or the supplier history below, never from the answer key. Kimi K3 here was explicitly told to check supplier history, including quantities larger than 3x the largest past order. PAY is a recommendation; nothing is paid.",
+ "documents": {
+  "po": "Northside Hospital Supply                   PURCHASE ORDER\nReceiving Dock 4\n1200 Northside Pkwy NW\nAtlanta, GA 30327\n\nVendor:\n   CardioLine Systems GmbH\n   Hamburg, DE\n\nPO Number: PO-092267                    PO Date: 2026-06-08\nBuyer: S. Patel                         Terms: Net 30\nVendor ID: SUP-CARDIOLINE               Ship To: Main receiving\n\nLn  Item         Description           Quantity  Unit Price      Amount\n-----------------------------------------------------------------------\n1   NS-INF-2200  Infusion Pump, Large     82 EA    4,835.44  396,506.08\n                 Volume, Model 2200\n\n                                              Total:        396,506.08\n\nDeliver to receiving dock. Reference PO number on all paperwork.\n\nPage 1 of 1\n",
+  "shipping_notice": "============================================================\n| DELIVERY NOTE   CardioLine Systems GmbH\n| Hamburg, DE\n============================================================\n| DELIVERY NOTE NO | DESPATCH DATE | CUST PO NO |\n| LS-582028        | 2026-06-24    | PO-092267  |\n| CARRIER     | CONSIGNMENT  | DESPATCH POINT |\n| UPS Freight | 1Z0892975587 | Hamburg, DE    |\n| CTNS |\n| 1    |\n------------------------------------------------------------\n| POS | ARTICLE     | DESCRIPTION       | QTY DESP |\n----------------------------------------------------\n| 1   | NS-INF-2200 | LVP Infusion Pump |    82 EA |\n|     |             | 2200              |          |\n------------------------------------------------------------\n\nDELIVER TO: Northside Hospital Supply / Receiving Dock 4 / 1200 Northside\nPkwy NW / Atlanta, GA 30327\nGoods remain property of seller until paid in full.\n",
+  "gr": "Receiving Report\nNorthside Hospital Supply\nReceiving Dock 4,\n1200 Northside Pkwy NW, Atlanta, GA 30327\n\nFrom Vendor: CardioLine Systems GmbH\n    Hamburg, DE\n\nReceiving Report # .... RCV-288262\nReceived On ........... 2026-07-04\nYour Order Ref ........ 92267\nVendor ................ CardioLine Systems GmbH\nChecked By ............ KW\nLocation .............. Dock 2\n\nITEMS\n-----\n01  SKU: NS-INF-2200\n    Infusion Pump, Large Volume, Model 2200\n    Ordered: 82 EA   Received: 82 EA\n\n\nReceived subject to inspection. Count verified at dock.\n\n-- end of document --\n",
+  "invoice": "===========================================================================\n| COMMERCIAL INVOICE   CardioLine Systems GmbH\n| Hamburg, DE\n===========================================================================\n| INVOICE NO | INVOICE DATE | CUST PO NO |\n| RE-2645793 | 2026-06-26   | PO-092267  |\n| DUE        | TERMS  | CUSTOMER                                    |\n| 2026-07-26 | Net 30 | Accounts Payable, Northside Hospital Supply |\n| OFFICE      |\n| Hamburg, DE |\n---------------------------------------------------------------------------\n| POS | ARTICLE     | DESCRIPTION       |   QTY | UNIT PRICE | NET AMOUNT |\n---------------------------------------------------------------------------\n| 1   | NS-INF-2200 | LVP Infusion Pump | 82 EA |   4,835.44 | 396,506.08 |\n|     |             | 2200              |       |            |            |\n---------------------------------------------------------------------------\n|                      NET TOTAL |       396,506.08 |\n|                        VAT/TAX |             0.00 |\n|                    GROSS TOTAL |       396,506.08 |\n\nINVOICE TO: Northside Hospital Supply / Receiving Dock 4 / 1200 Northside\nPkwy NW / Atlanta, GA 30327\nRemit payment to: Hamburg, DE / Bank: Deutsche Bank, acct ****8686\nPlease quote invoice number with remittance. Thank you for your business.\n"
+ },
+ "billing_history": [
+  {
+   "invoice_number": "RE-2518714",
+   "po_number": "PO-099498",
+   "invoice_date": "2026-02-23",
+   "lines": [
+    {
+     "sku": "NS-VEN-0450",
+     "qty": 1,
+     "amount": 28863.15
+    }
+   ],
+   "status": "paid"
+  }
+ ],
+ "company": "northside",
+ "supplier_id": "SUP-CARDIOLINE",
+ "supplier_history": {
+  "invoices": 300,
+  "largest_past_quantity": {
+   "northside|NS-INF-2200": 11
+  },
+  "usual_unit_price": {
+   "n": 83,
+   "mean": 4842.1717,
+   "sd": 110.2059,
+   "min": 4666.85,
+   "max": 5040.46
+  }
+ },
+ "kimi_k3_alone": {
+  "action": "PAY",
+  "reason_code": "none",
+  "next_step": "pay",
+  "risk": 0.2016,
+  "at_risk_usd": 0.0,
+  "evidence": "PO, shipping notice, goods receipt and invoice all agree on NS-INF-2200 at 82 EA and 4,835.44/EA (396,506.08), the price is within 10% of the supplier's historical mean (4,842.17), quantity is below the 3x spike threshold, and remit-to (Hamburg, DE) and ship-from (Hamburg, DE) match supplier history; the prior paid invoice on this PO was for a different SKU (NS-VEN-0450) and amount, so it is not a duplicate.",
+  "cost_usd": 0.0099,
+  "latency_ms": 3821
+ },
+ "our_harness": {
+  "action": "ESCALATE",
+  "reason_code": "quantity_spike",
+  "next_step": "investigate",
+  "risk": 0.98,
+  "at_risk_usd": 343316.24,
+  "evidence": "NS-INF-2200: 82 EA vs at most 11 ever ordered",
+  "issues": [
+   {
+    "code": "quantity_spike",
+    "next_step": "investigate",
+    "detail": "NS-INF-2200: 82 EA vs at most 11 ever ordered"
+   }
+  ],
+  "dial": {
+   "review_cost_usd": 10.0,
+   "cost_of_miss_usd": 7630203.43,
+   "escalate_above_risk": 1e-06,
+   "expected_loss_if_paid_usd": 7477599.37,
+   "expected_cost_of_review_usd": 0.2
+  },
+  "cost_usd": 0.00097985,
+  "latency_ms": 8905
+ }
+}

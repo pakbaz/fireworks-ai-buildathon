@@ -31,32 +31,38 @@ The dial is applied to **both** rows the same way: escalate when risk × cost of
 
 The harness adds `read` (what GLM read from each document), `issues` (every failed check), `features` (unreadable fields, values recovered from raw text), `anomalies` (informational history flags) and `dial` (review cost, cost of a miss, threshold, expected loss).
 
-## A real case: the payment address changed
+## A real case: 82 infusion pumps
 
-`DEVCTX-0019`, Caseworks buying 4,224 wireless chargers from VoltEdge. The PO, shipping notice, receipt and invoice all agree: 4,224 EA at $12.69 = $53,602.56. The invoice ends with:
+`TESTCTX-0149`, from the frozen test set. Northside Hospital Supply is invoiced for 82 dual-channel infusion pumps at $4,835.44 each, $396,506.08. The PO, shipping notice, goods receipt and invoice all agree. In 300 past invoices from this supplier, Northside has never ordered more than 11 of this pump.
 
-```text
-Remit payment to: Sofia, BG / Bank: Unity Commerce Bank, SWIFT UCBXXX ****2210
-```
+Both systems had that history. Kimi K3 was explicitly told to escalate any quantity more than 3 times the largest past order.
 
-VoltEdge has always been paid in San Jose, CA. That fact was in **both** systems' inputs.
-
-**Kimi K3 alone** (1 call, $0.0092):
+**Kimi K3 alone** (1 call, $0.0099):
 
 ```json
-{"action": "PAY", "reason_code": "none", "risk": 0.048, "at_risk_usd": 0.0,
- "evidence": "PO, shipping notice, goods receipt, and invoice all agree on item CW-CHG-MAG15, quantity 4,224 EA, and unit price 12.69 (total 53,602.56) against PO-002255, with receipt booked 2026-09-05 and no prior billing on this PO."}
+{
+ "action": "PAY",
+ "reason_code": "none",
+ "risk": 0.2016,
+ "evidence": "PO, shipping notice, goods receipt and invoice all agree on NS-INF-2200 at 82 EA and 4,835.44/EA (396,506.08), the price is within 10% of the supplier's historical mean (4,842.17), quantity is below the 3x spike threshold, and remit-to (Hamburg, DE) and ship-from (Hamburg, DE) match supplier history; the prior paid invoice on this PO was for a different SKU (NS-VEN-0450) and amount, so it is not a duplicate."
+}
 ```
 
-**Our harness** (1 call, $0.0009):
+**Our harness** (GLM 5.3 Flash reads, code checks; 1 call, $0.0010):
 
 ```json
-{"action": "ESCALATE", "reason_code": "remit_to_changed", "next_step": "investigate", "risk": 0.98, "at_risk_usd": 53602.56,
- "evidence": "pay to 'Sofia, BG / Bank: Unity Commerce Bank, SWIFT UCBXXX ****2210' but this supplier is always paid at San Jose, CA",
- "dial": {"review_cost_usd": 10.0, "cost_of_miss_usd": 54460.2, "escalate_above_risk": 0.000184, "expected_loss_if_paid_usd": 53371.0}}
+{
+ "action": "ESCALATE",
+ "reason_code": "quantity_spike",
+ "next_step": "investigate",
+ "at_risk_usd": 343316.24,
+ "evidence": "NS-INF-2200: 82 EA vs at most 11 ever ordered"
+}
 ```
 
-Kimi did the three-way match perfectly and paid $53,602 to a new bank in another country. A changed bank account on an otherwise perfect invoice is the most common invoice-fraud pattern. The harness caught it because code compares the payment address with the supplier's history every time, instead of hoping the model notices a fact buried in a long prompt.
+Kimi did the three-way match perfectly and recommended paying. The harness compared the quantity with the company's own order history, as code does on every invoice, and sent it to a person. This is the general pattern on the test set: told what to check, Kimi still misses 19 of 140 history problems, mostly quantity spikes (10 of 20 caught) and items a supplier never sold before (15 of 20). The amount is synthetic exposure, not a prevented loss.
+
+An earlier example in this file, `DEVCTX-0019` (a changed payment address), came from the run before Kimi was told to check history; once told, Kimi catches all 20 payment-address changes on test, so it is no longer a fair illustration.
 
 ## How we compare the two
 
@@ -73,7 +79,15 @@ Kimi did the three-way match perfectly and paid $53,602 to a new bank in another
 
 ## Results so far
 
-**Document problems** (`test.jsonl`, 1,000 cases): Kimi K3 alone caught 374 of 375 real problems and sent 1 of 500 fine invoices to a person, for $9.20. GLM rows are running.
+**Document problems** (`test.jsonl`, first 300 of the 1,000 cases, same mix; both systems on the same invoices):
+
+| System | Real problems caught | Fine invoices sent to a person | In-transit waited | Model cost per 100 | Median time |
+|---|---:|---:|---:|---:|---:|
+| Kimi K3 alone | 117 / 117 | 0 / 148 | 35 / 35 | $0.93 | 3.5 s |
+| GLM 5.3 Flash + our checks | 117 / 117 | 20 / 148 | 34 / 35 | $0.29 | 22 s |
+
+Here the frontier model is better: our harness raised 20 false alarms, 15 from GLM misreading a quantity on messy invoices and 4 from the new history checks firing on noisy text. Its advantage on these cases is cost, not accuracy. Kimi K3 on all 1,000: 374 of 375 caught, $9.20.
+
 
 **Dev, 50 document cases (latest run):** our harness 15/15 caught, 2/28 fine invoices escalated (two GLM misreads), $0.22 per 100; Kimi 15/15, 0/28, $0.78 per 100.
 

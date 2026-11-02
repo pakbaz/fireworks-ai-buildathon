@@ -33,7 +33,7 @@ This repository currently contains the project idea and research, not a working 
 | Synthetic data and generator | Built. Train 3,000, dev 300, test 1,000 (document problems); dev 42, test 210 (history problems). `python3 -I generator/check.py` passes |
 | Harness on GLM 5.3 Flash | Built: reader, code checks, supplier history, re-reads, business dial, single-case API (`harness/`) |
 | History-problem test (210) | Run for Kimi K3 alone (two prompt versions), Kimi K3 + our checks, GLM + our checks |
-| Document-problem test (1,000) | Kimi K3 alone on all 1,000; our harness on the first 300 (same mix), finishing |
+| Document-problem test (1,000) | Kimi K3 alone on all 1,000; our harness on the first 300 (same mix) |
 | Diagnostic rows (GLM alone, harness without wiki) | Dev only; test runs pending |
 | Calibration | Not done. Risk values are heuristic, not calibrated probabilities |
 | Production readiness | Not claimed. No payments are made; PAY is a recommendation. The review dashboard design uses simulated parts (see `dashboard/README.md`) |
@@ -169,7 +169,14 @@ All results are on synthetic cases, generated with a seed and frozen before any 
 | Kimi K3 + our checks | 140 / 140 | 0 / 70 | 140 | $2.92 |
 | **GLM 5.3 Flash + our checks** | **139 / 140** | **0 / 70** | **139** | **$0.25** |
 
-**Document problems** (test): Kimi K3 alone caught 374 of 375 real problems and recommended review for 1 of 625 other invoices, for $9.20 per 1,000. Our harness on the first 300 of the same cases: see `docs/comparison.md` once the run lands.
+**Document problems** (test, first 300 of the 1,000 cases, same mix; both systems on the same invoices):
+
+| System | Real problems caught | Fine invoices sent to a person | In-transit waited | Model cost per 100 | Median time |
+|---|---:|---:|---:|---:|---:|
+| Kimi K3 alone | 117 / 117 | 0 / 148 | 35 / 35 | $0.93 | 3.5 s |
+| GLM 5.3 Flash + our checks | 117 / 117 | 20 / 148 | 34 / 35 | $0.29 | 22 s |
+
+Here the frontier model is better: our harness raised 20 false alarms, 15 from GLM misreading a quantity on messy invoices and 4 from the new history checks firing on noisy text. Its advantage on these cases is cost, not accuracy. Kimi K3 on all 1,000: 374 of 375 caught, $9.20.
 
 **Speed:** our harness is slower. On the history set, median 7.0 s against 3.2 s for Kimi K3, and p95 30 s against 5 s. Invoices are processed in parallel, so throughput is set by the API rate limit, not per-invoice latency.
 
