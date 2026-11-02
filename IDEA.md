@@ -148,3 +148,7 @@ Notes:
 - **Baseline:** frontier LLM, same inputs and prompt.
 - **Our system:** open-model harness on Fireworks (better reading + reasoning + supplier context, optional fine-tune).
 - **Win condition:** fewer false-positive escalations than the baseline, with no increase in missed real discrepancies.
+
+---
+
+Research and our take on sessions 2 and 3: [docs/ideas-review.md](docs/ideas-review.md).

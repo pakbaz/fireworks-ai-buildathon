@@ -8,6 +8,7 @@ This repository currently contains the project idea and research, not a working 
 
 - Original concept: [IDEA.md](IDEA.md)
 - Full source-backed report: [docs/research.md](docs/research.md)
+- Review of brainstorm sessions 2 and 3, with our take and a plan for today: [docs/ideas-review.md](docs/ideas-review.md)
 
 ## Status
 
