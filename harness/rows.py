@@ -27,7 +27,9 @@ def _action_prob(r):
 def _history_summary(h):
     if not h:
         return None
-    return {k: h.get(k) for k in ("invoices", "problem_rate", "problems_by_type", "unit_price_by_sku", "lead_days")}
+    # Same history facts the harness uses, so the comparison is about how the information is used, not who has it.
+    return {k: h.get(k) for k in ("invoices", "problem_rate", "problems_by_type", "unit_price_by_sku", "lead_days",
+                                  "remit_to", "ship_from", "qty_max_by_company_sku")}
 
 def alone(case, model, use_images, frontier):
     stats = dict(calls=0, tokens_in=0, tokens_out=0, cost_usd=0.0, latency_ms=0)
