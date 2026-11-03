@@ -3,7 +3,7 @@
 Form: https://hackersquad.io/builders/dashboard/events/cmvhfug2f0014pg23mya02wru/builder#project
 Judged commit: `3073420` (use the latest commit on `main` if more changes land before submitting, and say which).
 Repository: https://github.com/pakbaz/fireworks-ai-buildathon (must be public before judging)
-Demo video (1 min 53 s): https://drive.google.com/file/d/1cEZZ00eSJBZlKE0aDoeYgAf1HcPLOe6y/view?usp=sharing (share setting: anyone with the link can view)
+Demo video (1 min 56 s): https://github.com/pakbaz/fireworks-ai-buildathon/blob/main/media/demo-video.mp4
 Live results dashboard: https://claude.ai/artifact/NyWmdZFGwhRAp6yQZBsFue (share it from its Share menu first)
 
 ## Project name
