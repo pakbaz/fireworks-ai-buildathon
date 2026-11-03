@@ -1,6 +1,6 @@
 # Invoice Reconciliation
 
-**Demo video (1 min 53 s):** [watch on Google Drive](https://drive.google.com/file/d/1cEZZ00eSJBZlKE0aDoeYgAf1HcPLOe6y/view?usp=sharing) · narration script: [media/narration.md](media/narration.md)
+**Demo video (1 min 56 s):** [media/demo-video.mp4](media/demo-video.mp4) · narration script: [media/narration.md](media/narration.md)
 
 **Final results for the video and presentation: [results.md](results.md).**
 
