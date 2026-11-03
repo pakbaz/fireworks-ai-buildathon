@@ -5,6 +5,7 @@ from . import client, prompts, packet, domain, dial, supplier_history
 def _acc(stats, model, r):
     ti, to, c = client.usage_cost(model, r)
     stats["calls"] += 1  # counted even when served from the shared cache, so per-row cost is complete
+    stats["cached_calls"] = stats.get("cached_calls", 0) + bool(r.get("_cached"))
     stats["tokens_in"] += ti; stats["tokens_out"] += to; stats["cost_usd"] += c
     stats["latency_ms"] += r.get("_latency_ms", 0)
 
