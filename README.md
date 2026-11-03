@@ -1,5 +1,9 @@
 # Invoice Reconciliation
 
+[![Demo video preview, silent at 4x speed. Click for the full video with sound.](media/demo-preview.gif)](media/demo-video.mp4)
+
+*Silent 4x preview. Click it for the full video with sound.*
+
 **Demo video (1 min 56 s):** [media/demo-video.mp4](media/demo-video.mp4) · narration script: [media/narration.md](media/narration.md)
 
 **Final results for the video and presentation: [results.md](results.md).**
