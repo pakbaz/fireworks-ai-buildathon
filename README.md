@@ -20,6 +20,7 @@ An evidence-first open-model evaluation for **Fireworks: Deploy with Microsoft a
 
 > Can a rules-first system use an open model only for genuine ambiguity, reduce unnecessary human review, and still catch cases that require a person?
 
+- Review site for flagged invoices, which runs from this repo: [web/README.md](web/README.md)
 - Problem statement and system flow: [docs/problem-statement.md](docs/problem-statement.md)
 - Build plan: [docs/plan.md](docs/plan.md)
 - Original concept: [IDEA.md](IDEA.md)
